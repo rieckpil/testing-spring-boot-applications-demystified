@@ -1,1 +1,4 @@
 intro.md
+content.md
+outro.md
+changelog.md

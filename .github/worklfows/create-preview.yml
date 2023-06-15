@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - preview
+      - main
 
 jobs:
   create-preview:

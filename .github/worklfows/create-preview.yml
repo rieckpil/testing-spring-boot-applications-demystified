@@ -1,0 +1,25 @@
+name: Create Leanpub Preview
+
+on:
+  push:
+    branches:
+      - preview
+
+jobs:
+  create-preview:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        max-parallel: [1]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Send webhook to Leanpub API
+        timeout-minutes: 5
+        continue-on-error: false
+        env:
+          LEANPUB_API_KEY: ${{ secrets.LEANPUB_API_KEY }}
+          BOOK_SLUG: spring-boot-testing-pitfalls
+        run: curl -v -d "api_key=$LEANPUB_API_KEY" https://leanpub.com/$BOOK_SLUG/preview.json

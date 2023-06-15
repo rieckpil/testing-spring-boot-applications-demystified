@@ -1,0 +1,13 @@
+{
+  "name": "spring-boot-testing-pitfalls-ebook",
+  "version": "1.0.0",
+  "scripts": {
+    "check-links": "find manuscript -type f -name '*.md' | xargs -L1 node_modules/.bin/markdown-link-check -c .broken-link-config.json --quiet"
+  },
+  "dependencies": {
+    "markdown-link-check": "3.8.7"
+  },
+  "engines": {
+    "node": ">= 16"
+  }
+}

@@ -1,4 +1,7 @@
 # Intro
 
-What this is
-Who am I
+## About this Book
+
+## About the Author
+
+## Conventions Used in this Book

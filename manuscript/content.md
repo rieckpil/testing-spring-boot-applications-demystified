@@ -5,9 +5,542 @@
 
 ## Tips & Tricks
 
-### Maven
+### Correct Use Of Your Build Tool: Maven
+
+Starting with a new programming language is always exciting. However, it can be overwhelming as we have to get comfortable with the language, the tools, conventions, and the general development workflow. This holds true for both developing and testing our applications. 
+
+When testing Java applications with Maven, there are several concepts and conventions to understand: Maven lifecycles, build phases, plugins, etc. With this blog post, we'll cover the basic concepts for you to understand how testing Java applications with Maven _works_.
+
+#### What Do We Need Maven For?
+
+When writing applications with Java, we can't just pass our `.java` files to the JVM (Java Virtual Machine) to run our program. We first have to compile our Java source code to bytecode (`.class` files) using the Java Compiler (`javac`). 
+
+Next, we pass this bytecode to the JVM (`java` binary on our machines) which then interprets our program and/or compiles parts of it even further to native machine code. Given this two-step process, someone has to compile our Java classes and package our application accordingly. Manually calling `javac` and passing the correct classpath is a cumbersome task. 
+
+A build tool automates this process. As developers, we then only have to execute one command, and everything get's build automatically. The two most adopted build tools for the Java ecosystem are [Maven](https://maven.apache.org/) and [Gradle](https://gradle.org/). _Ancient devs_ might still prefer [Ant](https://ant.apache.org/), while _latest-greatest devs_ might advocate for [Bazel](https://bazel.build/) as a build tool for their Java applications. We're going to focus on Maven with this article. To build and test our Java applications, we need a [JDK](https://adoptopenjdk.net/) (Java Development Kit) installed on our machine and Maven. 
+
+We can either [install Maven as a command-line tool](https://maven.apache.org/install.html) (i.e., place the Maven binary on our system's `PATH`) or use the portable Maven Wrapper. The Maven Wrapper is a convenient way to work with Maven without having to install it locally. It allows us to conveniently build Java projects with Maven without having to install and configure Maven as a CLI tool on our machine When creating a new Spring Boot project, for example, you might have already wondered what the `mvnw` and `mvnw.cmd` files inside the root of the project are used for. That's the Maven Wrapper (the idea is borrowed from Gradle).
+
+#### Creating a New Maven Project
+
+There are several ways to bootstrap a new Maven project. Most of the popular Java application frameworks offer a project bootstrapping wizard-like interface. Good examples are the [Spring Initializr](https://start.spring.io/) for new Spring Boot applications, [Quarkus](https://code.quarkus.io/), [MicroProfile](https://start.microprofile.io/). 
+
+If we want to create a new Maven project without any framework support, we can use a [Maven Archetype](https://maven.apache.org/guides/introduction/introduction-to-archetypes.html) to create new projects. These archetypes are a project templating toolkit to generate a new Maven project conveniently. 
+
+Maven provides a set of [default Archetypes artifacts](https://maven.apache.org/archetypes/index.html) for several purposes like a new web app, a new Maven plugin project, or a simple quickstart project. We bootstrap a new Java project from one of these Archetypes using the `mvn` command-line tool:
+
+```
+mvn archetype:generate \
+    -DarchetypeGroupId=org.apache.maven.archetypes  \
+    -DarchetypeArtifactId=maven-archetype-quickstart \
+    -DarchetypeVersion=1.4 \
+    -DgroupId=com.mycompany \
+    -DartifactId=order-service
+```
+
+The skeleton projects we create with the official Maven Archetypes are a good place to start. However, some of these archetypes generate projects with outdated dependency versions like JUnit 4.11.
+
+While it's not a big effort to manually bump the dependency version after the project initialization, having an up-to-date Maven Archetype in the first place is even better.
+
+#### Minimal Maven Project For Testing Java Applications
+
+As part of my [Custom Maven Archetype](https://github.com/rieckpil/custom-maven-archetypes) open-source project on GitHub, I've published a collection of useful Maven Archetypes. One of them is the `java-testing-toolkit` to create a Java Maven project with basic testing capabilities. [Creating our own Maven Archetype](https://rieckpil.de/create-your-own-maven-archetype-in-5-simple-steps/) is almost no effort. We can create a new testing playground project using this custom Maven Archetype with the following Maven command (for Linux & Mac):
+
+```
+mvn archetype:generate \
+    -DarchetypeGroupId=de.rieckpil.archetypes  \
+    -DarchetypeArtifactId=testing-toolkit \
+    -DarchetypeVersion=1.0.0 \
+    -DgroupId=com.mycompany \
+    -DartifactId=order-service
+```
+
+For Windows (both PowerShell and CMD), we can use the following command to bootstrap a new project from this template:
+
+```
+mvn archetype:generate "-DarchetypeGroupId=de.rieckpil.archetypes" "-DarchetypeArtifactId=testing-toolkit" "-DarchetypeVersion=1.0.0" "-DgroupId=com.mycompany" "-DartifactId=order-service" "-DinteractiveMode=false"
+```
+
+We can adjust both `-DgroupId` and `-DartifactId` to our project's or company's preference. The generated project comes with a basic set of the [most central Java testing libraries](https://rieckpil.de/testing-tools-and-libraries-every-java-developer-must-know/). We can use it as a blueprint for our next project or explore testing Java applications with this playground. In summary, the following default configuration and libraries are part of this project shell:
+
+* Java 11 
+* JUnit Jupiter, Mockito, and Testcontainers dependencies 
+* A basic unit test 
+* Maven Surefire and Failsafe Plugin configuration 
+* A basic `.gitignore`
+* Maven Wrapper
+
+Next, we have to ensure a JDK 11 (or higher) is on our `PATH` and also `JAVA_HOME` points to the installation folder:
+
+```
+$ java -version
+openjdk version "11.0.10" 2021-01-19
+OpenJDK Runtime Environment AdoptOpenJDK (build 11.0.10+9)
+OpenJDK 64-Bit Server VM AdoptOpenJDK (build 11.0.10+9, mixed mode)
+
+# Windows
+$ echo %JAVA_HOME%
+C:\Program Files\AdoptOpenJDK\jdk-11.0.10.9-hotspot
+
+# Mac and Linux
+$ echo $JAVA_HOME
+/usr/lib/jvm/adoptopenjdk-11.0.10.9-hotspot
+```
+
+As a final verification step, we can now build and test this project with Maven:
+
+```
+$ mvn archetype:generate ... // generate the project
+$ cd order-service // navigate into the folder
+$ ./mvnw package // mvnw.cmd package for Windows
+
+....
+
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.326 s
+[INFO] Finished at: 2021-06-03T08:31:11+02:00
+[INFO] ------------------------------------------------------------------------
+```
+
+We can now open and import the project to our editor or IDE ([IntelliJ IDEA](https://www.jetbrains.com/idea/), [Eclipse](https://www.eclipse.org/downloads/), [NetBeans](https://netbeans.apache.org/download/index.html), [Visual Code](https://code.visualstudio.com/), etc.) to inspect the generated project in more detail.
+
+#### Important Testing Folders and Files
+
+First, let's take a look at the folders and files that are relevant for testing Java applications with Maven:
+
+* `src/test/java`
+
+This folder is the main place to add our Java test classes (`.java` files). As a general recommendation, we should try to mirror the package structure of our production code (`src/main/java`). Especially if there's a direct relationship between the test and a source class. 
+
+The corresponding `CustomerServiceTest` for a `CustomerService` class inside the package `com.company.customer` should be placed in the same package within `src/test/java`. This improves the likelihood that our colleagues (and our future us) locate the corresponding test for a particular Java class without too many facepalms. Most of the IDEs and editors provide further support to jump to a test class. 
+
+IntelliJ IDEA, for example, provides a shortcut (Ctrl+ Shift + T) to navigate from a source file to its test classes(s) and vice-versa.
+
+* `src/test/resources`
+
+As part of this folder, we store static files that are only relevant for our test. This might be a CSV file to import test customers for an integration test, a dummy JSON response for [testing our HTTP clients](https://rieckpil.de/how-to-test-java-http-client-usages-e-g-okhttp-apache-httpclient/), or a configuration file.
+
+* `target/test-classes`
+
+At this location, Maven places our compiled test classes (`.class` files) and test resources whenever the Maven compiler compiles our test sources. We can explicitly trigger this with `mvn test-compile` and add a `clean` if we want to remove the existing content of the entire `target` folder first. Usually, there's no need to perform any manual operations inside this folder as it contains build artifacts. Nevertheless, it's helpful to investigate the content for this folder whenever we face test failures because we, e.g., can't read a file from the classpath. Taking a look at this folder (after the Maven compiler did its work), can help understanding where a resources file ended up on the classpath.
+
+* `pom.xml`
+
+This is the heart of our Maven project. The abbreviation stands for **P**roject **O**bject **M**odel. Within this file, we define metadata about our project (e.g., description, artifactId, developers, etc.), which dependencies we require, and the configuration of our plugins.
+
+#### Maven and Java Testing Naming Conventions
+
+Next, let's take a look at the naming conventions for our test classes. We can separate our tests into two (or even more) basic categories: unit and integration test. To distinguish the tests for both of these two categories, we use different naming conventions with Maven. The Maven Surefire Plugin, more about this plugin later, is designed to run our unit tests. The following patterns are the defaults so that the plugin will detect a class as a test:
+
+* `**/Test*.java`
+* `**/*Test.java`
+* `**/*Tests.java`
+* `**/*TestCase.java`
+
+So what's actually a unit test? Several smart people came up with a definition for this term. One of such smart people is [Michael Feathers](https://www.artima.com/weblogs/viewpost.jsp?thread=126923). He's turning the definition around and defines what a **unit test is not**:
+
+> A test is not a unit test if it ...
+>
+> *   talks to the database
+> *   communicates across the network
+> *   touches the file system
+> *   can't run at the same time as any of your other unit tests
+> *   or you have to do special things to your environment (such as editing config files) to run it.
+
+Kevlin Henney is also a great source of inspiration for a [definition of the term unit test](https://www.theregister.com/2007/07/28/what_are_your_units/?page=3). Nevertheless, our own definition or the definition of our coworkers might be entirely different. In the end, the actual definition is secondary as long as we're sharing the same definition within our team and talking about the same thing when referring to the term unit test. The Maven Failsafe Plugin, designed to run our integration tests, detects our integration tests by the following default patterns:
+
+* `**/IT*.java`
+* `**/*IT.java`
+* `**/*ITCase.java`
+
+We can also override the default patterns for both plugins and come up with a different naming convention. However, sticking to the defaults is recommended.
+
+#### When Are Our Java Tests Executed?
+
+Maven is built around the concept of build lifecycles. There are three built-in lifecycles:
+
+* `default`: handling project building and deployment
+* `clean`: project cleaning
+* `site`: the creation of our project's (documentation) site
+
+Each of the three built-in lifecycles has a list of build phases. For our testing example, the `default` lifecycle is important. The `default` lifecycle compromises a set of build phases to handle building, testing, and deploying our Java project. Each phase represents a stage in the build lifecycle with a central responsibility:
+
+<div style="text-align: center;">![](https://rieckpil.de/wp-content/uploads/2021/06/maven-default-lifecycle-build-phases.png)</div>
+
+In short, the several phases have the following responsibilities:
+
+* `validate`: validate that our project setup is correct (e.g., we have the correct Maven folder structure)
+* `compile`: compile our source code with `javac`
+* `test`: run our unit tests
+* `package`: build our project in its distributable format (e.g., JAR or WAR)
+* `verify`: run our integration tests and further checks (e.g., [the OWASP dependency check](https://rieckpil.de/top-3-maven-plugins-to-ensure-quality-and-security-for-your-project/))
+* `install`: install the distributable format into our local repository (`~/.m2` folder)
+* `deploy`: deploy the project to a remote repository (e.g., Maven Central or a company hosted Nexus Repository/Artifactory)
+
+These build phases represent the central phases of the `default` lifecycle. There are actually more phases. For a complete list, please refer to the [Lifecycle Reference](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference) of the official Maven documentation. Whenever we execute a build phase, our project will go through all build phases and sequentially until the build phase we specified. To phrase it differently, when we run `mvn package`, for example, Maven will execute the default lifecycle phases up to `package` in order:
+
+```
+validate -> compile -> test -> package
+```
+
+If one of the build phases in the chain fails, the entire build process will terminate. Imagine our Java source code has a missing semicolon, the `compile` phase would detect this and terminate the process. As with a corrupt source file, there'll be no compiled `.class` file to test. When it comes to testing our Java project, both the `test` and `verify` build phases are of importance. As part of the `test` phase, we're running our unit tests with the [Maven Surefire Plugin](https://maven.apache.org/surefire/maven-surefire-plugin/), and with `verify` our integration tests are executed by the [Maven Failsafe Plugin](https://maven.apache.org/surefire/maven-failsafe-plugin/index.html). Let's take a look at these two plugins.
+
+#### Running Unit Tests With the Maven Surefire Plugin
+
+The Maven Surefire is responsible for running our unit tests. We must either follow the default naming convention of our test classes, as discussed above, or [configure a different pattern](https://maven.apache.org/surefire/maven-surefire-plugin/examples/inclusion-exclusion.html) that matches our custom naming convention. In both cases, we have to place our tests inside `src/test/java` folder for the plugin to pick them up. For the upcoming examples, we're using a basic `format` method
+
+```
+public class Main {
+
+  public String format(String input) {
+    return input.toUpperCase();
+  }
+}
+```
+
+... and its corresponding test as a unit test blueprint:
+
+```
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class MainTest {
+
+  private Main cut;
+
+  @BeforeEach
+  void setUp() {
+    this.cut = new Main();
+  }
+
+  @Test
+  void shouldReturnFormattedUppercase() {
+    String input = "duke";
+
+    String result = cut.format(input);
+
+    assertEquals("DUKE", result);
+  }
+}
+```
+
+Depending on the Maven version and distribution format of our application (e.g., JAR or WAR), Maven defines [default versions for the core plugins](https://maven.apache.org/ref/3.8.1/maven-core/default-bindings.html). Besides the Maven Compiler Plugin, the Maven Resource Plugin, and other plugins, the Maven Surefire Plugin is such a core plugin. When packaging our application as a JAR file and using Maven 3.8.1, for example, Maven picks the Maven Surefire Plugin with version 2.12.4 by default unless we override it. As the default versions are sometimes a little bit behind the latest plugin versions, it's worth updating the plugin versions and manually specifying the plugin version inside our `pom.xml`:
+
+```xml
+<project>
+  <!-- dependencies -->
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M5</version>
+      </plugin>
+    </plugins>
+  </build>
+ </project>
+```
+
+As part of the `test` phase of the default lifecycle, we'll now see the Maven Surefire Plugin executing our tests:
+
+```
+$ mvn test
+
+[INFO] --- maven-surefire-plugin:3.0.0-M5:test (default-test) @ testing-example ---
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running de.rieckpil.blog.MainTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.04 s - in de.rieckpil.blog.MainTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+```
+
+For the example above, we're running one unit test with JUnit 5 (testing provider). There's no need to configure the testing provider anywhere, as with recent Surefire versions, the plugin will pick up the correct test provider by itself. The Maven Surefire Plugin [integrates both JUnit and TestNG as testing providers](https://maven.apache.org/surefire/maven-surefire-plugin/usage.html) out-of-the-box. If we don't want to execute all build phases before running our tests, we can also explicitly execute the `test` goal of the Surefire plugin:
+
+```
+mvn surefire:test
+```
+
+But keep in mind that we have to ensure that the test classes have been compiled first (e.g., by a previous build). We can further tweak and configure the Maven Surefire Plugin to, e.g., parallelize the execution of our unit tests. This is only relevant for JUnit 4, as JUnit 5 (JUnit Jupiter to be precise) [supports parallelization on the test framework level](https://junit.org/junit5/docs/snapshot/user-guide/index.html#writing-tests-parallel-execution). Whenever we want to skip our unit tests when building our project, we can use an additional parameter:
+
+```
+mvn package -DskipTests
+```
+
+We can also explicitly [run only one or multiple tests](https://maven.apache.org/surefire/maven-surefire-plugin/examples/single-test.html):
+
+
+```
+mvn test -Dtest=MainTest
+
+mvn test -Dtest=MainTest#testMethod
+
+mvn surefire:test -Dtest=MainTest
+```
+
+#### Running Integration Tests With the Maven Failsafe Plugin
+
+Unlike the Maven Surefire Plugin, the Maven Failsafe Plugin is not a core plugin and hence won't be part of our project unless we manually include it. As already outlined, the Maven Failsafe plugin is used to run our integration test. In contrast to our unit tests, the integration tests usually take more time, more setup effort (e.g., [start Docker containers for external infrastructure with Testcontainers](https://rieckpil.de/howto-write-spring-boot-integration-tests-with-a-real-database/)), and test multiple components of our application together. We integrate the Maven Failsafe Plugin by adding it to the `build` section of our `pom.xml`:
+
+```xml
+<project>
+
+  <!-- other dependencies -->
+
+  <build>
+      <!-- further plugins -->
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.0.0-M5</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+```
+
+As part of the `executions` configuration, we specify [the goals of the Maven Failsafe plugin](https://maven.apache.org/surefire/maven-failsafe-plugin/plugin-info.html) we want to execute as part of our build process. A common pitfall is to only execute the `integration-test` goal. Without the `verify` goal, the plugin will run our integration tests but won't fail the build if there are test failures. The Maven Failsafe Plugin is invoked as part of the `verify` build phase of the default lifecycle. That's right after the `package` build phase where we build our distributable artifact (e.g., JAR):
+
+```
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ testing-example ---
+[INFO] Building jar: C:\Users\phili\Desktop\junk\testing-example\target\testing-example.jar
+[INFO]
+[INFO] --- maven-failsafe-plugin:3.0.0-M5:integration-test (default) @ testing-example ---
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running de.rieckpil.blog.MainIT
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 s - in de.rieckpil.blog.MainIT
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO]
+[INFO] --- maven-failsafe-plugin:3.0.0-M5:verify (default) @ testing-example ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+```
+
+If we want to run our integration tests manually, we can do so with the following command:
+
+```
+mvn failsafe:integration-test failsafe:verify
+```
+
+For scenarios where we don't want to run our integration test (but still our unit tests), we can add `-DskipITs` to our Maven execution:
+
+```
+mvn verify -DskipITs
+```
+
+Similar to the Maven Surefire Plugin, we can also run a subset of our integration tests:
+
+```
+mvn -Dit.test=MainIT failsafe:integration-test failsafe:verify
+
+mvn -Dit.test=MainIT#firstTest failsafe:integration-test failsafe:verify
+```
+
+When using the command above, make sure the test classes have been compiled previously, as otherwise, there won't be any test execution. There's also a property available to entirely skip the compilation of test classes and avoid running any tests when building our project (not recommended):
+
+```
+mvn verify -Dmaven.test.skip=true
+```
+
+#### Summary of Testing Java Applications With Maven
+
+Maven is a powerful, mature, and well-adopted build tool for Java projects. As a newcomer or when coming from a different programming language, the basics of the Maven build lifecycle and how and when different Maven Plugins interact is something to understand first. With the help of Maven Archetypes or using a framework initializer, we can easily bootstrap new Maven projects. There's no need to install Maven as a CLI tool for our machine as we can instead use the portable Maven Wrapper. Furthermore, keep this in mind when testing your Java applications and use Maven as the build tool:
+
+* With Maven, we can separate the unit and integration test execution 
+* The Maven Surefire Plugin runs our unit tests 
+* The Maven Failsafe Plugin runs our integration tests 
+* By following the default naming conventions for both plugins, we can easily separate our tests 
+* The Maven default lifecycle consists of several build phases that are executed in order and sequentially 
+* Use the [Java Testing Toolkit Maven archetype](https://github.com/rieckpil/custom-maven-archetypes) for your next testing adventure
 
 ### Use GitHub Actions
+
+I was recently wasting time and energy to get the CI pipelines for my two main GitHub repositories working with Travis CI. Even though the documentation provides examples for Maven-based Java projects, it took me still some time to find the correct setup. 
+
+While working on these pipelines, I remembered that GitHub now also provides its own CI/CD solution: [GitHub Actions](https://github.com/features/actions). As I wasn't quite satisfied with Travis CI, I gave it a try and got everything up- and running in less than one hour.
+
+#### Introduction to GitHub Actions
+
+GitHub [markets](https://github.com/features/actions) its GitHub Actions product as the following:
+
+> GitHub Actions makes it easy to automate all your software workflows, now with world-class CI/CD. Build, test, and deploy your code right from GitHub. Make code reviews, branch management, and issue triaging work the way you want.
+
+We can enter this feature on every (even private) GitHub repository with the **Actions** tab: [![GitHub Actions Tab Panel](https://rieckpil.de/wp-content/uploads/2019/12/gitHubActionsTabPanel.png)](https://rieckpil.de/wp-content/uploads/2019/12/gitHubActionsTabPanel.png) Within this tab, we get an overview of your latest builds and their logs like our might know it from Jenkins, Travis CI, Circle CI, etc. : [![GitHub Actions Overview](https://rieckpil.de/wp-content/uploads/2019/12/gitHubActionsOverview.png)](https://rieckpil.de/wp-content/uploads/2019/12/gitHubActionsOverview.png)
+
+We configure your different pipeline steps as code and include them in your repository. The pipeline YAML definitions are then placed in the `.github/workflows` folder. Among other things, GitHub actions offers the following features:
+
+* hosted runners for every OS (Windows, macOS, Linux)
+* matrix builds to, e.g., test your library for different OS and programming language versions
+* access to Docker to, e.g., use Testcontainers or a docker-compose.yml file for integration tests
+* rich-feature marketplace next to pre-defined Actions provided by GitHub
+* free for public repositories and limited contingent (minutes per month) for private repositories
+* great integration for [events of your GitHub repository](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows) (e.g., pull request, issue creation, etc.)
+
+Let's use a Maven-based Java project to demonstrate how to use GitHub Actions...
+
+#### Sample Workflow for a Maven-Based Java Application
+
+As an example, we'll use a [typical Java 11 Spring Boot Maven project](https://github.com/rieckpil/blog-tutorials/tree/master/github-actions-java-maven) to demonstrate the use of GitHub Actions.
+
+The project uses Testcontainers to access a PostgreSQL database during integration tests. The deployment target is Kubernetes, and the application is packaged inside a Docker container. This should reflect 80% of the requirements for a standard CI/CD pipeline these days. In short, we want to achieve the following with our CI/CD pipeline using GitHub Actions:
+
+* use different Java versions to compile the project (useful for library developers)
+* cache the content of `.m2/repository` (or any other folder) for accelerated builds
+* use Maven to build the project
+* stash build artifacts between different jobs
+* access secrets (to, e.g., login to a container registry )
+* make use of Docker
+
+The workflow uses three jobs: `compile`, `build` and `deploy`. Don't reflect on the meaningfulness of the following setup. We intentionally create a bloated pipeline to showcase as many features of GitHub Actions as possible. Let's start with the `compile` job:
+
+```
+name: Build sample Java Maven project
+
+on: [push, pull_request]
+
+jobs:
+  compile:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        java: [ 11, 12, 13 ]
+    name: Java ${{ matrix.java }} compile
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v2
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-package: jdk
+          java-version: ${{ matrix.java }}
+      - name: Compile the Project
+        working-directory: github-actions-java-maven
+        run: mvn -B compile
+```
+
+We configure the job to run on a hosted ubuntu-20.04 runner. GitHub let's use choose between Ubuntu, Windows, and Mac as GitHub-hosted runners. Those runners already come with a decent amount of binaries and tools installed (e.g. AWS CLI, Maven, etc.). For a complete list of installed software, see the [documentation on supported software](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software). 
+
+Next, we define a matrix strategy to run the same job multiple times (in parallel) with different Java versions. The source code for the repository is not checked out on the runner by default. 
+
+We use the `checkout@v2` action for this purpose. The `setup-java@v2` action is used to set up the specific Java version on the runner and as part of the last step, we're compiling the Java project with Maven. With `working-directory` we define in which folder we want to execute the commands. This way we don't have to explicitly perform any `cd` operation. Next comes the `build` job:
+
+```
+name: Build sample Java Maven project
+
+on: [push, pull_request]
+
+jobs:
+  compile:
+    # compile job
+
+  build:
+    runs-on: ubuntu-20.04
+    needs: compile
+    name: Build the Maven Project
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+          distribution: 'adopt'
+          java-version: '11'
+          java-package: jdk
+    - name: Build and test project
+      working-directory: github-actions-java-maven
+      run: mvn -B verify
+    - name: Upload Maven build artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: artifact.jar
+        path: github-actions-java-maven/target/github-actions-java-maven.jar
+```
+
+By default, GitHub executes all jobs in parallel unless we specify that the job depends on the outcome of a previous job. This way we can ensure a sequential order. Each GitHub Actions job starts with a fresh GitHub runner and hence we have to perform the VCS checkout and Java setup again.
+
+As an alternative, we can (and should have) performed the Maven build as part of the previous job. Similar to the previous job, we're using Maven to now build the `.jar` file. We'll now cache the contents of the `.m2` folder to speed up subsequent builds as they don't have to download our dependencies over and over. 
+
+After we've successfully built our project, we want to share the build artifact with an upcoming job. As the jobs don't share the same filesystem we have to upload it. Once we've uploaded an artifact (this might also be a screenshot from a failing web test), another job can download it. Furthermore, we can also manually download any build artifacts ourselves: ![GitHub Actions Download Artifact](https://rieckpil.de/wp-content/uploads/2019/12/github-actions-download-build-artifact-e1623407894167.png) And finally, we're (artificially) deploying the project:
+
+```
+name: Build sample Java Maven project
+
+on: [push, pull_request]
+
+jobs:
+  # existing jobs ..
+
+  deploy:
+    runs-on: ubuntu-20.04
+    needs: build
+    name: Build Docker Container and Deploy to Kubernetes
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download Maven build artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: artifact.jar
+        path: github-actions-java-maven/target
+    - name: Build Docker container
+      working-directory: github-actions-java-maven
+      run: |
+        docker build -t de.rieckpil.blog/github-actions-sample .
+    - name: Access secrets
+      env:
+        SUPER_SECRET: ${{ secrets.SUPER_SECRET }}
+      run: echo "Content of secret - $SUPER_SECRET"
+    - name: Push Docker images
+      run: echo "Pushing Docker image to Container Registry (e.g. ECR)"
+    - name: Deploy application
+      run: echo "Deploying application (e.g. Kubernetes)"
+```
+
+We first download the Maven build artifact as we need it to build our Docker image. Right after building the Docker image, we could now log in to our private Docker Registry to push our image. As this usually requires access to secrets (username and password) we demonstrate how to map secrets to environment variables. We can securely store those secrets as part of our GitHub repository (Settings -> Secrets). What's left is to deploy the new Docker Image to our target environment (e.g. Kubeternes).
+
+#### Blueprints for Real-World Workflow With GitHub Actions
+
+Over the past month, I've migrated most of my GitHub projects to GitHub Actions and never looked back. For further inspiration on how to use GitHub Actions, take a look at the following examples:
+
+* Building and testing all blog post code examples as part of my [blog-tutorials repository](https://github.com/rieckpil/blog-tutorials/tree/master/.github/workflows) (Gradle, Maven, multiple Java versions, caching)
+* Building and testing the source code for the [Getting Started With Eclipse MicroProfile Course](https://github.com/rieckpil/getting-started-with-microprofile/tree/master/.github/workflows) (Integration tests with MicroShed Testing, Docker, multiple projects, Open Liberty)
+* For [Stratospheric](https://stratospheric.dev/) (a book about Spring Boot and AWS that I'm co-authoring), we're using GitHub actions for the entire CI/CD pipeline. We're building the Spring Boot backend, push the Docker image to ECR and create/sync our entire AWS infrastructure with the AWS CDK. Take a look at [the various workflows](https://github.com/stratospheric-dev/stratospheric/tree/main/.github/workflows) for some inspiration and [get a copy of this book](https://leanpub.com/stratospheric) if you want detailed information about this setup.
+* If you're maintaining a Java library that you're publishing to Maven Central, consider [this GitHub Actions workflow blueprint](https://github.com/stratospheric-dev/cdk-constructs/tree/main/.github/workflows) for building and deploying libraries.
+* Aggregating Selenide screenshots to download in case of test failures for the [Spring Boot Applications Masterclass](https://github.com/rieckpil/testing-spring-boot-applications-masterclass/blob/master/.github/workflows/maven.yml)
+* Checking for [rotten links in markdown files](https://github.com/rieckpil/blog-tutorials/blob/master/.github/workflows/broken-links.yml) (must-have when writing eBooks)
+
+To summarize, I can highly recommend GitHub Actions for Maven-based Java projects. The configuration is simple and you are ready in minutes. Whether you are building a Java library or an application in a private repository, GitHub Actions allows you to easily set up CI/CD. Give it a try! 
+
+The [Spring Boot application](https://github.com/rieckpil/blog-tutorials/tree/master/github-actions-java-maven) and the [workflow](https://github.com/rieckpil/blog-tutorials/blob/master/.github/workflows/sampleJavaMavenProject.yml) definition is available on GitHub. 
 
 ### Parallelizing Unit Tests with Maven and JUnit 5
 

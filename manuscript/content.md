@@ -2,7 +2,6 @@
 
 ## Spring Boot Testing Pitfalls
 
-
 ## Tips & Tricks
 
 ### Correct Use Of Your Build Tool: Maven
@@ -17,7 +16,7 @@ When writing applications with Java, we can't just pass our `.java` files to the
 
 Next, we pass this bytecode to the JVM (`java` binary on our machines) which then interprets our program and/or compiles parts of it even further to native machine code. Given this two-step process, someone has to compile our Java classes and package our application accordingly. Manually calling `javac` and passing the correct classpath is a cumbersome task. 
 
-A build tool automates this process. As developers, we then only have to execute one command, and everything get's build automatically. The two most adopted build tools for the Java ecosystem are [Maven](https://maven.apache.org/) and [Gradle](https://gradle.org/). _Ancient devs_ might still prefer [Ant](https://ant.apache.org/), while _latest-greatest devs_ might advocate for [Bazel](https://bazel.build/) as a build tool for their Java applications. We're going to focus on Maven with this article. To build and test our Java applications, we need a [JDK](https://adoptopenjdk.net/) (Java Development Kit) installed on our machine and Maven. 
+A build tool automates this process. As developers, we then only have to execute one command, and everything gets build automatically. The two most adopted build tools for the Java ecosystem are [Maven](https://maven.apache.org/) and [Gradle](https://gradle.org/). _Ancient devs_ might still prefer [Ant](https://ant.apache.org/), while _latest-greatest devs_ might advocate for [Bazel](https://bazel.build/) as a build tool for their Java applications. We're going to focus on Maven with this article. To build and test our Java applications, we need a [JDK](https://adoptopenjdk.net/) (Java Development Kit) installed on our machine and Maven. 
 
 We can either [install Maven as a command-line tool](https://maven.apache.org/install.html) (i.e., place the Maven binary on our system's `PATH`) or use the portable Maven Wrapper. The Maven Wrapper is a convenient way to work with Maven without having to install it locally. It allows us to conveniently build Java projects with Maven without having to install and configure Maven as a CLI tool on our machine When creating a new Spring Boot project, for example, you might have already wondered what the `mvnw` and `mvnw.cmd` files inside the root of the project are used for. That's the Maven Wrapper (the idea is borrowed from Gradle).
 
@@ -166,7 +165,7 @@ Maven is built around the concept of build lifecycles. There are three built-in 
 
 Each of the three built-in lifecycles has a list of build phases. For our testing example, the `default` lifecycle is important. The `default` lifecycle compromises a set of build phases to handle building, testing, and deploying our Java project. Each phase represents a stage in the build lifecycle with a central responsibility:
 
-<div style="text-align: center;">![](https://rieckpil.de/wp-content/uploads/2021/06/maven-default-lifecycle-build-phases.png)</div>
+TODO: Image
 
 In short, the several phases have the following responsibilities:
 

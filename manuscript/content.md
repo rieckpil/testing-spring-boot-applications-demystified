@@ -1840,4 +1840,337 @@ Hence, we don't have to clean up our tests, and every test starts with empty tab
 
 ### Testing HTTP Clients
 
+Fetching data via HTTP from a remote system is a task almost every application has to solve. Fortunately, there are mature Java HTTP client libraries available that are robust and have a user-friendly API. 
+
+Most of the frameworks ship their own HTTP client (e.g Spring with `WebClient` and `RestTemplate`, Jakarta EE with the JAX-RS Client), but there are also standalone clients available: OkHttp, Apache HttpClient, Unirest, etc.
+
+When it comes to testing Java classes that use one of these clients, I often see developers trying to mock the internals of the library. With this article, you'll understand why such an approach is not beneficial and what you should do instead when writing a test that involves a Java HTTP client.
+
+#### Why Plain Old Unit Tests Are Not Enough
+
+Most of the Java HTTP clients are instantiated with static methods. In addition, we usually chain multiple method calls or use a builder to construct the instance of the client or the HTTP request. Even though [Mockito is able to mock static method calls](https://rieckpil.de/mocking-static-methods-with-mockito-java-kotlin/) and with deep mocking, we could keep the stubbing setup lean, we should always remember:
+
+> Every time a mock returns a mock a fairy dies.
+
+We end up in a _mocking hell_ and have to mock the whole setup. With this approach, we also almost duplicate our production code as the stubbing setup has to match our usage. While we could test conditionals e.g. behavior on non 200 HTTP responses or how our implementation handles exceptions, there is not much benefit with this approach. 
+
+A better solution for testing our Java HTTP clients would be to actually test them _in action_ and see how they behave to different responses. This also allows us to test more niche scenarios like slow responses, different HTTP status codes, etc.
+
+#### A Better Approach for Testing HTTP Clients
+
+Instead of heavy lifting with Mockito, we'll spawn a local web server and queue HTTP responses. We can then let our HTTP clients connect to this local server and test our code. 
+
+Whether or not we are still writing a unit test depends on your definition and scope. However, we are still testing a unit of our application in isolation. Going further, we also have to take a small overhead (time-wise) into account. Most of the time this is negligible. The two most common libraries for this are [WireMock](http://wiremock.org/) and the [MockWebServer from OkHttp](https://github.com/square/okhttp/tree/master/mockwebserver). 
+
+We'll use the lightweight `MockWebServer` for this demo, but you can achieve the same with WireMock. There's already an example on how to use WireMock with JUnit 5 for testing a Spring Boot application on my blog: [Spring Boot Integration Tests with WireMock and JUnit 5](https://rieckpil.de/spring-boot-integration-tests-with-wiremock-and-junit-5/) We include the `MockWebServer` with the following Maven import:
+
+```
+<dependency>
+  <groupId>com.squareup.okhttp3</groupId>
+  <artifactId>mockwebserver</artifactId>
+  <version>4.9.0</version>
+  <scope>test</scope>
+</dependency>
+```
+
+Starting the local server and adding mocked HTTP responses is as simple as the following:
+
+```
+MockWebServer mockWebServer = new MockWebServer();
+
+mockWebServer.enqueue(new MockResponse()
+      .addHeader("Content-Type", "application/json; charset=utf-8")
+      .setBody(VALID_RESPONSE)
+      .setResponseCode(200));
+
+MyClient client = new MyClient(mockWebServer.url("/").toString());
+```
+
+Unlike WireMock, where we stub responses for given URLs, the `MockWebServer` queues every `MockResponse` and returns them in order (FIFO). 
+
+When specifying the mocked HTTP response, we can set any HTTP body, status, and header. With the `MockWebServer` we can even simulate slow responses using `.setBodyDelay()`. For our use case, we store a successful JSON response body inside `src/test/resources/stubs` to test the happy-path.
+
+#### First Java HTTP Client Test Example: Java's HttpClient
+
+As a first HTTP client example, we're using Java's own `HttpClient`. This client is part of the [JDK since Java 11](https://openjdk.java.net/groups/net/httpclient/intro.html) (in incubator mode since Java 9) and allows HTTP communication without any further dependency. For demonstration purposes, we're requesting [a random quote of the day](https://quotes.rest/) from a public REST API as JSON. 
+
+As the `HttpClient` only provides basic converters of the HTTP response body (to e.g. `String` or `byte[]`) we need a library for marshaling JSON payloads. We're going to use Jackson for this purpose. 
+
+First, we'll convert the response to a Java `String` and then use Jackson's `ObjectMapper` to map it our `RandomQuoteResponse` Java class for type-safe access of the response. To test different behaviors of our client, later on, we're returning a default quote whenever the HTTP response code is not 200 or an exception is thrown (e.g. `IOException` due to a network timeout). 
+
+A simple implementation of our use case can look like the following:
+
+```
+public class JavaHttpClient {
+
+  private static final String DEFAULT_QUOTE = "Lorem ipsum dolor sit amet.";
+  private final String baseUrl;
+
+  public JavaHttpClient(String baseUrl) {
+    this.baseUrl = baseUrl;
+  }
+
+  public String getRandomQuote() {
+    HttpClient client = HttpClient.newHttpClient();
+
+    HttpRequest request = HttpRequest.newBuilder()
+      .uri(URI.create(baseUrl + "/qod"))
+      .header("Accept", "application/json")
+      .GET()
+      .build();
+
+    try {
+      HttpResponse<String> httpResponse = client.send(request, BodyHandlers.ofString());
+
+      if (httpResponse.statusCode() != 200) {
+        return DEFAULT_QUOTE;
+      }
+
+      RandomQuoteResponse responseBody = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .readValue(httpResponse.body(), RandomQuoteResponse.class);
+      return responseBody.getContents().getQuotes().get(0).getQuote();
+    } catch (IOException | InterruptedException e) {
+      e.printStackTrace();
+      return DEFAULT_QUOTE;
+    }
+  }
+}
+```
+
+Creating the `HttpRequest` is straightforward. We only have to provide the HTTP method, the URL, and an HTTP header to request JSON. Here it's important to **not** hard-code the full URL of the remote resource as otherwise testing this client will be difficult.
+
+We're passing the `baseUrl` as part of the public constructor and use it to construct the final URL. For production usage, we can inject this value from an environment variable or a property file (e.g use `@Value` from Spring or `@ConfigProperty` from [MicroProfile Config](https://rieckpil.de/whatis-eclipse-microprofile-config/)).
+
+As we create the instance of this client on our own when testing, we can then pass the URL of the local `MockWebServer`. The two test scenarios: testing a successful response and a failure (HTTP code 500) are now easy to verify.
+
+```
+class JavaHttpClientTest {
+
+  private MockWebServer mockWebServer;
+  private JavaHttpClient cut;
+
+  private static String VALID_RESPONSE;
+
+  static {
+    try {
+      VALID_RESPONSE = new String(requireNonNull(JavaHttpClientTest.class
+        .getClassLoader()
+        .getResourceAsStream("stubs/random-quote-success.json"))
+        .readAllBytes());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @BeforeEach
+  void init() {
+    this.mockWebServer = new MockWebServer();
+    this.cut = new JavaHttpClient(mockWebServer.url("/").toString());
+  }
+
+  @Test
+  void shouldReturnDefaultQuoteOnFailure() {
+    mockWebServer.enqueue(new MockResponse()
+      .addHeader("Content-Type", "application/json; charset=utf-8")
+      .setResponseCode(500));
+
+    String result = cut.getRandomQuote();
+
+    assertEquals("Lorem ipsum dolor sit amet.", result);
+  }
+
+  @Test
+  void shouldReturnRandomQuoteOnSuccessfulResponse() {
+    mockWebServer.enqueue(new MockResponse()
+      .addHeader("Content-Type", "application/json; charset=utf-8")
+      .setBody(VALID_RESPONSE)
+      .setResponseCode(200));
+
+    String result = cut.getRandomQuote();
+
+    assertEquals("Vision without action is daydream. Action without vision is nightmare..", result);
+  }
+}
+```
+
+#### Second Java HTTP Client Test Example: OkHttpClient
+
+As a second example, let's take a look at a popular Java HTTP client library: [OkHttp](https://%5BOkHttp%5D(https://square.github.io/okhttp/)). This is a feature-rich open-source HTTP client that I've seen in several projects. After adding it to our project
+
+```
+<dependency>
+  <groupId>com.squareup.okhttp3</groupId>
+  <artifactId>okhttp</artifactId>
+  <version>4.9.0</version>
+</dependency>
+```
+
+We can implement the same behavior and fetch a random quote:
+
+```
+public class OkHttpClientExample {
+
+  private static final String DEFAULT_QUOTE = "Lorem ipsum dolor sit amet.";
+  private final String baseUrl;
+
+  public OkHttpClientExample(String baseUrl) {
+    this.baseUrl = baseUrl;
+  }
+
+  public String getRandomQuote() {
+
+    OkHttpClient client = new OkHttpClient();
+
+    Request request = new Request.Builder()
+      .url(baseUrl + "/qod")
+      .addHeader("Accept", "application/json")
+      .build();
+
+    try (Response response = client.newCall(request).execute()) {
+
+      if (response.code() != 200) {
+        return DEFAULT_QUOTE;
+      }
+
+      RandomQuoteResponse responseBody = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .readValue(response.body().string(), RandomQuoteResponse.class);
+
+      return responseBody.getContents().getQuotes().get(0).getQuote();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return DEFAULT_QUOTE;
+    }
+  }
+}
+```
+
+The code looks almost similar to the example in the last section. First, we instantiate a client and then create a `Request` that we pass to the client as the last step. There's also no big difference in the test for this `OkHttpClient` usage:
+
+```
+class OkHttpClientExampleTest {
+
+  private MockWebServer mockWebServer;
+  private OkHttpClientExample cut;
+
+  private static String VALID_RESPONSE;
+
+  static {
+    try {
+      VALID_RESPONSE = new String(requireNonNull(ApacheHttpClientTest.class
+        .getClassLoader()
+        .getResourceAsStream("stubs/random-quote-success.json"))
+        .readAllBytes());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @BeforeEach
+  void init() {
+    this.mockWebServer = new MockWebServer();
+    this.cut = new OkHttpClientExample(mockWebServer.url("/").toString());
+  }
+
+  @Test
+  void shouldReturnDefaultQuoteOnFailure() {
+    mockWebServer.enqueue(new MockResponse()
+      .addHeader("Content-Type", "application/json; charset=utf-8")
+      .setResponseCode(500));
+
+    String result = cut.getRandomQuote();
+
+    assertEquals("Lorem ipsum dolor sit amet.", result);
+  }
+
+  @Test
+  void shouldReturnRandomQuoteOnSuccessfulResponse() {
+    mockWebServer.enqueue(new MockResponse()
+      .addHeader("Content-Type", "application/json; charset=utf-8")
+      .setBody(VALID_RESPONSE)
+      .setResponseCode(200));
+
+    String result = cut.getRandomQuote();
+
+    assertEquals("Vision without action is daydream. Action without vision is nightmare..", result);
+  }
+}
+```
+
+Again, we're creating the class under test (short `cut` ) on our own and pass the URL of the `MockWebServer` to it.
+
+#### Third Java HTTP Client Test Example: Apache HttpClient
+
+To complete the demonstration of popular Java HTTP clients, let's use the [Apache HttpClient](https://hc.apache.org/httpcomponents-client-ga/index.html) as the last example.
+
+```
+<dependency>
+  <groupId>org.apache.httpcomponents</groupId>
+  <artifactId>httpclient</artifactId>
+  <version>4.5.13</version>
+</dependency>
+```
+
+The implementation for fetching a random quote is quite similar to the first example when we used Java's own `HttpClient`:
+
+```
+public class ApacheHttpClient {
+
+  private static final String DEFAULT_QUOTE = "Lorem ipsum dolor sit amet.";
+  private final String baseUrl;
+
+  public ApacheHttpClient(String baseUrl) {
+    this.baseUrl = baseUrl;
+  }
+
+  public String getRandomQuote() {
+
+    HttpClient client = HttpClientBuilder.create().build();
+
+    try {
+      HttpUriRequest request = RequestBuilder.get()
+        .setUri(this.baseUrl + "/qod")
+        .setHeader(HttpHeaders.ACCEPT, "application/json")
+        .build();
+
+      HttpResponse httpResponse = client.execute(request);
+
+      if (httpResponse.getStatusLine().getStatusCode() != 200) {
+        return DEFAULT_QUOTE;
+      }
+
+      RandomQuoteResponse responseBody = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .readValue(EntityUtils.toString(httpResponse.getEntity(), "UTF-8"), RandomQuoteResponse.class);
+
+      return responseBody.getContents().getQuotes().get(0).getQuote();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return DEFAULT_QUOTE;
+    }
+  }
+}
+```
+
+The test code is exactly the same, the only difference is that we instantiate a `ApacheHttpClient` as our class under test:
+
+```
+@BeforeEach
+void init() {
+  this.mockWebServer = new MockWebServer();
+  this.cut = new ApacheHttpClient(mockWebServer.url("/").toString());
+}
+```
+
+#### What About Other Java HTTP Clients?
+
+But what about my fancy HTTP client library? How can I test it? I assume there are even more Java HTTP client libraries available than logging libraries... 
+
+With the client example above, we saw that there is actually no big difference when it comes to testing code that uses them. As long as we are able to configure (at least) the base URL, we can test any client with this recipe. 
+
+So it doesn't matter whether we use the JAX-RS Client, the Spring WebFlux `WebClient` , the Spring `RestTemplate` or your `MyFancyHttpClient`, as this technique is applicable to all of them.
+
+For both the [WebClient](https://rieckpil.de/test-spring-webclient-with-mockwebserver-from-okhttp/) and [RestTemplate](https://rieckpil.de/testing-your-spring-resttemplate-with-restclienttest/) you'll find dedicated articles on my blog. If you are curious and want to know how to achieve the same with `WireMock`, take a look at this [Spring Boot integration test example using WireMock and JUnit 5](https://rieckpil.de/spring-boot-integration-tests-with-wiremock-and-junit-5/). The source code for testing these different Java HTTP clients is [available on GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/test-java-http-clients). 
+
 ### Writing End-to-End Tests

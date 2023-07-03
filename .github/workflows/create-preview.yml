@@ -22,5 +22,5 @@ jobs:
         continue-on-error: false
         env:
           LEANPUB_API_KEY: ${{ secrets.LEANPUB_API_KEY }}
-          BOOK_SLUG: spring-boot-testing-pitfalls
+          BOOK_SLUG: spring-boot-testing-demystified
         run: curl -v -d "api_key=$LEANPUB_API_KEY" https://leanpub.com/$BOOK_SLUG/preview.json

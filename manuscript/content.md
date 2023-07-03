@@ -1167,6 +1167,432 @@ There is a dedicated [testing category](https://rieckpil.de/category/other/testi
 
 ### Testing the Web Layer
 
+Did you ever found yourself saying: _I usually ignore testing my Spring Web MVC controller endpoints because the security setup is tricky_. That belongs to the past. With MockMvc, Spring provides an excellent tool for testing Spring Boot applications. 
+
+This guide provides you with recipes to verify your `@Controller` and `@RestController` endpoints and other relevant Spring Web MVC components using `MockMvc`.
+
+#### Required Maven Dependencies For MockMvc
+
+It is very little we need to start testing our controller endpoints with `MockMvc`. We only need to include both the Spring Boot Starter Web and the Spring Boot Starter Test (aka. [swiss-army for testing Spring Boot applications](https://rieckpil.de/guide-to-testing-with-spring-boot-starter-test/)):
+
+```
+<dependency>
+  <groupId>org.springframework.boot<groupId>
+  <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-test</artifactId>
+  <scope>test</scope>
+</dependency>
+```
+
+Once we secure our endpoints using Spring Security, the following test dependency is a must-have to test our protected controller with ease:
+
+```
+<dependency>
+  <groupId>org.springframework.security</groupId>
+  <artifactId>spring-security-test</artifactId>
+  <scope>test</scope>
+</dependency>
+```
+
+#### What Can We Test and Verify with MockMvc?
+
+That's easy to answer: Everything related to Spring MVC! This includes our controller endpoints (both `@Controller` and `@RestController`) and any Spring MVC infrastructure components like `Filter`, `@ControllerAdvice`, `WebMvcConfigurer`, etc. Possible test scenarios can be the following:
+
+* Does my REST API controller return a proper JSON response?
+* Is the model for my Thymeleaf view initialized?
+* Does my endpoint return the HTTP status code 418 if my service layer throws a `TeaNotFoundException`?
+* Is my REST API endpoint protected with Basic Auth?
+* Can only users with the role ADMIN access the DELETE endpoint?
+* etc.
+
+With `MockMvc` we perform requests against a **mocked servlet environment**. There won't be any real HTTP communication for such tests. We directly work with the mocked environment provided by Spring. 
+
+`MockMvc` acts as the **entry point** to this mocked servlet environment. Similar to the `WebTestClient` when accessing our started Servlet container over HTTP.
+
+#### MockMvc Test Setup
+
+There are two ways to create a `MockMvc` instance: using Spring Boot's auto-configuration or hand-crafting it. Following Spring Boot's auto-configuration principle, we only need to annotate our test with `@WebMvcTest`. 
+
+This annotation not only ensures to auto-configure `MockMvc` but also creates a [sliced Spring context](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) containing only MVC-related beans. To keep the sliced test context small, we can pass the class name of the controller we want to test: `@WebMvcTest(MyController.cass)`. 
+
+Otherwise, Spring will create a context including all our controller endpoints. The second approach is helpful if we're using Spring without Spring Boot or if we want to fine-tune the setup. The `MockMvcBuilders` class provides several entry points to construct a `MockMvc` instance:
+
+```
+class TaskControllerTest {
+
+  private MockMvc mockMvc;
+
+  @BeforeEach
+  public void setup() {
+    this.mockMvc = MockMvcBuilders.standaloneSetup(new TaskController(new TaskService()))
+      .setControllerAdvice()
+      .setLocaleResolver(localResolver)
+      .addInterceptors(interceptorOne)
+      .build();
+  }
+}
+```
+
+or ...
+
+```
+@WebMvcTest(TaskController.class)
+public class TaskControllerSecondTest {
+
+  @Autowired
+  private WebApplicationContext context;
+
+  @MockBean
+  private TaskService taskService;
+
+  protected MockMvc mockMvc;
+
+  @BeforeEach
+  public void setup() {
+    this.mockMvc = MockMvcBuilders
+      .webAppContextSetup(this.context)
+      .apply(springSecurity())
+      .build();
+  }
+
+}
+```
+
+#### Invoke and Test an API Endpoint with MockMvc
+
+Let's start with the first test: Ensuring the JSON result from a `@RestController` endpoint is correct. Our sample controller has three endpoint mappings and acts as a REST API for a `User` entity:
+
+```
+@Validated
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+  private final UserService userService;
+
+  public UserController(UserService userService) {
+    this.userService = userService;
+  }
+
+  @GetMapping
+  public List<User> getAllUsers() {
+    return this.userService.getAllUsers();
+  }
+
+  @GetMapping
+  @RequestMapping("/{username}")
+  public User getUserByUsername(@PathVariable String username) {
+    return this.userService.getUserByUsername(username);
+  }
+
+  @PostMapping
+  public ResponseEntity<Void> createNewUser(@RequestBody @Valid User user, UriComponentsBuilder uriComponentsBuilder) {
+    this.userService.storeNewUser(user);
+    return ResponseEntity
+      .created(uriComponentsBuilder.path("/api/users/{username}").build(user.getUsername()))
+      .build();
+  }
+}
+```
+
+With a first test, we want to ensure the JSON payload from `/api/users` is what we expect. As our `UserController` has a dependency on a `UserService` bean, we'll mock it. 
+
+This ensures we can solely focus on testing the web layer and don't have to provide further infrastructure for our service classes to work (e.g. remote systems, databases, etc.). The minimal test setup looks like the following:
+
+```
+@WebMvcTest(UserController.class)
+class UserControllerTest {
+
+  @Autowired
+  private MockMvc mockMvc;
+
+  @MockBean
+  private UserService userService;
+
+  // ... upcoming test
+
+}
+```
+
+Before we invoke the endpoint using `MockMvc`, we have to mock the result of our `UserService`. Therefore we can return a hard-coded list of users:
+
+```
+@Test
+void shouldReturnAllUsersForUnauthenticatedUsers() throws Exception {
+  when(userService.getAllUsers())
+    .thenReturn(List.of(new User("duke", "duke@spring.io")));
+
+  this.mockMvc
+    .perform(MockMvcRequestBuilders.get("/api/users"))
+    .andExpect(MockMvcResultMatchers.status().isOk())
+    .andExpect(MockMvcResultMatchers.jsonPath("$.size()").value(1))
+    .andExpect(MockMvcResultMatchers.jsonPath("$[0].username").value("duke"))
+    .andExpect(MockMvcResultMatchers.jsonPath("$[0].email").value("duke@spring.io"));
+}
+```
+
+Next, we use `MockMvcRequestBuilders` to construct our request against the mocked servlet environment. This allows us to specify the HTTP method, any HTTP headers, and the HTTP body. Once we invoke our endpoint with `perform`, we can verify the HTTP response using fluent assertions to inspect: headers, status code, and the body. 
+
+[JsonPath](https://github.com/json-path/JsonPath) is quite helpful here to verify the API contract of our endpoint. Using its standardized expressions (somehow similar to XPath for XML) we can write assertions for any attribute of the HTTP response. 
+
+Our next test focuses on testing the HTTP POST endpoint to create new users. This time we need to send data alongside our `MockMvc` request:
+
+```
+@Test
+void shouldAllowCreationForUnauthenticatedUsers() throws Exception {
+  this.mockMvc
+    .perform(
+      post("/api/users")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"username\": \"duke\", \"email\":\"duke@spring.io\"}")
+        .with(csrf())
+    )
+    .andExpect(status().isCreated())
+    .andExpect(header().exists("Location"))
+    .andExpect(header().string("Location", Matchers.containsString("duke")));
+
+  verify(userService).storeNewUser(any(User.class));
+}
+```
+
+To avoid an HTTP 403 Forbidden response, we have to populate a valid `CsrfToken` for the request. This only applies if your project includes Spring Security and CSRF is enabled (which you always should).
+
+Due to the great MockMvc and Spring Security integration, we can create this token using `.with(csrf())` .
+
+#### Writing Tests for a Thymeleaf Controller
+
+There is more to Spring MVC than writing API endpoints: exposing server-side rendered views following the MVC (Model View Controller) pattern. 
+
+To showcase this kind of controller test, let's assume our application exposes one Thymeleaf view including a pre-filled `Model`:
+
+```
+@Controller
+@RequestMapping("/dashboard")
+public class DashboardController {
+
+  private final DashboardService dashboardService;
+
+  public DashboardController(DashboardService dashboardService) {
+    this.dashboardService = dashboardService;
+  }
+
+  @GetMapping
+  public String getDashboardView(Model model) {
+
+    model.addAttribute("user", "Duke");
+    model.addAttribute("analyticsGraph", dashboardService.getAnalyticsGraphData());
+    model.addAttribute("quickNote", new QuickNote());
+
+    return "dashboard";
+  }
+}
+```
+
+From a testing perspective, it would be great if we can verify that our model is present and we are returning the correct view (locatable & renderable by Spring MVC).
+
+Writing a web test with [Selenium](https://rieckpil.de/spring-boot-functional-tests-with-selenium-and-testcontainers/) for this scenario would be quite expensive (time & maintenance effort). Fortunately, `MockMvc` provides verification mechanisms for these kinds of endpoints, too:
+
+```
+@WebMvcTest(DashboardController.class)
+class DashboardControllerTest {
+
+  @Autowired
+  private MockMvc mockMvc;
+
+  @MockBean
+  private DashboardService dashboardService;
+
+  @Test
+  void shouldReturnViewWithPrefilledData() throws Exception {
+    when(dashboardService.getAnalyticsGraphData()).thenReturn(new Integer[]{13, 42});
+
+    this.mockMvc
+      .perform(get("/dashboard"))
+      .andExpect(status().isOk())
+      .andExpect(view().name("dashboard"))
+      .andExpect(model().attribute("user", "Duke"))
+      .andExpect(model().attribute("analyticsGraph", Matchers.arrayContaining(13, 42)))
+      .andExpect(model().attributeExists("quickNote"));
+  }
+}
+```
+
+The `MockMvc` request setup looks similar to the tests in the last section. What's different is the way we assert the response. As this endpoint returns a view rather than JSON, we make use of the `ResultMatcher` `.model()`. 
+
+And can now write assertions for the big M in MVC: the `Model`. There is also a `ResultMatcher` available to ensure any `FlashAttributues` are present if you follow the [POST - redirect - GET pattern](https://en.wikipedia.org/wiki/Post/Redirect/Get).
+
+#### Test a Secured Endpoint with Spring Security and MockMvc
+
+Let's face reality, most of the time our endpoints are protected by Spring Security. Neglecting to write tests because the security setup is hard, is foolish. Because it isn't. The excellent integration of `MockMvc` and Spring Security ensures this.
+
+Once Spring Security is part of our project, the `MockMvc` will be auto-configured with our security config**.
+
+** **UPDATE**: When using a `SecurityFilterChain` bean for the Spring Security config in Spring Boot 3.0, we need to manually import the security configuration with `@Import(SecurityConfig.class)` to our test. As a demo, let's consider the following security configuration for our MVC application:
+
+```
+@Configuration
+@EnableMethodSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    http
+      .authorizeRequests(authorize -> authorize
+        .mvcMatchers(HttpMethod.GET, "/dashboard").permitAll()
+        .mvcMatchers(HttpMethod.GET, "/api/tasks/**").authenticated()
+        .mvcMatchers("/api/users/**").permitAll()
+        .mvcMatchers("/**").authenticated()
+      )
+      .httpBasic();
+  }
+}
+```
+
+This configuration creates two kinds of endpoints: unprotected endpoints and protected endpoints using Basic Auth. Manually fiddling around with authentication is the last thing we want to do when verifying our secured Spring Web MVC endpoints. Let's use the following API endpoint as an example:
+
+```
+@RestController
+@RequestMapping("/api/tasks")
+public class TaskController {
+
+  private final TaskService taskService;
+
+  public TaskController(TaskService taskService) {
+    this.taskService = taskService;
+  }
+
+  @PostMapping
+  public ResponseEntity<Void> createNewTask(@RequestBody JsonNode payload, 
+                                            UriComponentsBuilder uriComponentsBuilder) {
+
+    Long taskId = this.taskService.createTask(payload.get("taskTitle").asText());
+
+    return ResponseEntity
+      .created(uriComponentsBuilder.path("/api/tasks/{taskId}").build(taskId))
+      .build();
+  }
+
+  @DeleteMapping
+  @RolesAllowed("ADMIN")
+  @RequestMapping("/{taskId}")
+  public void deleteTask(@PathVariable Long taskId) {
+    this.taskService.deleteTask(taskId);
+  }
+}
+```
+
+Valid test scenarios would now include verifying that we block anonymous users, allow authenticated users access, and only allow privileged users to delete tasks. The anonymous part is simple. Just invoke the endpoint without any further setup and expect HTTP status 401:
+
+```
+@WebMvcTest(TaskController.class)
+// @Import(SecurityConfig.class) required when using a SecurityFilter chain bean -> Spring Boot 3.0
+class TaskControllerTest {
+
+  @Autowired
+  private MockMvc mockMvc;
+
+  @MockBean
+  private TaskService taskService;
+
+  @Test
+  void shouldRejectCreatingReviewsWhenUserIsAnonymous() throws Exception {
+    this.mockMvc
+      .perform(
+        post("/api/tasks")
+          .contentType(MediaType.APPLICATION_JSON)
+          .content("{\"taskTitle\": \"Learn MockMvc\"}")
+          .with(csrf())
+      )
+      .andExpect(status().isUnauthorized());
+  }
+
+}
+```
+
+When we now want to test the happy path of creating a task, we need an authenticated user accessing the endpoint. Including the Spring Security Test dependency (see the first section), we have multiple ways to inject a user into the `SecurityContext` of the mocked Servlet environment. The most simple one is `user()`, where we can specify any user-related attributes alongside the `MockMvc` request:
+
+```
+@Test
+void shouldReturnLocationOfReviewWhenUserIsAuthenticatedAndCreatesReview() throws Exception {
+
+  when(taskService.createTask(anyString())).thenReturn(42L);
+
+  this.mockMvc
+    .perform(
+      post("/api/tasks")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"taskTitle\": \"Learn MockMvc\"}")
+        .with(csrf())
+        .with(SecurityMockMvcRequestPostProcessors.user("duke"))
+    )
+    .andExpect(status().isCreated())
+    .andExpect(header().exists("Location"))
+    .andExpect(header().string("Location", Matchers.containsString("42")));
+}
+```
+
+Adding this method to our `MockMvc` request setup, Spring Test populates a valid `SecurityContext` that holds information about the principal _duke_. We can further tweak the user setup and assign roles to test the DELETE endpoint:
+
+```
+@Test
+void shouldAllowDeletingReviewsWhenUserIsAdmin() throws Exception {
+  this.mockMvc
+    .perform(
+      delete("/api/tasks/42")
+        .with(user("duke").roles("ADMIN", "SUPER_USER"))
+        .with(csrf())
+    )
+    .andExpect(status().isOk());
+
+  verify(taskService).deleteTask(42L);
+}
+```
+
+There are way more `SecurityMockMvcRequestPostProcessors` available that allow setting up users for your authentication method: `jwt()`, `oauth2Login()`, `digest()`, `opaqueToken()`, etc. We can also use `@WithMockUser` on top of your test to define the mocked user for the whole test execution:
+
+```
+@Test
+@WithMockUser("duke")
+public void shouldRejectDeletingReviewsWhenUserLacksAdminRole() throws Exception {
+  this.mockMvc
+    .perform(delete("/api/tasks/42"))
+    .andExpect(status().isForbidden());
+}
+```
+
+#### Using MockMvc in Combination with @SpringBootTest
+
+We can also use `MockMvc` together with `@SpringBootTest`. With this setup, we'll get our entire Spring application context populated and don't have to mock any service class. Such tests ensure the integration of multiple parts of your application (aka. integration tests):
+
+```
+@SpringBootTest
+@AutoConfigureMockMvc
+class ApplicationTests {
+
+  @Autowired
+  private MockMvc mockMvc;
+
+  @Test
+  public void shouldAllowDeletingReviewsWhenUserIsAdmin() throws Exception {
+    this.mockMvc
+      .perform(
+        delete("/api/tasks/42")
+          .with(SecurityMockMvcRequestPostProcessors.user("duke").roles("ADMIN", "SUPER_USER"))
+          .with(csrf())
+      )
+      .andExpect(status().isOk());
+  }
+}
+```
+
+As with this setup, we still test against a mocked servlet environment, we should at least add some happy-path tests that invoke our application over HTTP. 
+
+For this test scenario, the [WebTestClient](https://rieckpil.de/spring-webtestclient-for-efficient-testing-of-your-rest-api/) fits perfectly. You can find the demo application for this testing Spring Boot MVC controllers example using MockMvc on [GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/testing-spring-boot-applications-with-mockmvc). 
+
 ### Testing the Database Layer
 
 ### Testing HTTP Clients

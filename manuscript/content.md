@@ -1595,6 +1595,249 @@ For this test scenario, the [WebTestClient](https://rieckpil.de/spring-webtestcl
 
 ### Testing the Database Layer
 
+Similar to testing our web layer in isolation with `@WebMvcTest`, Spring Boot provides a convenient way to test our Spring Boot JPA persistence layer. Using the @DataJpaTest [test slice annotation](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/), we can easily write integration tests for our JPA persistence layer. 
+
+While the default configuration expects an embedded database, this article demonstrates how to test any Spring Data JPA repository with a running database server using [Testcontainers](https://rieckpil.de/howto-write-spring-boot-integration-tests-with-a-real-database/) and [Flyway](https://rieckpil.de/howto-best-practices-for-flyway-and-hibernate-with-spring-boot/). We're using Spring Boot 2.5, Java 17, and a PostgreSQL database for the sample application.
+
+#### What Not to test for Our Spring Data JPA Persistence Layer
+
+With Spring Data JPA, we create repository interfaces for our JPA entity classes by extending the `JpaRepository` interface:
+
+```
+public interface OrderRepository extends JpaRepository<Order, Long> {
+}
+```
+
+Such repositories already provide a set of methods to retrieve, store and delete our JPA entities like `.findAll()`, `.save()`, `.delete(Order order)`. When testing these default methods, we'll end up testing the Spring Data JPA framework.
+
+That shouldn't be our goal unless we don't trust the test suite of the framework (if that's the case, clearly shouldn't use this technology for running applications in production). Spring Data also has the concept of derived queries where the actual SQL query is derived from the method name:
+
+```
+public interface OrderRepository extends JpaRepository<Order, Long> {
+  List<Order> findAllByTrackingNumber(String trackingNumber);
+}
+```
+
+These methods are validated on application startup. If we refer to an unknown column of our entity or don't follow the naming convention, our application won't start. 
+
+Testing these derived queries of our `JpaRepository` doesn't add many benefits, similar to testing the default CRUD methods. With such tests, we would again test the Spring Data framework, which we want to avoid as we want to focus on testing our application. 
+
+
+Next, what about testing the entity mapping? Should we make sure that our JPA entity model maps to our database schema? To validate that the mapping is correct, we can rely on a feature of Hibernate that validates the schema on application startup:
+
+```
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+```
+
+This ensures that a corresponding database table exists for our JPA entities, all columns are present, and they have the correct column type. There are still scenarios that this validation does not cover, like checking for constraints like `unique`. 
+
+Hence we shouldn't explicitly focus on testing this but ensure that all entity lifecycles are implicitly covered with an integration test. We should also ensure that our integration tests not only interact with Hibernate's first-level cache but also do full database roundtrips. The `TestEntityManager` can help here.
+
+#### What to test for Our Spring Data JPA Persistence Layer
+
+So if the examples above don't qualify for an integration test, what should we focus on when testing our JPA persistence layer?
+
+We should focus on **non-trivial handcrafted queries**. A good example is the following native query that makes use of PostgreSQL's JSON support:
+
+```
+public interface OrderRepository extends JpaRepository<Order, Long> {
+
+  @Query(value = """
+      SELECT *
+      FROM orders
+      WHERE items @> '[{"name": "MacBook Pro"}]';
+    """, nativeQuery = true)
+  List<Order> findAllContainingMacBookPro();
+
+}
+```
+
+PS: Wondering how we can create this multi-line string without concatenation? That's the new [Java text block feature](https://openjdk.java.net/jeps/355) that is GA since Java 15. Our `Order` entity class uses Vlad Mihaleca's [hibernate-types](https://github.com/vladmihalcea/hibernate-types) project to map PostgreSQL's `JSNOB` column type to a Java `String`.
+
+```
+@Entity
+@Table(name = "orders")
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
+public class Order {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(nullable = false, unique = true)
+  private String trackingNumber;
+
+  @Type(type = "jsonb")
+  @Column(columnDefinition = "jsonb")
+  private String items;
+
+  // constructor, getter, setters, etc.
+}
+```
+
+Knowing what to test now brings us to the topic of how to test it.
+
+#### How to Test the Spring Data JPA Persistence Layer
+
+We have multiple options to verify the native query of the `OrderRepository`. We could write a unit test. As the Spring Data JPA repositories are Java interfaces, there is not much to achieve with a unit test. These repositories only work in combination with Spring Data. 
+
+We need to test these repositories _in action_. Starting the whole Spring application context for this would be overkill. Spring Boot provides a test annotation that allows us [to start a sliced Spring Context](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) with only relevant JPA components: `@DataJpaTest`. By default, this would start an in-memory database like H2 or Derby. As long as our project doesn't use an in-memory database, starting one for our tests is counterproductive. 
+
+Our Flyway migration scripts might use database-specific features that are not compatible with the in-memory database. Maintaining a second set of DDL migration scripts for the in-memory database is a non-negligible effort.
+
+In the pre-container times, using an in-memory database might have been the easiest solution as you would otherwise have to install or provide a test database for every developer. With the rise of Docker, we are now able to start any containerized software on-demand with ease. 
+
+This includes databases. Testcontainers makes it convenient to start any Docker container of choice for testing purposes. I'm not going to explain Testcontainers in detail here, as there are already several articles available:
+
+1: [Write Spring Boot Integration Tests with Testcontainers (JUnit 4 & 5)](https://rieckpil.de/howto-write-spring-boot-integration-tests-with-a-real-database/)
+2. [Reuse Containers with Testcontainers for Fast Integration Tests](https://rieckpil.de/reuse-containers-with-testcontainers-for-fast-integration-tests/)
+3. [Testing Spring Boot Applications with Kotlin and Testcontainers](https://rieckpil.de/testing-spring-boot-applications-with-kotlin-and-testcontainers/)
+
+#### Create the Database Schema for Our @DataJpaTest
+
+An empty database container doesn't help us much with our test case. We need a solution to create our database tables prior to the test execution. When working with `@DataJpaTest` and an embedded database, we can achieve this with Hibernate's `ddl-auto` feature set to `create-drop`. This ensures first to create the database schema based on our Java entity definitions and then drop it afterward. 
+
+While this works and might feel convenient (we don't have to write any SQL), we should instead stick to our handcrafted Flyway migration scripts. Otherwise, there might be a difference between our database schema during the test and production. Remember: We want to be as close as possible to our production setup when testing our application. The migration script for our examples contains a single DDL statement:
+
+```
+CREATE TABLE orders (
+    ID BIGSERIAL PRIMARY KEY,
+    TRACKING_NUMBER VARCHAR(255) UNIQUE NOT NULL,
+    ITEMS JSONB
+);
+```
+
+When starting our sliced Spring context with `@DataJpaTest`, Flyway's auto-configuration is included, and our migration scripts are executed for each new Spring `TestContext`.
+
+#### Preloading Data for the Test
+
+Having the database tables created, we now have multiple options to populate data: during the test, using the `@Sql` annotation, as part of JUnit's `@BeforeEach` lifecycle or using a custom Docker image. 
+
+Let's start with the most straightforward approach. Every test prepares the data that it needs for verifying a specific method. As the Spring Test Context contains all our Spring Data JPA repositories, we can inject the repository of our choice and save our entities:
+
+```
+orderRepository.save(createOrder("42", "[]"));
+```
+
+Next comes the `@Sql` annotation. With this annotation, we can execute any SQL script before running our test. We can place our init scripts inside `src/test/resources`. It's not necessary to put them on the classpath as we can also reference, e.g., a file on disk or an HTTP resource (basically anything that can be resolved by Spring's `ResouceUtils` class):
+
+```
+INSERT INTO orders (tracking_number, items) VALUES ('42', '[{"name": "MacBook Pro", "amount" : 42}]');
+INSERT INTO orders (tracking_number, items) VALUES ('43', '[{"name": "Kindle", "amount" : 13}]');
+INSERT INTO orders (tracking_number, items) VALUES ('44', '[]');
+```
+
+```
+@Test
+@Sql("/scripts/INIT_THREE_ORDERS.sql")
+void shouldReturnOrdersThatContainMacBookPro() {
+}
+```
+
+If all your test cases (in the same test class) share the same data setup, we can use JUnit Jupiter's `@BeforeEach` to initialize our tables with data.
+
+```
+@BeforeEach
+void initData() {
+  orderRepository.save(createOrder("42", "[]"));
+}
+```
+
+We can also create a custom database image that already contains our database with a preset of data. This can also mirror the size of production. 
+
+We save a lot of time with this approach for bigger projects as Flyway doesn't have to migrate any script. The only downside of this approach is to maintain and keep this test image up-to-date.
+
+#### Writing the Test for Our Spring Data JPA Repository
+
+Putting it all together, we can now write our test to verify our Spring Boot JPA persistence layer with `@DataJpaTest`. 
+
+As we use Testcontainers to start our PostgreSQL database server, we use `@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE`) to avoid starting an embedded database:
+
+```
+@DataJpaTest
+@Testcontainers
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+class OrderRepositoryTest {
+
+  @Container
+  static PostgreSQLContainer database = new PostgreSQLContainer("postgres:12")
+    .withDatabaseName("springboot")
+    .withPassword("springboot")
+    .withUsername("springboot");
+
+  @DynamicPropertySource
+  static void setDatasourceProperties(DynamicPropertyRegistry propertyRegistry) {
+    propertyRegistry.add("spring.datasource.url", database::getJdbcUrl);
+    propertyRegistry.add("spring.datasource.password", database::getPassword);
+    propertyRegistry.add("spring.datasource.username", database::getUsername);
+  }
+
+  @Autowired
+  private OrderRepository orderRepository;
+
+  @Test
+  void shouldReturnOrdersThatContainMacBookPro() {
+
+    orderRepository.save(createOrder("42", """
+         [{"name": "MacBook Pro", "amount" : 42}, {"name": "iPhone Pro", "amount" : 42}]
+      """));
+
+    orderRepository.save(createOrder("43", """
+         [{"name": "Kindle", "amount" : 13}, {"name": "MacBook Pro", "amount" : 10}]
+      """));
+
+    orderRepository.save(createOrder("44", "[]"));
+
+    List<Order> orders = orderRepository.findAllContainingMacBookPro();
+
+    assertEquals(2, orders.size());
+  }
+
+  private Order createOrder(String trackingNumber, String items) {
+    Order order = new Order();
+    order.setTrackingNumber(trackingNumber);
+    order.setItems(items);
+    return order;
+  }
+}
+```
+
+Testcontainers maps the PostgreSQL port to a random ephemeral port, so we can't hardcode the JDBC URL. In the example above, we are using `@DynamicPropertySource` to set all required `datasource` attributes in a dynamic fashion based on the started container. 
+
+We can even write a shorter test with less _setup ceremony_ using [Testcontainers JDBC support](https://www.testcontainers.org/modules/databases/jdbc/) feature:
+
+```
+@DataJpaTest(properties = {
+  "spring.test.database.replace=NONE",
+  "spring.datasource.url=jdbc:tc:postgresql:12:///springboot"
+})
+class OrderRepositoryShortTest {
+
+  @Autowired
+  private OrderRepository orderRepository;
+
+  @Test
+  @Sql("/scripts/INIT_THREE_ORDERS.sql")
+  void shouldReturnOrdersThatContainMacBookPro() {
+    List<Order> orders = orderRepository.findAllContainingMacBookPro();
+    assertEquals(2, orders.size());
+  }
+}
+```
+
+Note the `tc` keyword after `jdbc` for the data source URL. The 12 indicates the PostgreSQL version. With this modification, Testcontainers will start the dockerized PostgreSQL for our test class in the background. 
+
+If you want to optimize this setup further when running multiple tests for your persistence layer, you can [reuse already started containers](https://rieckpil.de/reuse-containers-with-testcontainers-for-fast-integration-tests/) with Testcontainers.
+
+#### Database Cleanup After the Test
+
+The `@DataJpaTest` meta-annotation contains the `@Transactional` annotation. This ensures our test execution is wrapped with a transaction that gets rolled back after the test. The rollback happens for both successful test cases as well as failures. 
+
+Hence, we don't have to clean up our tests, and every test starts with empty tables (except we initialize data with our migration scripts). The source code for this `@DataJpaTest` example is [available on GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/spring-boot-datajpatest).
+
 ### Testing HTTP Clients
 
 ### Writing End-to-End Tests

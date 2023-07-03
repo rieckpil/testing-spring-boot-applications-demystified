@@ -2174,3 +2174,180 @@ So it doesn't matter whether we use the JAX-RS Client, the Spring WebFlux `WebCl
 For both the [WebClient](https://rieckpil.de/test-spring-webclient-with-mockwebserver-from-okhttp/) and [RestTemplate](https://rieckpil.de/testing-your-spring-resttemplate-with-restclienttest/) you'll find dedicated articles on my blog. If you are curious and want to know how to achieve the same with `WireMock`, take a look at this [Spring Boot integration test example using WireMock and JUnit 5](https://rieckpil.de/spring-boot-integration-tests-with-wiremock-and-junit-5/). The source code for testing these different Java HTTP clients is [available on GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/test-java-http-clients). 
 
 ### Writing End-to-End Tests
+
+Good old web tests - extremely valuable, sometimes hard to maintain, and annoying once they get flaky. If you are familiar with Selenium, you might find your self-writing helper functions to e.g., wait on elements to be present in the DOM, or AJAX calls to finish. 
+
+As Selenium is more or less a low-level API to manage the browser, this usually leads to boilerplate code for your projects. The [Selenide](https://selenide.org/) project eliminates the shortcoming of the low-level API nature of Selenium. With Selenide, you can write concise, stable, and short web tests for your Java projects. This article showcases Selenide 6 with Selenium 4 and Testcontainers using a Spring Boot Java 11 application with a Thymeleaf frontend.
+
+#### Java Project Setup for Selenide
+
+For a Maven-based project, we have to include the following dependency:
+
+```
+<dependency>
+  <groupId>com.codeborne</groupId>
+  <artifactId>selenide</artifactId>
+  <version>6.3.3</version>
+  <scope>test</scope>
+</dependency>
+```
+
+That's all we need. The Selenide dependency already includes Selenium's [selenium-java](https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java) dependency, so we don't have to include any Selenium-related dependency on our own. 
+
+All specific browser APIs are part of this library, and we can start writing automated web tests for Chrome, Edge, Firefox, Opera, Safari, etc. In case Spring Boot's dependency management selects an incompatible Selenium version, we can override the Selenium version with a property:
+
+```
+<properties>
+  <selenium.version>4.1.2</selenium.version>
+</properties>
+```
+
+Apart from this, Selenide also ships with the [WebDriverManager](https://github.com/bonigarcia/webdrivermanager). This is a useful utility library to automate the management of browser drivers. 
+
+As we always need the driver binary of our target browser (e.g. `chromedriver`) installed while executing the web tests, manually downloading them, and managing their versions is cumbersome.
+
+The WebDriverManager project takes over this task for us. Prior to executing a web test, the WebDriverManager ensures to download the required driver binary or use an already existing one. Hence we don't have to fiddle around with setting any parameters like `-Dwebdriver.chrome.driver`. 
+
+At the end of this blog post, we'll also see how we can utilize the [WebDriver module of Testcontainers](https://www.testcontainers.org/modules/webdriver_containers/) so that the driver is running in isolation as part of a Docker container.
+
+#### Accessing Browser Elements with Selenide
+
+The first step of every web test is to open the browser for a specific URL. With Selenide, that's a one-liner:
+
+```
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+class BookStoreWT {
+
+  @LocalServerPort
+  private Integer port;
+
+  @Test
+  void shouldDisplayBooks() {
+    open("http://localhost:" + port + "/book-store");
+  }
+}
+```
+
+For demonstration purposes, let's assume we'll use a Spring Boot application that exposes one Thymleaf view and a REST API endpoint. The view displays a table of books whenever someone clicks a button to fetch them via AJAX. Once the browser window opens our application, we can access HTML elements. 
+
+Selenide provides two functions to access any `SelenideEelement` (a wrapper around Selenium's `WebElement`): `$` and `$$` (good old jQuery memories). Using `$`, we'll get the first element that matches your search, whereas with `$$` we get a list of all the elements that match. 
+
+Selenide provides different mechanisms (similar to Selenium) to locate elements by ...
+
+* `id`
+* `tagName` (e.g. `h1`)
+* `xpath`
+* `className`
+* `cssSelector`
+* etc.
+
+In our example, we first want to make sure the book table does not exist inside the DOM. Next, we want to click the button to fetch data via the book REST API. After that, we can verify that our book table is rendered. With Selenide, that's a three-liner:
+
+```
+$(By.id("all-books")).shouldNot(Condition.exist);
+$(By.id("fetch-books")).click();
+$(By.id("all-books")).shouldBe(Condition.visible);
+```
+
+As soon as we have access to the `SelenideElement`, we can perform actions (e.g. click or fill inputs) or express expectations using a readable and fluent API. In addition to this, we can make sure that our page only contains one `h1` element:
+
+```
+$(By.tagName("h1")).shouldHave(CollectionCondition.size(1));
+```
+
+#### Make Screenshots During the Web Test Execution
+
+Most of the time, the execution of our web test is automated on a CI server (e.g., Jenkins or Gitlab CI). This makes it hard to actually _see_ the automated test and understand the reason whenever the test fails. Fortunately, Selenide creates a screenshot and captures the HTML for every failing test out-of-the-box. 
+
+What's left to adjust is the location where Selenide stores these files. By default, it's `build/reports`. As a Maven fanboy, I want the location to be inside the `target` folder. For those of you that use JUnit Jupiter, you can override this by registering the `ScreenShooterExtension`:
+
+```
+@RegisterExtension
+static ScreenShooterExtension extension = new ScreenShooterExtension()
+  .to("target/selenide");
+```
+
+We can also configure this using the `Configuration` class of Selenide:
+
+```
+Configuration.reportsFolder = "target/selenide";
+```
+
+In addition to the screenshots on failure, we can also manually take screenshots throughout our test execution:
+
+```
+$(By.id("all-books")).shouldNot(Condition.exist);
+
+screenshot("pre_book_fetch");
+
+$(By.id("fetch-books")).click();
+```
+
+#### Use Testcontainers to Containerize the WebDriver
+
+If you are familiar with [Tescontainers](https://rieckpil.de/howto-write-spring-boot-integration-tests-with-a-real-database/), you might wonder if we can utilize its [WebDriver module](https://www.testcontainers.org/modules/webdriver_containers/) for the web tests with Selenide. Good news: Yes, we can use Testcontainers to write web tests with Selenide for our Java projects! For this to work, we need one additional dependency:
+
+```
+<dependency>
+  <groupId>org.testcontainers</groupId>
+  <artifactId>selenium</artifactId>
+  <version>1.18.3</version>
+  <scope>test</scope>
+</dependency>
+```
+
+Even though Selenide ships with the WebDriverManager, we don't have to create the `WebDriver` with it. We can instruct Selenide to use a `WebDriver`that we created with Testcontainers:
+
+```
+RemoteWebDriver remoteWebDriver = webDriverContainer.getWebDriver();
+WebDriverRunner.setWebDriver(remoteWebDriver);
+```
+
+The full example for our existing Java web test with Selenide but now using Testcontainers to provide the `WebDriver` looks like the following:
+
+```
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+class BookStoreTestcontainersWT {
+
+  public static BrowserWebDriverContainer<?> webDriverContainer =
+    new BrowserWebDriverContainer<>()
+      .withCapabilities(new ChromeOptions()
+        .addArguments("--no-sandbox")
+        .addArguments("--disable-dev-shm-usage"));
+
+  @RegisterExtension
+  static ScreenShooterExtension screenShooterExtension =
+    new ScreenShooterExtension().to("target/selenide");
+
+  @LocalServerPort
+  private Integer port;
+
+  @BeforeAll
+  static void beforeAll(@Autowired Environment environment) {
+    Testcontainers.exposeHostPorts(environment.getProperty("local.server.port", Integer.class));
+    webDriverContainer.start();
+  }
+
+  @Test
+  void shouldDisplayBook() {
+
+    Configuration.timeout = 2000;
+    Configuration.baseUrl = String.format("http://host.testcontainers.internal:%d", port);
+
+    RemoteWebDriver remoteWebDriver = webDriverContainer.getWebDriver();
+    WebDriverRunner.setWebDriver(remoteWebDriver);
+
+    open("/book-store");
+
+    $(By.id("all-books")).shouldNot(Condition.exist);
+    $(By.id("fetch-books")).click();
+    $(By.id("all-books")).shouldBe(Condition.visible);
+  }
+}
+```
+
+Keep in mind that the driver is now running in an isolated Docker container, and we can't use `localhost` to refer to our application. That's why we expose the host port we want to access from within the `BrowserWebDriverContainer`. 
+
+Exposing the [host port with Testcontainers](https://www.testcontainers.org/features/networking/#exposing-host-ports-to-the-container) has to happen after we start our Tomcat server but before we start the Docker container.
+
+The source code for the demo application and this introduction to Selenide is [available on GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/write-concise-web-tests-with-selenide).

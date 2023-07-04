@@ -15,6 +15,5 @@ Stratospheric
 ## On-Demand Courses
 
 TSBAP
-HOM
 TSBAM
 TSBDR

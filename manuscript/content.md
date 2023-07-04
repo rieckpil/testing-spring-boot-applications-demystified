@@ -4,7 +4,7 @@
 
 Learning how to test a Spring Boot application effectively can be a hurdle, especially for newcomers. Without a basic knowledge of Spring's dependency injection mechanism and what Spring Boot's auto-configuration is all about, we might end up throwing annotations to our test. 
 
-Trying to make things work. While this trial and error might fix the test setup for some cases, the result is usually a not-so-optimal test setup. With this blog post, I've collected the most common pitfalls I've seen in projects and while answering questions [on Stack Overflow](https://stackoverflow.com/users/9085273/rieckpil?tab=profile) when it comes to testing Spring Boot applications.
+Trying to make things work. While this trial and error might fix the test setup for some cases, the result is usually a not-so-optimal test setup. With this section post, I've collected the most common pitfalls I've seen in projects and while answering questions [on Stack Overflow](https://stackoverflow.com/users/9085273/rieckpil?tab=profile) when it comes to testing Spring Boot applications.
 
 ### Spring Boot Testing Pitfall 1: @Mock vs. @MockBean
 
@@ -56,7 +56,7 @@ There are [tools](https://github.com/junit-pioneer/convert-junit4-to-junit5) and
 
 Starting with a new programming language is always exciting. However, it can be overwhelming as we have to get comfortable with the language, the tools, conventions, and the general development workflow. This holds true for both developing and testing our applications. 
 
-When testing Java applications with Maven, there are several concepts and conventions to understand: Maven lifecycles, build phases, plugins, etc. With this blog post, we'll cover the basic concepts for you to understand how testing Java applications with Maven _works_.
+When testing Java applications with Maven, there are several concepts and conventions to understand: Maven lifecycles, build phases, plugins, etc. With this section post, we'll cover the basic concepts for you to understand how testing Java applications with Maven _works_.
 
 #### What Do We Need Maven For?
 
@@ -64,7 +64,7 @@ When writing applications with Java, we can't just pass our `.java` files to the
 
 Next, we pass this bytecode to the JVM (`java` binary on our machines) which then interprets our program and/or compiles parts of it even further to native machine code. Given this two-step process, someone has to compile our Java classes and package our application accordingly. Manually calling `javac` and passing the correct classpath is a cumbersome task. 
 
-A build tool automates this process. As developers, we then only have to execute one command, and everything gets build automatically. The two most adopted build tools for the Java ecosystem are [Maven](https://maven.apache.org/) and [Gradle](https://gradle.org/). _Ancient devs_ might still prefer [Ant](https://ant.apache.org/), while _latest-greatest devs_ might advocate for [Bazel](https://bazel.build/) as a build tool for their Java applications. We're going to focus on Maven with this article. To build and test our Java applications, we need a [JDK](https://adoptopenjdk.net/) (Java Development Kit) installed on our machine and Maven. 
+A build tool automates this process. As developers, we then only have to execute one command, and everything gets build automatically. The two most adopted build tools for the Java ecosystem are [Maven](https://maven.apache.org/) and [Gradle](https://gradle.org/). _Ancient devs_ might still prefer [Ant](https://ant.apache.org/), while _latest-greatest devs_ might advocate for [Bazel](https://bazel.build/) as a build tool for their Java applications. We're going to focus on Maven with this section. To build and test our Java applications, we need a [JDK](https://adoptopenjdk.net/) (Java Development Kit) installed on our machine and Maven. 
 
 We can either [install Maven as a command-line tool](https://maven.apache.org/install.html) (i.e., place the Maven binary on our system's `PATH`) or use the portable Maven Wrapper. The Maven Wrapper is a convenient way to work with Maven without having to install it locally. It allows us to conveniently build Java projects with Maven without having to install and configure Maven as a CLI tool on our machine When creating a new Spring Boot project, for example, you might have already wondered what the `mvnw` and `mvnw.cmd` files inside the root of the project are used for. That's the Maven Wrapper (the idea is borrowed from Gradle).
 
@@ -607,7 +607,7 @@ The [Spring Boot application](https://github.com/rieckpil/blog-tutorials/tree/ma
 
 ### Parallelizing Unit Tests with Maven and JUnit 5
 
-The more our project and test suite grow, the longer the feedback loop becomes. Fortunately, there are techniques available to speed up our build time. One of such techniques is parallelizing our tests. Instead of running our tests in sequence, we can run them in parallel to save time. The parallelization may not work for all kinds of tests, and hence we'll learn with this article how to only parallelize our unit tests with JUnit 5 and Maven. 
+The more our project and test suite grow, the longer the feedback loop becomes. Fortunately, there are techniques available to speed up our build time. One of such techniques is parallelizing our tests. Instead of running our tests in sequence, we can run them in parallel to save time. The parallelization may not work for all kinds of tests, and hence we'll learn with this section how to only parallelize our unit tests with JUnit 5 and Maven. 
 
 The upcoming technique is framework independent, and we can apply it to any Java project (Spring Boot, Quarkus, Micronaut, Jakarta EE, etc.) that uses JUnit 5 (JUnit Jupiter, to be precise) and Maven.
 
@@ -1024,7 +1024,9 @@ If you want to see this technique in action for a public repository, take a look
 
 ### What the Heck Is the SpringExtension Used For?
 
-I've seen a lot of confusion recently about the SpringExtension. When failing to get the context configuration for a test right, some developers randomly throw `@ExtendWith(SpringExtension.class)` to their test classes to (hopefully) get their tests running. With this blog post, I want to shed some light on the SpringExtension and its usage when testing Spring Boot application. At the end of this article, you'll understand when, why, and how to use this extension. TL;DR: The `SpringExtension` enables seamless integration of JUnit Jupiter tests with Spring's TestContext framework. Most of the time, you don't need to explicitly register the SpringExtesion, as all Spring Boot test slice annotations already do this.
+I've seen a lot of confusion recently about the SpringExtension. When failing to get the context configuration for a test right, some developers randomly throw `@ExtendWith(SpringExtension.class)` to their test classes to (hopefully) get their tests running. With this blog post, I want to shed some light on the SpringExtension and its usage when testing Spring Boot application. 
+
+At the end of this section, you'll understand when, why, and how to use this extension. TL;DR: The `SpringExtension` enables seamless integration of JUnit Jupiter tests with Spring's TestContext framework. Most of the time, you don't need to explicitly register the SpringExtesion, as all Spring Boot test slice annotations already do this.
 
 #### What's a JUnit Jupiter Extension Used For?
 
@@ -1901,7 +1903,7 @@ For this test scenario, the [WebTestClient](https://rieckpil.de/spring-webtestcl
 
 Similar to testing our web layer in isolation with `@WebMvcTest`, Spring Boot provides a convenient way to test our Spring Boot JPA persistence layer. Using the @DataJpaTest [test slice annotation](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/), we can easily write integration tests for our JPA persistence layer. 
 
-While the default configuration expects an embedded database, this article demonstrates how to test any Spring Data JPA repository with a running database server using [Testcontainers](https://rieckpil.de/howto-write-spring-boot-integration-tests-with-a-real-database/) and [Flyway](https://rieckpil.de/howto-best-practices-for-flyway-and-hibernate-with-spring-boot/). We're using Spring Boot 2.5, Java 17, and a PostgreSQL database for the sample application.
+While the default configuration expects an embedded database, this section demonstrates how to test any Spring Data JPA repository with a running database server using [Testcontainers](https://rieckpil.de/howto-write-spring-boot-integration-tests-with-a-real-database/) and [Flyway](https://rieckpil.de/howto-best-practices-for-flyway-and-hibernate-with-spring-boot/). We're using Spring Boot 2.5, Java 17, and a PostgreSQL database for the sample application.
 
 #### What Not to test for Our Spring Data JPA Persistence Layer
 
@@ -2151,7 +2153,7 @@ Fetching data via HTTP from a remote system is a task almost every application h
 
 Most of the frameworks ship their own HTTP client (e.g Spring with `WebClient` and `RestTemplate`, Jakarta EE with the JAX-RS Client), but there are also standalone clients available: OkHttp, Apache HttpClient, Unirest, etc.
 
-When it comes to testing Java classes that use one of these clients, I often see developers trying to mock the internals of the library. With this article, you'll understand why such an approach is not beneficial and what you should do instead when writing a test that involves a Java HTTP client.
+When it comes to testing Java classes that use one of these clients, I often see developers trying to mock the internals of the library. With this section, you'll understand why such an approach is not beneficial and what you should do instead when writing a test that involves a Java HTTP client.
 
 #### Why Plain Old Unit Tests Are Not Enough
 
@@ -2484,7 +2486,7 @@ For both the [WebClient](https://rieckpil.de/test-spring-webclient-with-mockwebs
 
 Good old web tests - extremely valuable, sometimes hard to maintain, and annoying once they get flaky. If you are familiar with Selenium, you might find your self-writing helper functions to e.g., wait on elements to be present in the DOM, or AJAX calls to finish. 
 
-As Selenium is more or less a low-level API to manage the browser, this usually leads to boilerplate code for your projects. The [Selenide](https://selenide.org/) project eliminates the shortcoming of the low-level API nature of Selenium. With Selenide, you can write concise, stable, and short web tests for your Java projects. This article showcases Selenide 6 with Selenium 4 and Testcontainers using a Spring Boot Java 11 application with a Thymeleaf frontend.
+As Selenium is more or less a low-level API to manage the browser, this usually leads to boilerplate code for your projects. The [Selenide](https://selenide.org/) project eliminates the shortcoming of the low-level API nature of Selenium. With Selenide, you can write concise, stable, and short web tests for your Java projects. This section showcases Selenide 6 with Selenium 4 and Testcontainers using a Spring Boot Java 11 application with a Thymeleaf frontend.
 
 #### Java Project Setup for Selenide
 
@@ -2515,7 +2517,7 @@ As we always need the driver binary of our target browser (e.g. `chromedriver`) 
 
 The WebDriverManager project takes over this task for us. Prior to executing a web test, the WebDriverManager ensures to download the required driver binary or use an already existing one. Hence we don't have to fiddle around with setting any parameters like `-Dwebdriver.chrome.driver`. 
 
-At the end of this blog post, we'll also see how we can utilize the [WebDriver module of Testcontainers](https://www.testcontainers.org/modules/webdriver_containers/) so that the driver is running in isolation as part of a Docker container.
+At the end of this section post, we'll also see how we can utilize the [WebDriver module of Testcontainers](https://www.testcontainers.org/modules/webdriver_containers/) so that the driver is running in isolation as part of a Docker container.
 
 #### Accessing Browser Elements with Selenide
 

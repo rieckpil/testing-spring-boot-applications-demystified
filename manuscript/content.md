@@ -1115,12 +1115,14 @@ public class SpringExtension {
   // ...
 
   @Override
-  public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+  public boolean supportsParameter(ParameterContext parameterContext, 
+  ExtensionContext extensionContext) {
     // determine whether or not this extension is responsible to resolve the parameter
   }
 
   @Nullable
-  public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+  public Object resolveParameter(ParameterContext parameterContext, 
+  ExtensionContext extensionContext) {
     // return the bean from the TestContext
   }
 }
@@ -1317,10 +1319,12 @@ JUnit 5 offers parameter injection for test constructor and method arguments. Th
 
 ```java
 @RepeatedTest(5)
-void testMethodName(TestInfo testInfo, TestReporter testReporter, RepetitionInfo repetitionInfo) {
+void testMethodName(TestInfo testInfo, TestReporter testReporter,
+  RepetitionInfo repetitionInfo) {
   System.out.println(testInfo.getTestMethod().get().getName());
   testReporter.publishEntry("secretMessage", "JUnit 5");
-  System.out.println(repetitionInfo.getCurrentRepetition() + " from " + repetitionInfo.getTotalRepetitions());
+  System.out.println(repetitionInfo.getCurrentRepetition() + 
+    " from " + repetitionInfo.getTotalRepetitions());
 }
 ```
 
@@ -1335,12 +1339,14 @@ public class RandomUUIDParameterResolver implements ParameterResolver {
   }
 
   @Override
-  public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+  public boolean supportsParameter(ParameterContext parameterContext, 
+  ExtensionContext extensionContext) {
     return parameterContext.isAnnotated(RandomUUID.class);
   }
 
   @Override
-  public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+  public Object resolveParameter(ParameterContext parameterContext, 
+   ExtensionContext extensionContext) {
     return UUID.randomUUID().toString();
   }
 
@@ -1439,7 +1445,8 @@ public class DisabledOnMidnightCondition implements ExecutionCondition {
 
   @Override
   public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-    Optional<DisabledOnMidnight> optional = findAnnotation(context.getElement(), DisabledOnMidnight.class);
+    Optional<DisabledOnMidnight> optional = 
+    findAnnotation(context.getElement(), DisabledOnMidnight.class);
     if (optional.isPresent()) {
       LocalDateTime now = LocalDateTime.now();
       if (now.getHour() == 23 || now.getHour() <= 1) {
@@ -1582,7 +1589,9 @@ public class UserController {
   }
 
   @PostMapping
-  public ResponseEntity<Void> createNewUser(@RequestBody @Valid User user, UriComponentsBuilder uriComponentsBuilder) {
+  public ResponseEntity<Void> createNewUser(@RequestBody @Valid User user, 
+  UriComponentsBuilder uriComponentsBuilder) {
+  UriComponentsBuilder uriComponentsBuilder) {
     this.userService.storeNewUser(user);
     return ResponseEntity
       .created(uriComponentsBuilder.path("/api/users/{username}").build(user.getUsername()))
@@ -1723,7 +1732,7 @@ Let's face reality, most of the time our endpoints are protected by Spring Secur
 
 Once Spring Security is part of our project, the `MockMvc` will be auto-configured with our security config**.
 
-** **UPDATE**: When using a `SecurityFilterChain` bean for the Spring Security config in Spring Boot 3.0, we need to manually import the security configuration with `@Import(SecurityConfig.class)` to our test. As a demo, let's consider the following security configuration for our MVC application:
+**UPDATE**: When using a `SecurityFilterChain` bean for the Spring Security config in Spring Boot 3.0, we need to manually import the security configuration with `@Import(SecurityConfig.class)` to our test. As a demo, let's consider the following security configuration for our MVC application:
 
 ```
 @Configuration
@@ -1781,7 +1790,8 @@ Valid test scenarios would now include verifying that we block anonymous users, 
 
 ```
 @WebMvcTest(TaskController.class)
-// @Import(SecurityConfig.class) required when using a SecurityFilter chain bean -> Spring Boot 3.0
+// @Import(SecurityConfig.class)
+   required when using a SecurityFilter chain bean -> Spring Boot 3.0
 class TaskControllerTest {
 
   @Autowired
@@ -1809,7 +1819,8 @@ When we now want to test the happy path of creating a task, we need an authentic
 
 ```
 @Test
-void shouldReturnLocationOfReviewWhenUserIsAuthenticatedAndCreatesReview() throws Exception {
+void shouldReturnLocationOfReviewWhenUserIsAuthenticatedAndCreatesReview() 
+  throws Exception {
 
   when(taskService.createTask(anyString())).thenReturn(42L);
 
@@ -1873,7 +1884,8 @@ class ApplicationTests {
     this.mockMvc
       .perform(
         delete("/api/tasks/42")
-          .with(SecurityMockMvcRequestPostProcessors.user("duke").roles("ADMIN", "SUPER_USER"))
+          .with(SecurityMockMvcRequestPostProcessors
+          .user("duke").roles("ADMIN", "SUPER_USER"))
           .with(csrf())
       )
       .andExpect(status().isOk());
@@ -2017,9 +2029,12 @@ orderRepository.save(createOrder("42", "[]"));
 Next comes the `@Sql` annotation. With this annotation, we can execute any SQL script before running our test. We can place our init scripts inside `src/test/resources`. It's not necessary to put them on the classpath as we can also reference, e.g., a file on disk or an HTTP resource (basically anything that can be resolved by Spring's `ResouceUtils` class):
 
 ```
-INSERT INTO orders (tracking_number, items) VALUES ('42', '[{"name": "MacBook Pro", "amount" : 42}]');
-INSERT INTO orders (tracking_number, items) VALUES ('43', '[{"name": "Kindle", "amount" : 13}]');
-INSERT INTO orders (tracking_number, items) VALUES ('44', '[]');
+INSERT INTO orders (tracking_number, items) VALUES 
+  ('42', '[{"name": "MacBook Pro", "amount" : 42}]');
+INSERT INTO orders (tracking_number, items) 
+  VALUES ('43', '[{"name": "Kindle", "amount" : 13}]');
+INSERT INTO orders (tracking_number, items) 
+  VALUES ('44', '[]');
 ```
 
 ```

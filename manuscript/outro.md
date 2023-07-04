@@ -17,7 +17,7 @@ Thank you for reading "Testing Spring Boot Applications Demystified". We wish yo
 If you want to learn more about testing Spring Boot applications, we recommend the following resources:
 
 - Curated list of [Recommended Resources on Testing Java Applications](https://rieckpil.de/recommended-resources-for-testing-java-applications/)
--[30 Testing Tools & Libraries Every Java Developer Must Know] eBook(https://rieckpil.de/testing-tools-and-libraries-every-java-developer-must-know/#Pricing)
+- Java Testing Toolbox eBook: [30 Testing Tools & Libraries Every Java Developer Must Know](https://rieckpil.de/testing-tools-and-libraries-every-java-developer-must-know/)
 - Conference talk: [Things I Wish I Knew When I Started Testing Spring Boot Applications](https://www.youtube.com/watch?v=hR0bbk2tsF0)
 - Conference talk: [How fixing a broken window cut down our build time by 50%](https://www.youtube.com/watch?v=c-GV2PxymoY)
 - From Zero to Production with Spring Boot and AWS: [Stratospheric](https://stratospheric.dev/)

@@ -2,6 +2,54 @@
 
 ## Spring Boot Testing Pitfalls
 
+Learning how to test a Spring Boot application effectively can be a hurdle, especially for newcomers. Without a basic knowledge of Spring's dependency injection mechanism and what Spring Boot's auto-configuration is all about, we might end up throwing annotations to our test. 
+
+Trying to make things work. While this trial and error might fix the test setup for some cases, the result is usually a not-so-optimal test setup. With this blog post, I've collected the most common pitfalls I've seen in projects and while answering questions [on Stack Overflow](https://stackoverflow.com/users/9085273/rieckpil?tab=profile) when it comes to testing Spring Boot applications.
+
+### Spring Boot Testing Pitfall 1: @Mock vs. @MockBean
+
+One of the first Spring Boot testing pitfalls is mocking collaborators, the objects our class under test depends on. If we are already familiar with Mockito, we might know that we can use `@Mock` to create mocks for our unit tests. When writing tests for our Spring Boot applications, we don't have to un-learn any specific Mockito knowledge. Nevertheless, we have to be aware of what kind of test we're writing. Does our test work with or without a Spring TestContext? 
+
+That's important because it determines whether to use [@Mock vs. @MockBean](https://rieckpil.de/difference-between-mock-and-mockbean-spring-boot-applications/). While both annotations create a mocked version of our collaborators, `@Mock` is only relevant for plain unit tests that work without a Spring TestContext. In such cases, we usually create mocks of the collaborators and inject them via the public constructor of our class under test. For tests that work with a Spring TestContext, e.g., when using a [Spring Boot Test slice annotation](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) or [@SpringBootTest](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/), things work differently. Here, we still want to mock the collaborator of your class under test. But this time, Spring assembles all our beans and performs dependency injection. 
+
+Hence, we have to replace (or add) a mocked version of collaborator as a bean inside the Spring TestContext. That's where `@MockBean` comes into play. We use it on top of a test field to instruct Spring Test to add a mocked version of this bean inside our TestContext. Whether we use `@Mock` or `@MockBean`, the Mockito stubbing setup works the same for both. The pitfall here lies in either mixing both annotations in the same test or using one of the annotations for the wrong purpose. I've covered a comparison of both annotations and when to use them in a separate [@Mock vs. @MockBean](https://rieckpil.de/difference-between-mock-and-mockbean-spring-boot-applications/) blog post.
+
+### Spring Boot Testing Pitfall 2: Extensive Usage of @SpringBootTest
+
+When starting with testing Spring Boot applications, we'll soon stumble over the `@SpringBootTest` annotation. Spring Boot even creates a basic test that uses this annotation for each new project generated from [start.spring.io](https://start.spring.io/). The name of the annotation might imply it's used and required for every Spring Boot test. That's not the case. We use [@SpringBootTest](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/) whenever we want to write an integration test that works with the entire Spring Context. Spring Test will create a TestContext for us that contains all our beans (`@Component`, `@Configuration`, `@Service`, etc.). This implies that we also have to provide every external infrastructure component we're connecting to. Imagine we're writing a CRUD application that connects to a database. 
+
+We won't be able to create and use our repository classes if there's no database during test execution to connect to. If we would only use `@SpringBootTest` for our tests, we'll soon encounter that our test suite takes way longer than plain JUnit & Mockito tests. Starting a Spring Context results in slower test execution times as everything has to be instantiated and initialized. As a general recommendation, we should try to test and verify as much of our implementation as possible on a lower testing level. That means a specific if-block inside our `@Service` class can be tested with a unit test. Furthermore, we can ensure our Spring Security configuration is working by using `@WebMvcTest`. 
+
+For integration tests that verify the interaction for multiple components, or when writing end-to-end tests, `@SpringBootTest` comes into play. Make yourself familiar with the [different Spring Boot test slice annotations](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/). Furthermore, there are [several ways to further tweak @SpringBootTest](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/), which we have to be aware of.
+
+### Testing Pitfall 3: Not Testing At All
+
+I guess this Spring Boot testing pitfall goes without saying. If we're not testing our code, how can we ever say it's working? While we might have checked our implementation manually, how can we ensure any upcoming changes don't break our feature? If we don't test our application, our users definitely will, and they won't be delighted if they find half-backed features. Testing might not be the first priority when learning Spring Boot. 
+
+That's fine as long as we're making sure to return to the testing topic as soon as we feel comfortable with the framework. Whether we write the test before the implementation (aka. test-driven development) or afterward depends on personal preferences. I've had a great experience writing the test first, leading to more thoughtful design and smaller steps. Doing it the other way around and adding tests to our code right after we finish the implementation usually results in _not-so-well_ tests. We already know how the implementation looks like and are biased towards testing only the bare minimum. On top of this, we might already be late integrating our changes and, hence, have little time to test the implementation thoroughly. 
+
+
+The Spring Framework and Spring Boot emphasize the importance of testing and encourage us to write tests by having great testing support and tools. Testing is an essential part of every Spring Boot project as every new project already comes with a basic integration test and the [testing swiss-army knife](https://rieckpil.de/guide-to-testing-with-spring-boot-starter-test/). [Josh Long](https://twitter.com/starbuxman/) will personally visit us if we delete (or disable) this autogenerated test.
+
+There's literally no excuse to write no test - except we don't know the _how_ (yet). But this we can easily fix. There's plenty of [hands-on testing advice](https://rieckpil.de/start-here/) available on this blog. Start with the following [Spring Boot unit and integration testing overview](https://rieckpil.de/spring-boot-unit-and-integration-testing-overview/). Next, consider enrolling for the [Testing Spring Boot Applications Primer](https://rieckpil.de/testing-spring-boot-applications-primer/) to kickstart your Spring Boot testing success.
+
+### Testing Pitfall 4: Not Reusing the Spring TestContext
+
+This is coupled to the second pitfall (Extensive usage of `@SpringBootTest`). Starting a new Spring TestContext for each and every test class is expensive. So why not cache an already started Spring TestContext? That's exactly what Spring Test does for us! Whenever we're about to start a new Spring TestContext, a sliced or the entire context, Spring considers an already started context for this test. 
+
+If an existing context matches the context configuration for the test class we're about to run, Spring will reuse the context. If there's no suitable cache context already started (speak a cache miss), Spring starts a new one and stores the context afterward for further reuse of other tests. So how does Spring determine whether or not a context can be reused and how can we use this feature effectively? Imagine one integration test activates the profile `integration-test` while another test activates `web-test`. In such a case, Spring won't reuse the same context because our configuration looks entirely different due to the different profiles.
+
+
+There are more than ten configuration and setup values that determine the uniqueness of a cache. To effectively use this performance improvement, we have to align most of our Spring TestContext setups. We should avoid multiple context configurations, especially for tests that work with the entire `ApplicationContext`. In one of my projects, I reduced the entire build time (running `mvn verify`) from 25 minutes to 9 minutes while making the most of the Spring TestContext Caching mechanism. I did this by aligning the context configurations for the expensive integration tests. Make yourself familiar with the several configuration values and how to make the most of Spring's [TestContext caching mechanism](https://rieckpil.de/improve-build-times-with-context-caching-from-spring-test/).
+
+### Spring Boot Testing Pitfall 5: Mixing Up JUnit 4 and JUnit 5
+
+Another common pitfall when testing Spring Boot applications that leads to weird test results is mixing JUnit 4 and JUnit 5 in the same test class. When answering questions on Stack Overflow, I see a lot of confusion around this topic. While the first version of JUnit 5 was released in 2017, there are still projects out there using the predecessor (which is fine).
+
+As JUnit 5 supports running JUnit 4 tests next to JUnit 5 tests, we can mix both for our projects during the migration/transition period. Using annotations and APIs from JUnit 4 and JUnit 5 (JUnit Jupiter, to be precise) won't work. It's either-or. While we can have both JUnit 4 and JUnit 5 tests in our project, thanks to the JUnit Vintage engine, one test class should either opt-in of version 4 or 5. Using JUnit 4 for `MyOrderTest` and JUnit 5 for `MyPricingServiceTest` is totally fine. The pitfall lies in mixing APIs and annotations of both versions within the same test. 
+
+There are [tools](https://github.com/junit-pioneer/convert-junit4-to-junit5) and [guides](https://www.arhohuttunen.com/junit-5-migration/) available to start the migration and help convert the low-hanging fruits. There's still some manual effort left when it comes to migrating custom `Runner` or `Rule` classes. Once the migration to JUnit 5 is done, I recommend excluding any JUnit 4 dependency from the project. This helps to identify JUnit 4 leftovers due to a failing compile step. It also reduces the likelihood to (accidentally) re-introduce JUnit 4 for a new test.
+
 ## Tips & Tricks
 
 ### Correct Use Of Your Build Tool: Maven

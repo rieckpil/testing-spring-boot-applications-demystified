@@ -14,14 +14,21 @@ Thank you for reading "Testing Spring Boot Applications Demystified". We wish yo
 
 ## Further Resources
 
-Talks
-Books
-Aggregate
+[Recommended Resources on Testing Java Applications](https://rieckpil.de/recommended-resources-for-testing-java-applications/)
 
-Stratospheric
+[30 Testing Tools & Libraries Every Java Developer Must Know](https://rieckpil.de/testing-tools-and-libraries-every-java-developer-must-know/#Pricing)
 
-## On-Demand Courses
+[Things I Wish I Knew When I Started Testing Spring Boot Applications](https://www.youtube.com/watch?v=hR0bbk2tsF0)
 
-TSBAP
-TSBAM
-TSBDR
+[How fixing a broken window cut down our build time by 50%](https://www.youtube.com/watch?v=c-GV2PxymoY)
+
+[Stratospheric](https://stratospheric.dev/)
+
+[Testing Spring Boot Applications Primer](https://rieckpil.de/testing-spring-boot-applications-primer/)
+
+
+[TDD with Spring Boot Done Right](https://rieckpil.de/tdd-with-spring-boot-done-right/)
+
+[Testing Spring Boot Applications Masterclass](https://rieckpil.de/testing-spring-boot-applications-masterclass/)
+
+

@@ -1054,7 +1054,7 @@ Many frameworks and testing libraries ship with a custom JUnit Jupiter extension
 
 For more information about the extension model and its various APIs, consult the [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/#extensions).
 
-## What's the Purpose of the SpringExtension?
+#### What's the Purpose of the SpringExtension?
 
 As a next step, let's investigate the cross-cutting functionality the `SpringExtension` implements. The best way to start our investigation is to take a look at the source code of the `SpringExtension` to understand which extension APIs it implements:
 

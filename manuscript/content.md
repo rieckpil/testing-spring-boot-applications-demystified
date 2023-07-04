@@ -170,7 +170,9 @@ As part of this folder, we store static files that are only relevant for our tes
 
 * `target/test-classes`
 
-At this location, Maven places our compiled test classes (`.class` files) and test resources whenever the Maven compiler compiles our test sources. We can explicitly trigger this with `mvn test-compile` and add a `clean` if we want to remove the existing content of the entire `target` folder first. Usually, there's no need to perform any manual operations inside this folder as it contains build artifacts. Nevertheless, it's helpful to investigate the content for this folder whenever we face test failures because we, e.g., can't read a file from the classpath. Taking a look at this folder (after the Maven compiler did its work), can help understanding where a resources file ended up on the classpath.
+At this location, Maven places our compiled test classes (`.class` files) and test resources whenever the Maven compiler compiles our test sources. We can explicitly trigger this with `mvn test-compile` and add a `clean` if we want to remove the existing content of the entire `target` folder first. Usually, there's no need to perform any manual operations inside this folder as it contains build artifacts. 
+
+Nevertheless, it's helpful to investigate the content for this folder whenever we face test failures because we, e.g., can't read a file from the classpath. Taking a look at this folder (after the Maven compiler did its work), can help understanding where a resources file ended up on the classpath.
 
 * `pom.xml`
 
@@ -195,7 +197,9 @@ So what's actually a unit test? Several smart people came up with a definition f
 > *   can't run at the same time as any of your other unit tests
 > *   or you have to do special things to your environment (such as editing config files) to run it.
 
-Kevlin Henney is also a great source of inspiration for a [definition of the term unit test](https://www.theregister.com/2007/07/28/what_are_your_units/?page=3). Nevertheless, our own definition or the definition of our coworkers might be entirely different. In the end, the actual definition is secondary as long as we're sharing the same definition within our team and talking about the same thing when referring to the term unit test. The Maven Failsafe Plugin, designed to run our integration tests, detects our integration tests by the following default patterns:
+Kevlin Henney is also a great source of inspiration for a [definition of the term unit test](https://www.theregister.com/2007/07/28/what_are_your_units/?page=3). Nevertheless, our own definition or the definition of our coworkers might be entirely different.
+
+In the end, the actual definition is secondary as long as we're sharing the same definition within our team and talking about the same thing when referring to the term unit test. The Maven Failsafe Plugin, designed to run our integration tests, detects our integration tests by the following default patterns:
 
 * `**/IT*.java`
 * `**/*IT.java`
@@ -225,13 +229,17 @@ In short, the several phases have the following responsibilities:
 * `install`: install the distributable format into our local repository (`~/.m2` folder)
 * `deploy`: deploy the project to a remote repository (e.g., Maven Central or a company hosted Nexus Repository/Artifactory)
 
-These build phases represent the central phases of the `default` lifecycle. There are actually more phases. For a complete list, please refer to the [Lifecycle Reference](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference) of the official Maven documentation. Whenever we execute a build phase, our project will go through all build phases and sequentially until the build phase we specified. To phrase it differently, when we run `mvn package`, for example, Maven will execute the default lifecycle phases up to `package` in order:
+These build phases represent the central phases of the `default` lifecycle. There are actually more phases. For a complete list, please refer to the [Lifecycle Reference](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference) of the official Maven documentation. Whenever we execute a build phase, our project will go through all build phases and sequentially until the build phase we specified. 
+
+To phrase it differently, when we run `mvn package`, for example, Maven will execute the default lifecycle phases up to `package` in order:
 
 ```
 validate -> compile -> test -> package
 ```
 
-If one of the build phases in the chain fails, the entire build process will terminate. Imagine our Java source code has a missing semicolon, the `compile` phase would detect this and terminate the process. As with a corrupt source file, there'll be no compiled `.class` file to test. When it comes to testing our Java project, both the `test` and `verify` build phases are of importance. As part of the `test` phase, we're running our unit tests with the [Maven Surefire Plugin](https://maven.apache.org/surefire/maven-surefire-plugin/), and with `verify` our integration tests are executed by the [Maven Failsafe Plugin](https://maven.apache.org/surefire/maven-failsafe-plugin/index.html). Let's take a look at these two plugins.
+If one of the build phases in the chain fails, the entire build process will terminate. Imagine our Java source code has a missing semicolon, the `compile` phase would detect this and terminate the process. As with a corrupt source file, there'll be no compiled `.class` file to test.
+
+When it comes to testing our Java project, both the `test` and `verify` build phases are of importance. As part of the `test` phase, we're running our unit tests with the [Maven Surefire Plugin](https://maven.apache.org/surefire/maven-surefire-plugin/), and with `verify` our integration tests are executed by the [Maven Failsafe Plugin](https://maven.apache.org/surefire/maven-failsafe-plugin/index.html). Let's take a look at these two plugins.
 
 #### Running Unit Tests With the Maven Surefire Plugin
 
@@ -274,7 +282,9 @@ class MainTest {
 }
 ```
 
-Depending on the Maven version and distribution format of our application (e.g., JAR or WAR), Maven defines [default versions for the core plugins](https://maven.apache.org/ref/3.8.1/maven-core/default-bindings.html). Besides the Maven Compiler Plugin, the Maven Resource Plugin, and other plugins, the Maven Surefire Plugin is such a core plugin. When packaging our application as a JAR file and using Maven 3.8.1, for example, Maven picks the Maven Surefire Plugin with version 2.12.4 by default unless we override it. As the default versions are sometimes a little bit behind the latest plugin versions, it's worth updating the plugin versions and manually specifying the plugin version inside our `pom.xml`:
+Depending on the Maven version and distribution format of our application (e.g., JAR or WAR), Maven defines [default versions for the core plugins](https://maven.apache.org/ref/3.8.1/maven-core/default-bindings.html). Besides the Maven Compiler Plugin, the Maven Resource Plugin, and other plugins, the Maven Surefire Plugin is such a core plugin. 
+
+When packaging our application as a JAR file and using Maven 3.8.1, for example, Maven picks the Maven Surefire Plugin with version 2.12.4 by default unless we override it. As the default versions are sometimes a little bit behind the latest plugin versions, it's worth updating the plugin versions and manually specifying the plugin version inside our `pom.xml`:
 
 ```xml
 <project>
@@ -415,7 +425,9 @@ mvn verify -Dmaven.test.skip=true
 
 #### Summary of Testing Java Applications With Maven
 
-Maven is a powerful, mature, and well-adopted build tool for Java projects. As a newcomer or when coming from a different programming language, the basics of the Maven build lifecycle and how and when different Maven Plugins interact is something to understand first. With the help of Maven Archetypes or using a framework initializer, we can easily bootstrap new Maven projects. There's no need to install Maven as a CLI tool for our machine as we can instead use the portable Maven Wrapper. Furthermore, keep this in mind when testing your Java applications and use Maven as the build tool:
+Maven is a powerful, mature, and well-adopted build tool for Java projects. As a newcomer or when coming from a different programming language, the basics of the Maven build lifecycle and how and when different Maven Plugins interact is something to understand first. With the help of Maven Archetypes or using a framework initializer, we can easily bootstrap new Maven projects. 
+
+There's no need to install Maven as a CLI tool for our machine as we can instead use the portable Maven Wrapper. Furthermore, keep this in mind when testing your Java applications and use Maven as the build tool:
 
 * With Maven, we can separate the unit and integration test execution 
 * The Maven Surefire Plugin runs our unit tests 
@@ -490,7 +502,9 @@ jobs:
         run: mvn -B compile
 ```
 
-We configure the job to run on a hosted ubuntu-20.04 runner. GitHub let's use choose between Ubuntu, Windows, and Mac as GitHub-hosted runners. Those runners already come with a decent amount of binaries and tools installed (e.g. AWS CLI, Maven, etc.). For a complete list of installed software, see the [documentation on supported software](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software). 
+We configure the job to run on a hosted ubuntu-20.04 runner. GitHub let's use choose between Ubuntu, Windows, and Mac as GitHub-hosted runners. Those runners already come with a decent amount of binaries and tools installed (e.g. AWS CLI, Maven, etc.). 
+
+For a complete list of installed software, see the [documentation on supported software](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software). 
 
 Next, we define a matrix strategy to run the same job multiple times (in parallel) with different Java versions. The source code for the repository is not checked out on the runner by default. 
 
@@ -572,7 +586,9 @@ jobs:
       run: echo "Deploying application (e.g. Kubernetes)"
 ```
 
-We first download the Maven build artifact as we need it to build our Docker image. Right after building the Docker image, we could now log in to our private Docker Registry to push our image. As this usually requires access to secrets (username and password) we demonstrate how to map secrets to environment variables. We can securely store those secrets as part of our GitHub repository (Settings -> Secrets). What's left is to deploy the new Docker Image to our target environment (e.g. Kubeternes).
+We first download the Maven build artifact as we need it to build our Docker image. Right after building the Docker image, we could now log in to our private Docker Registry to push our image. As this usually requires access to secrets (username and password) we demonstrate how to map secrets to environment variables.
+
+We can securely store those secrets as part of our GitHub repository (Settings -> Secrets). What's left is to deploy the new Docker Image to our target environment (e.g. Kubeternes).
 
 #### Blueprints for Real-World Workflow With GitHub Actions
 
@@ -591,11 +607,15 @@ The [Spring Boot application](https://github.com/rieckpil/blog-tutorials/tree/ma
 
 ### Parallelizing Unit Tests with Maven and JUnit 5
 
-The more our project and test suite grow, the longer the feedback loop becomes. Fortunately, there are techniques available to speed up our build time. One of such techniques is parallelizing our tests. Instead of running our tests in sequence, we can run them in parallel to save time. The parallelization may not work for all kinds of tests, and hence we'll learn with this article how to only parallelize our unit tests with JUnit 5 and Maven. The upcoming technique is framework independent, and we can apply it to any Java project (Spring Boot, Quarkus, Micronaut, Jakarta EE, etc.) that uses JUnit 5 (JUnit Jupiter, to be precise) and Maven.
+The more our project and test suite grow, the longer the feedback loop becomes. Fortunately, there are techniques available to speed up our build time. One of such techniques is parallelizing our tests. Instead of running our tests in sequence, we can run them in parallel to save time. The parallelization may not work for all kinds of tests, and hence we'll learn with this article how to only parallelize our unit tests with JUnit 5 and Maven. 
+
+The upcoming technique is framework independent, and we can apply it to any Java project (Spring Boot, Quarkus, Micronaut, Jakarta EE, etc.) that uses JUnit 5 (JUnit Jupiter, to be precise) and Maven.
 
 #### Upfront Requirement: Separation of Tests
 
-Before we jump right into the required configuration setup for parallelizing our unit tests, we first have to split our tests into at least two categories. The reason for this is to allow a separate parallelization strategy (or no parallelization at all) depending on the test category. While there are many different types of tests in the literature, one can endlessly discuss what's the correct name and category. Sticking to two basic test categories is usually sufficient: unit and integration tests. Where to draw the line between unit and integration tests is yet another discussion. In general, if a test meets the following criteria, we can usually refer to it as a unit test:
+Before we jump right into the required configuration setup for parallelizing our unit tests, we first have to split our tests into at least two categories. The reason for this is to allow a separate parallelization strategy (or no parallelization at all) depending on the test category. While there are many different types of tests in the literature, one can endlessly discuss what's the correct name and category. 
+
+Sticking to two basic test categories is usually sufficient: unit and integration tests. Where to draw the line between unit and integration tests is yet another discussion. In general, if a test meets the following criteria, we can usually refer to it as a unit test:
 
 * A small unit (method or class) is tested in isolation
 * The collaborators of the class under test are replaced with a fake/stub
@@ -603,11 +623,19 @@ Before we jump right into the required configuration setup for parallelizing our
 * The test executes fast
 * We can parallelize the test as there are no side effects from other tests
 
-While this list of requirements is not exhaustive, it's a first good indicator of what a unit test is. Any test that doesn't fit in this category will be labeled an integration test. When it comes to labeling and separating our tests, we have multiple options when using JUnit and Maven. First, JUnit 5 lets us tag `@Tag("integration-test")` (former JUnit 4 categories) our test class to label them. However, when adding a new test to our project, we may forget to add these tags, and in general, it requires a little bit more maintenance effort on our end. A more pragmatic approach is to use the convenient defaults of two Maven plugins that are involved in our testing lifecycle: the Maven Surefire and Maven Failsafe Plugin. By default, the Maven Surefire plugin will run any test that has the postfix `*Test` (e.g., `CustomerServiceTest`). The Maven Failsafe Plugin, on the other hand, only executes tests with the postfix `*IT` (for integration test). We can even override these naming strategies and come up with our own postfix. Sticking to the defaults, if we add the postfix `*Test` only to our unit tests classes and `*IT` for our integration tests, we already have a separation. Both plugins run separately at a different build phase of the Maven default lifecycle. The Maven Surefire plugin executes our unit tests in the `test` phase while the Failsafe plugin gets active in the `verify` phase. For more information on both plugins and to understand how Maven is involved in testing Java applications, [head over to this article](https://rieckpil.de/maven-setup-for-testing-java-applications/).
+While this list of requirements is not exhaustive, it's a first good indicator of what a unit test is. Any test that doesn't fit in this category will be labeled an integration test. When it comes to labeling and separating our tests, we have multiple options when using JUnit and Maven. First, JUnit 5 lets us tag `@Tag("integration-test")` (former JUnit 4 categories) our test class to label them. However, when adding a new test to our project, we may forget to add these tags, and in general, it requires a little bit more maintenance effort on our end. 
+
+A more pragmatic approach is to use the convenient defaults of two Maven plugins that are involved in our testing lifecycle: the Maven Surefire and Maven Failsafe Plugin. By default, the Maven Surefire plugin will run any test that has the postfix `*Test` (e.g., `CustomerServiceTest`). The Maven Failsafe Plugin, on the other hand, only executes tests with the postfix `*IT` (for integration test).
+
+We can even override these naming strategies and come up with our own postfix. Sticking to the defaults, if we add the postfix `*Test` only to our unit tests classes and `*IT` for our integration tests, we already have a separation. Both plugins run separately at a different build phase of the Maven default lifecycle. The Maven Surefire plugin executes our unit tests in the `test` phase while the Failsafe plugin gets active in the `verify` phase. For more information on both plugins and to understand how Maven is involved in testing Java applications, [head over to this article](https://rieckpil.de/maven-setup-for-testing-java-applications/).
 
 #### Upfront Requirement: Independent Unit Tests
 
-Another requirement we have to conform to is the independence of our unit tests. As soon as we've split up our test suite into unit and integration tests by naming them differently, we have to ensure our unit test can run in parallel. For this to work, there shouldn't be an implicit order that dictates the success or failure of our unit tests. Our unit tests should pass or fail independently of the order they were invoked. As our unit tests ran in sequence before, we may not have noticed any violation of this requirment. It's very likely that some tests fail this requirement, especially the longer our project exists. The parallelization acts as a litmus test for the independence of our unit test. If we see random test failures, we know there's something for us to work on before we can fully benefit from the test parallelization. As the independence of our tests is a best practice, it's we should revisit any test that fails to meet this requirement. Even if we decide not to parallelize them, fixing these tests is still worth the effort as they may fail randomly in the future. This makes our build less deterministic and results in frustrated developers that try to fix a critical bug while working under pressure.
+Another requirement we have to conform to is the independence of our unit tests. As soon as we've split up our test suite into unit and integration tests by naming them differently, we have to ensure our unit test can run in parallel. For this to work, there shouldn't be an implicit order that dictates the success or failure of our unit tests. Our unit tests should pass or fail independently of the order they were invoked. 
+
+As our unit tests ran in sequence before, we may not have noticed any violation of this requirment. It's very likely that some tests fail this requirement, especially the longer our project exists. The parallelization acts as a litmus test for the independence of our unit test.
+
+If we see random test failures, we know there's something for us to work on before we can fully benefit from the test parallelization. As the independence of our tests is a best practice, it's we should revisit any test that fails to meet this requirement. Even if we decide not to parallelize them, fixing these tests is still worth the effort as they may fail randomly in the future. This makes our build less deterministic and results in frustrated developers that try to fix a critical bug while working under pressure.
 
 #### Java JUnit 5 Test Example
 
@@ -637,7 +665,9 @@ class StringFormatterTest {
 }
 ```
 
-The actual implementation that is being tested by this unit test is secondary. Our `StringFormatterTest` test class contains three unit tests that we artificially slow down with a `Thread.sleep()`. This will help us see an actual difference once we enable the parallelization of our unit tests. Running the three tests of this class in sequence takes three seconds:
+The actual implementation that is being tested by this unit test is secondary. Our `StringFormatterTest` test class contains three unit tests that we artificially slow down with a `Thread.sleep()`. 
+
+This will help us see an actual difference once we enable the parallelization of our unit tests. Running the three tests of this class in sequence takes three seconds:
 
 ```shell
 [INFO] -------------------------------------------------------
@@ -681,7 +711,9 @@ While this is not a real integration test, it acts as a placeholder test. It hel
 
 #### Parallelize Java Unit Tests with JUnit 5 and Maven
 
-Now it's time to parallelize our Java unit tests with JUnit 5 and Maven. As JUnit runs our tests in sequence by default, we have to override this configuration only for our unit tests. A global JUnit 5 config file to define the parallelization won't do the job as this would also trigger parallelization for our integration tests. When using Maven and the Maven Surefire Plugin, we can add custom configurations (environment variables, system properties, etc.) specifically for the tests that are executed by the Surefire plugin. We can use this technique to pass the relevant JUnit 5 configuration parameters to start parallelizing our unit tests:
+Now it's time to parallelize our Java unit tests with JUnit 5 and Maven. As JUnit runs our tests in sequence by default, we have to override this configuration only for our unit tests. A global JUnit 5 config file to define the parallelization won't do the job as this would also trigger parallelization for our integration tests.
+
+When using Maven and the Maven Surefire Plugin, we can add custom configurations (environment variables, system properties, etc.) specifically for the tests that are executed by the Surefire plugin. We can use this technique to pass the relevant JUnit 5 configuration parameters to start parallelizing our unit tests:
 
 ```xml
 <plugin>
@@ -712,7 +744,9 @@ Using the configuration above to run all tests concurrently, we get the followin
 [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 ```
 
-The total test execution time (see the time elapsed) went down from three seconds to one second as now all three tests run in parallel. While this time improvement may seem negligible in this example, imagine the same 300% speed improvement for a bigger project. As we don't override the parallelization strategy, JUnit will fall back to the default `dynamic` parallization and parallelize by the number of available processors/cores. Per default, JUnit uses one thread per core. Hence, if we run the tests on a machine with only two cores, the build time will be two seconds as only two tests can run in parallel. That's why we might see build time differences when comparing our local build time with our build agent (e.g., GitHub Actions, Jenkins). We can override the degree to which parallelize by using either a custom, fixed, or dynamic strategy (factor x available cores):
+The total test execution time (see the time elapsed) went down from three seconds to one second as now all three tests run in parallel. While this time improvement may seem negligible in this example, imagine the same 300% speed improvement for a bigger project. As we don't override the parallelization strategy, JUnit will fall back to the default `dynamic` parallization and parallelize by the number of available processors/cores. Per default, JUnit uses one thread per core. 
+
+Hence, if we run the tests on a machine with only two cores, the build time will be two seconds as only two tests can run in parallel. That's why we might see build time differences when comparing our local build time with our build agent (e.g., GitHub Actions, Jenkins). We can override the degree to which parallelize by using either a custom, fixed, or dynamic strategy (factor x available cores):
 
 ```xml
 <properties>
@@ -746,7 +780,9 @@ The previous Maven Surefire Plugin configuration only propagates the JUnit 5 con
 </plugin>
 ```
 
-The `configurationParameters` from the Surefire Plugin are not shared, and hence we can isolate the configuration for both test executions. If our integration test suite allows for parallel test execution, we can even configure different parallelism and concurrent execution. We may want to only parallelize on an integration test class level and run the test methods in sequence. This can be achieved with the following configuration:
+The `configurationParameters` from the Surefire Plugin are not shared, and hence we can isolate the configuration for both test executions. If our integration test suite allows for parallel test execution, we can even configure different parallelism and concurrent execution. 
+
+We may want to only parallelize on an integration test class level and run the test methods in sequence. This can be achieved with the following configuration:
 
 ```
 junit.jupiter.execution.parallel.enabled = true
@@ -758,15 +794,21 @@ As soon as both our unit and integration tests share the same parallelism config
 
 #### Conclusion of Parallelizing Java Unit Tests with JUnit 5 and Maven
 
-Parallelizing our Java unit tests with JUnit 5 and Maven is a simple technique to speed up our Maven build. The parallelization feature of JUnit 5 allows for a fine-grained parallelization configuration. By separating our tests into two categories and by using two different Maven plugins, we can isolate the parallelization setup. Depending on how many existing unit tests we already have, parallelizing them may take some initial setup effort. Not all tests may have been written to be run in parallel in any order. Fixing them is worth the effort. A sample JUnit 5 Maven project with this parallelization setup is [available on GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/maven-junit-paralellize-tests).
+Parallelizing our Java unit tests with JUnit 5 and Maven is a simple technique to speed up our Maven build. The parallelization feature of JUnit 5 allows for a fine-grained parallelization configuration. By separating our tests into two categories and by using two different Maven plugins, we can isolate the parallelization setup. Depending on how many existing unit tests we already have, parallelizing them may take some initial setup effort. 
+
+Not all tests may have been written to be run in parallel in any order. Fixing them is worth the effort. A sample JUnit 5 Maven project with this parallelization setup is [available on GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/maven-junit-paralellize-tests).
 
 ### Run Java Tests With Maven Silently (Only Log on Failure)
 
-When running our Java tests with Maven they usually produce a lot of noise in the console. While this log output can help understand test failures, it's typically superfluous when our test suite is passing. Nobody will take a look at the entire output if the tests are green. It's only making the build logs more bloated. A better solution would be to run our tests with Maven silent with no log output and only dump the log output once the tests fail. This blog post demonstrates how to achieve this simple yet convenient technique to run Java tests with Maven silently for a compact and followable build log.
+When running our Java tests with Maven they usually produce a lot of noise in the console. While this log output can help understand test failures, it's typically superfluous when our test suite is passing. Nobody will take a look at the entire output if the tests are green. 
+
+It's only making the build logs more bloated. A better solution would be to run our tests with Maven silent with no log output and only dump the log output once the tests fail. This blog post demonstrates how to achieve this simple yet convenient technique to run Java tests with Maven silently for a compact and followable build log.
 
 #### The Status Quo: Noisy Java Tests
 
-Based on our logging configuration, our tests produce quite some log output. When running our entire test suite locally or on a CI server (e.g., GitHub Actions or Jenkins), analyzing a test failure is tedious when there's a lot of noise in the logs. We first have to find our way to the correct position by scrolling or using the search functionality of, e.g., our browser or the integrated terminal of our IDE. A demo output for a test that verifies email functionality using [GreenMail](https://rieckpil.de/use-greenmail-for-spring-mail-javamailsender-junit-5-integration-tests/) looks like the following:
+Based on our logging configuration, our tests produce quite some log output. When running our entire test suite locally or on a CI server (e.g., GitHub Actions or Jenkins), analyzing a test failure is tedious when there's a lot of noise in the logs. We first have to find our way to the correct position by scrolling or using the search functionality of, e.g., our browser or the integrated terminal of our IDE. 
+
+A demo output for a test that verifies email functionality using [GreenMail](https://rieckpil.de/use-greenmail-for-spring-mail-javamailsender-junit-5-integration-tests/) looks like the following:
 
 ```
 06:52:17.982 [smtp:127.0.0.1:3025<-/127.0.0.1:53348] INFO  c.i.greenmail.user.UserManager - Created user login mike@java.io for address mike@java.io with password mike@java.io because it didn't exist before.
@@ -810,33 +852,22 @@ Will run only once after all tests of this class
 [INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.022 s - in de.rieckpil.blog.junit5.JUnit5ExampleTest
 [INFO] Running de.rieckpil.blog.wiremock.WireMockSetupTest
 06:55:28.930 [main] INFO  org.eclipse.jetty.util.log - Logging initialized @6609ms to org.eclipse.jetty.util.log.Slf4jLog
-06:55:28.996 [main] INFO  org.eclipse.jetty.server.Server - jetty-9.4.44.v20210927; built: 2021-09-27T23:02:44.612Z; git: 8da83308eeca865e495e53ef315a249d63ba9332; jvm 11.0.11+9-LTS
-06:55:29.004 [main] INFO  o.e.j.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@5df54296{/__admin,null,AVAILABLE}
-06:55:29.005 [main] INFO  o.e.j.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@64a7ad02{/,null,AVAILABLE}
-06:55:29.010 [main] INFO  o.e.jetty.server.AbstractConnector - Started NetworkTrafficServerConnector@20960b51{HTTP/1.1, (http/1.1)}{0.0.0.0:53424}
-06:55:29.011 [main] INFO  org.eclipse.jetty.server.Server - Started @6690ms
 06:55:29.015 [main] INFO  o.e.jetty.server.AbstractConnector - Stopped NetworkTrafficServerConnector@20960b51{HTTP/1.1, (http/1.1)}{0.0.0.0:0}
-06:55:29.015 [main] INFO  o.e.j.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@64a7ad02{/,null,STOPPED}
-06:55:29.015 [main] INFO  o.e.j.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@5df54296{/__admin,null,STOPPED}
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.194 s - in de.rieckpil.blog.wiremock.WireMockSetupTest
-[INFO] Running de.rieckpil.blog.wiremock.JavaHttpClientTest
-06:55:29.019 [main] INFO  org.eclipse.jetty.server.Server - jetty-9.4.44.v20210927; built: 2021-09-27T23:02:44.612Z; git: 8da83308eeca865e495e53ef315a249d63ba9332; jvm 11.0.11+9-LTS
-06:55:29.020 [main] INFO  o.e.j.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@5ff29e8b{/__admin,null,AVAILABLE}
-06:55:29.020 [main] INFO  o.e.j.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@7acfcfc4{/,null,AVAILABLE}
-06:55:29.021 [main] INFO  o.e.jetty.server.AbstractConnector - Started NetworkTrafficServerConnector@736f8837{HTTP/1.1, (http/1.1)}{0.0.0.0:53425}
-06:55:29.021 [main] INFO  org.eclipse.jetty.server.Server - Started @6700ms
-06:55:29.067 [qtp1974219375-82] INFO  o.e.j.s.handler.ContextHandler.ROOT - RequestHandlerClass from context returned com.github.tomakehurst.wiremock.http.StubRequestHandler. Normalized mapped under returned 'null'
 06:55:29.087 [qtp1974219375-82] INFO  o.e.j.s.h.ContextHandler.__admin - RequestHandlerClass from context returned com.github.tomakehurst.wiremock.http.AdminRequestHandler. Normalized mapped under returned 'null'
 06:55:31.189 [main] INFO  o.e.jetty.server.AbstractConnector - Stopped NetworkTrafficServerConnector@736f8837{HTTP/1.1, (http/1.1)}{0.0.0.0:0}
 06:55:31.189 [main] INFO  o.e.j.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@7acfcfc4{/,null,STOPPED}
 06:55:31.189 [main] INFO  o.e.j.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@5ff29e8b{/__admin,null,STOPPED}
 ```
 
-While we could tweak our logger configuration and set the log level to `ERROR` for the framework and libraries logs, their `INFO` can still be quite relevant when analyzing a test failure. When scrolling through the log output of passing tests, we might also see stack traces and exceptions that are intended but might confuse newcomers as they wonder if something went wrong there. Having a clean build log without much noise would better help us follow the current build. The bigger our test suite, the more we have to scroll. If all tests pass, why pollute the console with log output from the tests? Our Maven build might also fail for different reasons than test failures, e.g., a [failing OWASP dependency check or a dependency convergence issue](https://rieckpil.de/top-3-maven-plugins-to-ensure-quality-and-security-for-your-project/). Getting fast to the root cause of the build failure is much simpler with a compact build log.
+While we could tweak our logger configuration and set the log level to `ERROR` for the framework and libraries logs, their `INFO` can still be quite relevant when analyzing a test failure. When scrolling through the log output of passing tests, we might also see stack traces and exceptions that are intended but might confuse newcomers as they wonder if something went wrong there. Having a clean build log without much noise would better help us follow the current build. 
+
+The bigger our test suite, the more we have to scroll. If all tests pass, why pollute the console with log output from the tests? Our Maven build might also fail for different reasons than test failures, e.g., a [failing OWASP dependency check or a dependency convergence issue](https://rieckpil.de/top-3-maven-plugins-to-ensure-quality-and-security-for-your-project/). Getting fast to the root cause of the build failure is much simpler with a compact build log.
 
 #### The Goal: Run Tests with Maven Silently
 
-Our goal for this optimization is to have a compact Maven build log and only log the test output if it's really necessary (aka. tests are failing). Gradle is doing this already by default. When running tests with Gradle, we'll only see a test summary after running our tests. There's no intermediate noise inside our console. The goal is to achieve a somehow similar behavior as Gradle and run our tests silently. If they're passing, we're fine, and there's (usually) no need to investigate the log outcome of our tests. If one of our tests fails, report the build log to the console to analyze the test failure. In short, with our target solution, we have two scenarios:
+Our goal for this optimization is to have a compact Maven build log and only log the test output if it's really necessary (aka. tests are failing). Gradle is doing this already by default. When running tests with Gradle, we'll only see a test summary after running our tests. There's no intermediate noise inside our console. The goal is to achieve a somehow similar behavior as Gradle and run our tests silently. 
+
+If they're passing, we're fine, and there's (usually) no need to investigate the log outcome of our tests. If one of our tests fails, report the build log to the console to analyze the test failure. In short, with our target solution, we have two scenarios:
 
 * No log output for tests in the console when all tests pass
 * Print the log output of our tests when a test fails
@@ -862,7 +893,9 @@ As a first step, we configure the desired log level for testing:
 </configuration>
 ```
 
-We're using Logback (any logger works) and log any `INFO` (and above) statement to the console for the example above. We don't differentiate between our application's log and framework or test libraries. Next comes the important configuration that'll make our test silent. The [Maven Surefire (unit tests) and the Failsafe (integration tests)](https://rieckpil.de/maven-setup-for-testing-java-applications/) plugin allow redirecting the console output to a file. We won't see any test log output in the console with this configuration as it's stored within a file:
+We're using Logback (any logger works) and log any `INFO` (and above) statement to the console for the example above. We don't differentiate between our application's log and framework or test libraries. Next comes the important configuration that'll make our test silent. 
+
+The [Maven Surefire (unit tests) and the Failsafe (integration tests)](https://rieckpil.de/maven-setup-for-testing-java-applications/) plugin allow redirecting the console output to a file. We won't see any test log output in the console with this configuration as it's stored within a file:
 
 ```xml
 <plugin>
@@ -942,7 +975,9 @@ For each test class, we'll find (at least) one text file that contains the test 
 *   `de.rieckpil.blog.greenmail.MailServiceTest-output.txt`: All console output of the test
 *   `de.rieckpil.blog.greenmail.MailServiceTest.txt`: The test summary, as seen in the build log
 
-What's left is to extract the content of all our `*-output.txt` files if our build is failing. As long as our tests are all green, we can ignore the content of the output files. In case of a test failure, we must become active and dump the file contents to the console. For this purpose, we're using a combination of `find` and `tail`.For demonstration purposes, we'll use GitHub Actions. However, the present solution is portable to any other build server that provides functionality to detect a build failure and execute shell commands:
+What's left is to extract the content of all our `*-output.txt` files if our build is failing. As long as our tests are all green, we can ignore the content of the output files. In case of a test failure, we must become active and dump the file contents to the console. 
+
+For this purpose, we're using a combination of `find` and `tail`.For demonstration purposes, we'll use GitHub Actions. However, the present solution is portable to any other build server that provides functionality to detect a build failure and execute shell commands:
 
 ```yaml
 name: Maven Build
@@ -969,7 +1004,9 @@ jobs:
         run: find . -type f -path "*test-reports/*-output.txt" -exec tail -n +1 {} +
 ```
 
-As part of the last step of our build workflow, we find all `*-output.txt` files and print their content. We only print the content of the test output files in case of a failure. With GitHub Actions, we can conditionally execute a step using a boolean expression: `if: failure() || cancelled()`. Both `failure()` and `cancelled()` are built-in functions of GitHub Actions. Every other CI server provides some similar functionality. We include `cancelled()` to the expression to cover the scenario when our test suite is stuck and we manually stop (aka. cancel) the build. If the build is passing, this last logging step is skipped, and no test log output is logged. By using `tail -n +1 {}` we print the file name before dumping its content to the console. This helps search for the failed test class to start the investigation:
+As part of the last step of our build workflow, we find all `*-output.txt` files and print their content. We only print the content of the test output files in case of a failure. With GitHub Actions, we can conditionally execute a step using a boolean expression: `if: failure() || cancelled()`. Both `failure()` and `cancelled()` are built-in functions of GitHub Actions. Every other CI server provides some similar functionality. 
+
+We include `cancelled()` to the expression to cover the scenario when our test suite is stuck and we manually stop (aka. cancel) the build. If the build is passing, this last logging step is skipped, and no test log output is logged. By using `tail -n +1 {}` we print the file name before dumping its content to the console. This helps search for the failed test class to start the investigation:
 
 ```
 ==> ./target/test-reports/de.rieckpil.blog.greenmail.MailServiceTest-output.txt <==
@@ -979,7 +1016,215 @@ As part of the last step of our build workflow, we find all `*-output.txt` files
 
 #### Summary: Silent and Compact Build Logs
 
-We'll get compact Maven build logs with this small tweak to the Maven Surefire and Failsafe plugin and the additional step inside our build server. No more noisy test runs. We won't lose any test log output as we temporarily park it inside files and inspect the files if a test fails. This configuration will only affect the way our tests are run with Maven. We can still see the console output when executing tests within our IDE. We'll capture any test console output with this mechanism, both from logging libraries and plain `System.out.println` calls. This technique also works when running our tests in parallel. However, if we parallelize the test methods, the console statements may be out of order inside the test output file. If you want to see this technique in action for a public repository, take a look at the [Java Testing Toolbox](https://rieckpil.de/testing-tools-and-libraries-every-java-developer-must-know/) repository [on GitHub](https://github.com/rieckpil/java-testing-ecosystem). As part of the [main GitHub Actions workflow](https://github.com/rieckpil/java-testing-ecosystem/actions) that builds the project(s) with Maven, you'll see the Java tests being run silently. If there's a build failure, you'll see the content of the test output files as one of the last jobs.
+We'll get compact Maven build logs with this small tweak to the Maven Surefire and Failsafe plugin and the additional step inside our build server. No more noisy test runs. We won't lose any test log output as we temporarily park it inside files and inspect the files if a test fails. This configuration will only affect the way our tests are run with Maven. We can still see the console output when executing tests within our IDE. 
+
+We'll capture any test console output with this mechanism, both from logging libraries and plain `System.out.println` calls. This technique also works when running our tests in parallel. However, if we parallelize the test methods, the console statements may be out of order inside the test output file.
+
+If you want to see this technique in action for a public repository, take a look at the [Java Testing Toolbox](https://rieckpil.de/testing-tools-and-libraries-every-java-developer-must-know/) repository [on GitHub](https://github.com/rieckpil/java-testing-ecosystem). As part of the [main GitHub Actions workflow](https://github.com/rieckpil/java-testing-ecosystem/actions) that builds the project(s) with Maven, you'll see the Java tests being run silently. If there's a build failure, you'll see the content of the test output files as one of the last jobs.
+
+### What the Heck Is the SpringExtension Used For?
+
+I've seen a lot of confusion recently about the SpringExtension. When failing to get the context configuration for a test right, some developers randomly throw `@ExtendWith(SpringExtension.class)` to their test classes to (hopefully) get their tests running. With this blog post, I want to shed some light on the SpringExtension and its usage when testing Spring Boot application. At the end of this article, you'll understand when, why, and how to use this extension. TL;DR: The `SpringExtension` enables seamless integration of JUnit Jupiter tests with Spring's TestContext framework. Most of the time, you don't need to explicitly register the SpringExtesion, as all Spring Boot test slice annotations already do this.
+
+#### What's a JUnit Jupiter Extension Used For?
+
+The first question we have to answer when we want to understand the `SpringExtension` is what a JUnit Jupiter extension is all about. The JUnit Jupiter extension model is a single concept (in contrast to JUnit 4's `Runner` and `Rule` API) to enhance testing functionality and intercept the lifecycles of our tests programmatically. There are many different extension points for both the lifecycle (e.g., `BeforeAllCallback`) and other utility functions (e.g., `ParameterResolver`) available.
+
+For a complete list of all available extension APIs, please take a look at the `Extension` interface and all interfaces that extend it. Their usage is versatile. 
+
+We can do housekeeping tasks before or after a test, resolve parameters, or decide whether to execute a test or skip it. Most of the time, we implement cross-cutting concerns that relate to multiple tests with an extension. For example, when writing web tests, instead of wrapping the browser interaction with a try-catch block for every test to make screenshots on failure, we could write an extension for this. JUnit Jupiter offers the `TestExecutionExceptionHandler` interface to handle exceptions for our test methods at a central place. (PS: [Selenide](https://rieckpil.de/write-concise-web-tests-with-selenide-for-java-projects/) already comes with such a screenshot extension on failure). Writing a custom extension is no rocket science. 
+
+As part of the [Testing Spring Boot Applications Masterclass](https://rieckpil.de/testing-spring-boot-applications-masterclass/), we develop a custom extension to inject random `UUID`s to our test methods. Whenever we want to activate a JUnit Jupiter extension for our test, we have to explicitly register the extension with `@ExtendWith` on top of the test class:
+
+```
+@ExtendWith(MyExtension.class)
+class MyTest {
+
+  @Test
+  void test() {
+  }
+}
+```
+
+Many frameworks and testing libraries ship with a custom JUnit Jupiter extension for convenient integration with the JUnit environment. Examples are:
+
+* Mockito's `MockitoExtension` for a seamless setup of our mocks
+* Testcontainers `TestcontainersExtension` (activated with `@Testcontainers`) to conveniently start and stop Docker containers
+* Spring's `SpringExtension`
+
+For more information about the extension model and its various APIs, consult the [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/#extensions).
+
+## What's the Purpose of the SpringExtension?
+
+As a next step, let's investigate the cross-cutting functionality the `SpringExtension` implements. The best way to start our investigation is to take a look at the source code of the `SpringExtension` to understand which extension APIs it implements:
+
+```
+public class SpringExtension implements BeforeAllCallback, 
+    AfterAllCallback, 
+    TestInstancePostProcessor, 
+    BeforeEachCallback, 
+    AfterEachCallback, 
+    BeforeTestExecutionCallback, 
+    AfterTestExecutionCallback, 
+    ParameterResolver {
+
+  // ...
+
+}
+```
+
+That's a lot. As we can see from the source code above, the `SpringExtension` is heavily involved in the lifecycle of our tests. Without diving too deep into the implementation, the main responsibilities of this extension are the following:
+
+* manage the lifecycle of the Spring `TestContext` (e.g., start a new one or [get a cached context](https://rieckpil.de/improve-build-times-with-context-caching-from-spring-test/))
+* support dependency injection for parameters (e.g., test class constructor or test method)
+* cleanup and housekeeping tasks after the test
+ 
+
+The `SpringExtension` acts as a glue between JUnit Jupiter and Spring Test. Most of the time the `SpringExtension` delegates its responsibilities to the `TestContextManager` to do the heavy lifting:
+
+```
+public class SpringExtension {
+
+  @Override
+  public void beforeAll(ExtensionContext context) throws Exception {
+    getTestContextManager(context).beforeTestClass();
+  }
+}
+```
+
+The `TestContextManager` is responsible for a single `TestContext` and test framework agnostic. Furthermore, the `TestContextManager` also invokes all registered `TestContextListeners` based on the lifecycle event (e.g., before test class or after a test method). Let's take a look at another practical example of the `SpringExtension` in-action: Resolving (aka. injecting) parameters:
+
+```
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+class ApplicationIT {
+
+  @Test
+  void needsEnvironmentBeanToVerifySomething(
+     @Autowired Environment environment) { // resolved by the SpringExtension
+
+    assertNotNull(environment);
+  }
+}
+```
+
+The test above injects the `Environment` via a method parameter. In the background, the following code snippet of the `SpringExtension` is responsible for resolving this parameter:
+
+```
+public class SpringExtension {
+
+  // ...
+
+  @Override
+  public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+    // determine whether or not this extension is responsible to resolve the parameter
+  }
+
+  @Nullable
+  public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+    // return the bean from the TestContext
+  }
+}
+```
+
+Before the `SpringExtension` tries to resolve a given parameter, the `supportsParameter` (part of the `ParameterResolver` interface) determines if it's the responsibility of this extension. In our example, the `@Autowired` annotation next to the parameter is a clear indicator for the `SpringExtension` to resolve this parameter from the `TestContext`.
+
+Field injection, however, works via the `DependencyInjectionTestExecutionListener`. This is one of the many default `TestExecutionListeners` that the `TestContextManager` invokes before running any test.
+
+```
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+class ApplicationIT {
+
+  @Autowired
+  // injected by the DependencyInjectionTestExecutionListener
+  private CustomerService customerService; 
+
+  @Test
+  void needsEnvironmentBeanToVerifySomething(
+    @Autowired Environment environment // resolved by the SpringExtension
+  ) {
+    assertNotNull(environment);
+  }
+}
+```
+
+#### When Do We Need To Register the SpringExtension?
+
+Most of the time, we don't need to explicitly register this extension because it's already activated for us. This is the case whenever we use a Spring Boot test annotation. All [Spring Boot test slice annotations](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) and also [@SpringBootTest](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/) register the `SpringExtension` out-of-the-box. This is beneficial, as otherwise, the tests would fail to start as they require a TestContext to work with. 
+
+Hence this opinionated approach saves us some keystrokes, and we don't encounter weird test failures because we've forgotten to register the `SpringExtension`. We can see this by taking a look at the source code of the `@WebMvcTest` annotation:
+
+```
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@BootstrapWith(WebMvcTestContextBootstrapper.class)
+@ExtendWith({SpringExtension.class})
+// ... further annotations
+public @interface WebMvcTest {
+
+}
+```
+
+Among other meta-annotations and instructions on what to auto-configure for this kind of test, we see the `SpringExtension` is activated for us. The same is true for `@SpringBootTest`:
+
+```
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@BootstrapWith(SpringBootTestContextBootstrapper.class)
+@ExtendWith(SpringExtension.class)
+// ...
+public @interface SpringBootTest {
+  // ...
+}
+```
+
+So whenever we encounter a test class where the `SpringExtension` is registered manually, and a Spring Boot test slice annotation is in use, we can safely remove it:
+
+```
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@ExtendWith(SpringExtension.class) // not necassary and should be removed
+class ApplicationIT {
+
+  // ...
+
+}
+```
+
+While JUnit Jupiter won't complain (aka. fail the test or produce noise in the logs), if the same extension is configured twice, we should remove it to avoid this duplication. It's redundant code and might only lead to confusion for new team members if we don't consistently add the `SpringExtension` everywhere.
+
+#### When Do We Need to Register the SpringExtension (Part II)?
+
+There are limited use cases where we have to explicitly register the `SpringExtension` manually. One of such use cases is writing a custom test slice annotation. As part of the [Testing Spring Boot Applications Masterclass](https://rieckpil.de/testing-spring-boot-applications-masterclass/), we bootstrap a messaging component of our application for testing purposes.
+
+This hands-on example demonstrates how to only bootstrap Amazon SQS Listener relevant parts of our application. As there is now Spring Boot test slice annotation available, we manually register the `SpringExtension`to work with a Spring TestContext throughout the test:
+
+```
+@ExtendWith(SpringExtension.class)
+@Import(BookSynchronizationListener.class)
+@ImportAutoConfiguration(MessagingAutoConfiguration.class)
+@Testcontainers(disabledWithoutDocker = true)
+class BookSynchronizationListenerSliceTest {
+
+   // test a SQS listener in isolation
+
+}
+```
+
+Furthermore, for projects that use plain Spring without Spring Boot, we're also in the driver seat and have to take care to register the `SpringExtension`.
+
+#### Summary
+
+The `SpringExtension` implements several JUnit Jupiter extension model callback methods for seamless integration between JUnit and Spring. When testing Spring Boot applications, most of the time, we don't have to explicitly register this extension as all sliced context annotations (e.g. `@WebMvcTest)` do this for us. 
+
+The official [documentation](https://docs.spring.io/spring-framework/docs/current/reference/html/testing.html#testcontext-junit-jupiter-extension) is also an excellent source of information if you want to dive deeper into this topic. Consider the following blog posts to learn more about Spring Boot's excellent testing capabilities:
+
+* [Spring Boot Unit and Integration Testing Overview](https://rieckpil.de/spring-boot-unit-and-integration-testing-overview/)
+* [Spring Boot Test Slices: Overview and Usage](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/)
+* [Guide to @SpringBootTest for Spring Boot Integration Tests](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/)
+
 
 ### Five Lesser-Known JUnit 5 Features
 

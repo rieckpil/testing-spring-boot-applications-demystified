@@ -2305,7 +2305,7 @@ class JavaHttpClientTest {
 
 #### Second Java HTTP Client Test Example: OkHttpClient
 
-As a second example, let's take a look at a popular Java HTTP client library: [OkHttp](https://%5BOkHttp%5D(https://square.github.io/okhttp/)). This is a feature-rich open-source HTTP client that I've seen in several projects. After adding it to our project
+As a second example, let's take a look at a popular Java HTTP client library: [OkHttp](https://square.github.io/okhttp/). This is a feature-rich open-source HTTP client that I've seen in several projects. After adding it to our project
 
 ```
 <dependency>

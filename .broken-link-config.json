@@ -2,6 +2,12 @@
   "ignorePatterns": [
     {
       "pattern": "localhost:"
+    },
+    {
+      "pattern": "https://twitter.com/*"
+    },
+    {
+      "pattern": " https://mvnrepository.com/*"
     }
   ]
 }

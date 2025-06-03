@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="900" height="700" fill="#0000" rx="5" ry="5"/>
+
+  <!-- Title -->
+  <text x="450" y="50" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" font-weight="bold" fill="#333">PIT Mutation Testing Example</text>
+
+  <!-- Original Code Box -->
+  <rect x="50" y="100" width="350" height="180" fill="#fff" stroke="#4285f4" stroke-width="2" rx="5" ry="5"/>
+  <text x="225" y="125" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" font-weight="bold" fill="#4285f4">Original Code</text>
+
+  <rect x="70" y="135" width="310" height="130" fill="#f5f7fa" rx="3" ry="3"/>
+  <text font-family="Consolas, monospace" font-size="14" fill="#333">
+    <tspan x="80" y="155">public int calculateDiscount(</tspan>
+    <tspan x="85" y="175">  int amount, boolean loyal) {</tspan>
+    <tspan x="85" y="195">  if (amount > 1000 &amp;&amp; loyal) {</tspan>
+    <tspan x="99" y="215">    return amount / 10;</tspan>
+    <tspan x="85" y="235">  }</tspan>
+    <tspan x="85" y="255">  return 0;</tspan>
+    <tspan x="75" y="275">}</tspan>
+  </text>
+
+  <!-- Arrow from Original to Mutants -->
+  <path d="M400 180 L500 180" stroke="#666" stroke-width="2" fill="none"/>
+  <polygon points="500,180 490,175 490,185" fill="#666"/>
+
+  <!-- Mutation Box -->
+  <rect x="500" y="100" width="350" height="310" fill="#fff" stroke="#ea4335" stroke-width="2" rx="5" ry="5"/>
+  <text x="675" y="125" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" font-weight="bold" fill="#ea4335">Mutations Created by PIT</text>
+
+  <!-- Mutation 1 -->
+  <rect x="520" y="140" width="310" height="80" fill="#f5f7fa" rx="3" ry="3"/>
+  <text font-family="Consolas, monospace" font-size="14" fill="#333">
+    <tspan x="530" y="160">// Mutation 1: Change &amp;&amp; to ||</tspan>
+    <tspan x="530" y="180" fill="#ea4335">if (amount > 1000 || loyal) {</tspan>
+    <tspan x="535" y="200">  return amount / 10;</tspan>
+  </text>
+
+  <!-- Mutation 2 -->
+  <rect x="520" y="230" width="310" height="80" fill="#f5f7fa" rx="3" ry="3"/>
+  <text font-family="Consolas, monospace" font-size="14" fill="#333">
+    <tspan x="530" y="250">// Mutation 2: Change > to >=</tspan>
+    <tspan x="530" y="270" fill="#ea4335">if (amount >= 1000  &amp;&amp; loyal) {</tspan>
+    <tspan x="535" y="290">  return amount / 10;</tspan>
+  </text>
+
+  <!-- Mutation 3 -->
+  <rect x="520" y="320" width="310" height="80" fill="#f5f7fa" rx="3" ry="3"/>
+  <text font-family="Consolas, monospace" font-size="14" fill="#333">
+    <tspan x="530" y="340">// Mutation 3: Return constant</tspan>
+    <tspan x="530" y="360">if (amount > 1000  &amp;&amp; loyal) {</tspan>
+    <tspan x="535" y="380" fill="#ea4335">  return 0;</tspan>
+  </text>
+
+  <!-- Test Box -->
+  <rect x="50" y="340" width="350" height="190" fill="#fff" stroke="#34a853" stroke-width="2" rx="5" ry="5"/>
+  <text x="225" y="365" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" font-weight="bold" fill="#34a853">JUnit Tests</text>
+
+  <rect x="70" y="375" width="310" height="140" fill="#f5f7fa" rx="3" ry="3"/>
+  <text font-family="Consolas, monospace" font-size="14" fill="#333">
+    <tspan x="80" y="395">@Test</tspan>
+    <tspan x="80" y="415">void testNormalDiscount() {</tspan>
+    <tspan x="90" y="435">  int result = discount(2000, true);</tspan>
+    <tspan x="90" y="455">  assertEquals(200, result);</tspan>
+    <tspan x="80" y="475">}</tspan>
+    <tspan x="80" y="495">// Missing tests for edge cases</tspan>
+  </text>
+
+  <!-- Results Box -->
+  <rect x="500" y="420" width="350" height="150" fill="#fff" stroke="#fbbc05" stroke-width="2" rx="5" ry="5"/>
+  <text x="675" y="445" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" font-weight="bold" fill="#fbbc05">PIT Mutation Test Results</text>
+
+  <rect x="520" y="455" width="310" height="100" fill="#f5f7fa" rx="3" ry="3"/>
+  <text font-family="Arial, sans-serif" font-size="14" fill="#333">
+    <tspan x="530" y="480">Mutation 1 ( &amp;&amp;→||): <tspan fill="#ea4335">SURVIVED</tspan></tspan>
+    <tspan x="530" y="505">Mutation 2 (>→>=): <tspan fill="#ea4335">SURVIVED</tspan></tspan>
+    <tspan x="530" y="530">Mutation 3 (return→0): <tspan fill="#34a853">KILLED</tspan></tspan>
+    <tspan x="530" y="555">Mutation Score: <tspan font-weight="bold">33%</tspan></tspan>
+  </text>
+
+  <!-- Action Box -->
+  <rect x="50" y="580" width="800" height="70" fill="#fff"  stroke-width="2" rx="5" ry="5"/>
+  <text x="450" y="620" font-family="Arial, sans-serif" font-size="16" text-anchor="middle">Action Required: Add tests for boundary cases (1000, loyal) and different combinations of inputs</text>
+
+  <!-- Connecting Arrows -->
+  <path d="M225 280 L225 340" stroke="#666" stroke-width="2" fill="none"/>
+  <polygon points="225,340 220,330 230,330" fill="#666"/>
+
+  <path d="M400 430 L500 470" stroke="#666" stroke-width="2" fill="none"/>
+  <polygon points="500,470 490,465 490,475" fill="#666"/>
+
+  <path d="M675 420 L675 410" stroke="#666" stroke-width="2" fill="none"/>
+  <polygon points="675,410 670,420 680,420" fill="#666"/>
+</svg>

@@ -1,4 +1,7 @@
-intro.md
-content.md
-outro.md
+00-introduction.md
+01-spring-boot-testing-fundamentals.md
+02-spring-boot-testing-sliced.md
+03-spring-boot-testing-full.md
+04-spring-boot-testing-pitfalls-and-best-practices.md
+05-outro.md
 changelog.md

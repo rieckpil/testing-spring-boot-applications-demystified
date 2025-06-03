@@ -1,0 +1,113 @@
+<svg width="900" height="700" viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif" font-size="14px">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+    </marker>
+    <style>
+      .box { fill: #e0f7fa; stroke: #00796b; stroke-width: 1.5; rx: 8; ry: 8; }
+      .label { font-weight: bold; fill: #004d40; }
+      .text-sm { font-size: 12px; fill: #333; }
+      .text-xs { font-size: 10px; fill: #555; }
+      .arrow { stroke: #333; stroke-width: 1.5; marker-end: url(#arrowhead); }
+      .flow-arrow { stroke: #00796b; stroke-width: 2; marker-end: url(#arrowhead); }
+      .db-arrow { stroke: #c62828; stroke-width: 2; marker-end: url(#arrowhead); }
+      .dirty { fill: #ffeb3b; }
+    </style>
+  </defs>
+
+  <title>Hibernate/JPA Caching and Flush Mechanism</title>
+
+  <!-- Application -->
+  <rect x="20" y="280" width="140" height="80" class="box" />
+  <text x="90" y="310" text-anchor="middle" class="label">Application</text>
+  <text x="90" y="330" text-anchor="middle" class="text-sm">`em.persist(obj)`</text>
+  <text x="90" y="345" text-anchor="middle" class="text-sm">`obj.setData(...)`</text>
+  <text x="90" y="360" text-anchor="middle" class="text-sm">`em.find(...)`</text>
+
+  <!-- Entity Manager -->
+  <rect x="200" y="200" width="200" height="240" class="box" />
+  <text x="300" y="225" text-anchor="middle" class="label">Entity Manager</text>
+  <text x="300" y="245" text-anchor="middle" class="text-sm">(Session)</text>
+
+  <!-- First-Level Cache -->
+  <rect x="220" y="260" width="160" height="160" style="fill:#b2ebf2; stroke:#00796b; stroke-width:1; rx:5; ry:5;" />
+  <text x="300" y="280" text-anchor="middle" class="label" style="font-size: 13px;">L1 Cache</text>
+  <text x="300" y="298" text-anchor="middle" class="text-sm">(Persistence Context)</text>
+  <text x="300" y="313" text-anchor="middle" class="text-xs">Scope: Session/EM</text>
+
+  <rect x="230" y="330" width="140" height="30" style="fill:#fff; stroke:#777; stroke-width:1;" />
+  <text x="300" y="350" text-anchor="middle" class="text-xs">Entity A (clean)</text>
+  <rect x="230" y="370" width="140" height="30" class="dirty" style="stroke:#777; stroke-width:1;" />
+  <text x="300" y="390" text-anchor="middle" class="text-xs">Entity B (dirty)</text>
+  <text x="300" y="405" text-anchor="middle" class="text-xs">(Snapshot kept)</text>
+
+  <!-- Arrow App -> EM -->
+  <line x1="160" y1="320" x2="200" y2="320" class="flow-arrow" />
+
+  <!-- Second-Level Cache -->
+  <rect x="440" y="80" width="200" height="120" class="box" />
+  <text x="540" y="105" text-anchor="middle" class="label">L2 Cache</text>
+  <text x="540" y="125" text-anchor="middle" class="text-sm">(SessionFactory Cache)</text>
+  <text x="540" y="140" text-anchor="middle" class="text-xs">Scope: SessionFactory</text>
+  <text x="540" y="155" text-anchor="middle" class="text-xs">(Optional, Configurable)</text>
+  <rect x="460" y="170" width="160" height="25" style="fill:#fff; stroke:#777; stroke-width:1;" />
+  <text x="540" y="187" text-anchor="middle" class="text-xs">Cached Entity C</text>
+
+  <!-- Database -->
+  <rect x="680" y="280" width="180" height="80" class="box" style="fill:#ffcdd2; stroke:#c62828;" />
+  <text x="770" y="310" text-anchor="middle" class="label" style="fill:#c62828;">Database</text>
+  <text x="770" y="335" text-anchor="middle" class="text-sm">Persistent Storage</text>
+
+  <!-- Flows for Reading -->
+  <text x="300" y="50" text-anchor="middle" class="label" style="font-size: 16px;">Data Loading Flow (e.g., `em.find()`)</text>
+  <path d="M300,260 Q300,150 440,150" fill="none" class="arrow" /> <!-- EM to L2 check -->
+  <text x="360" y="190" class="text-xs">1. Check L1</text>
+  <text x="380" y="140" class="text-xs">2. Check L2 (if not in L1)</text>
+  <path d="M640,150 Q680,150 680,280" fill="none" class="arrow" /> <!-- L2 miss to DB -->
+  <text x="670" y="220" class="text-xs">3. Query DB (if not in L1/L2)</text>
+  <path d="M680,320 Q500,350 400,330" fill="none" class="arrow" /> <!-- DB to L1 -->
+  <text x="540" y="355" class="text-xs">4. Load to L1</text>
+  <path d="M530,200 Q530,250 380,270" fill="none" class="arrow" /> <!-- L2 to L1 -->
+  <text x="450" y="240" class="text-xs">Load from L2 to L1</text>
+
+  <!-- Flush Mechanism -->
+  <g id="flush-mechanism">
+    <text x="450" y="460" text-anchor="middle" class="label" style="font-size: 16px;">Flush (Write-Behind)</text>
+    <text x="450" y="480" text-anchor="middle" class="text-sm">(e.g., on commit, pre-query, manual `em.flush()`)</text>
+
+    <!-- Arrow EM -> Flush Process -->
+    <line x1="350" y1="420" x2="350" y2="500" class="flow-arrow" />
+    <line x1="350" y1="500" x2="450" y2="500" class="flow-arrow" />
+    <text x="330" y="460" text-anchor="end" class="text-xs">Trigger</text>
+
+    <!-- Dirty Checking Box -->
+    <rect x="280" y="520" width="150" height="70" class="box" style="fill:#fffde7; stroke:#fbc02d;" />
+    <text x="355" y="545" text-anchor="middle" class="label" style="fill:#f9a825;">Dirty Checking</text>
+    <text x="355" y="565" text-anchor="middle" class="text-xs">Compare current state</text>
+    <text x="355" y="578" text-anchor="middle" class="text-xs">with snapshot in L1</text>
+
+    <!-- Arrow Dirty Checking -> SQL Gen -->
+    <line x1="430" y1="555" x2="480" y2="555" class="flow-arrow" />
+
+    <!-- SQL Generation -->
+    <rect x="480" y="520" width="160" height="70" class="box" style="fill:#e3f2fd; stroke:#1565c0;" />
+    <text x="560" y="545" text-anchor="middle" class="label" style="fill:#0d47a1;">SQL Generation</text>
+    <text x="560" y="565" text-anchor="middle" class="text-xs">INSERT for new</text>
+    <text x="560" y="578" text-anchor="middle" class="text-xs">UPDATE for dirty</text>
+
+    <!-- Arrow SQL Gen -> DB -->
+    <line x1="640" y1="555" x2="770" y2="360" class="db-arrow" />
+    <text x="700" y="470" text-anchor="middle" class="text-xs" style="fill:#c62828;">SQL sent to DB</text>
+    <text x="700" y="485" text-anchor="middle" class="text-xs" style="fill:#c62828;">(Write-Behind)</text>
+  </g>
+
+  <!-- Legend/Notes -->
+  <rect x="20" y="600" width="860" height="80" style="fill: #f5f5f5; stroke: #ccc; stroke-width: 1; rx:5; ry:5;" />
+  <text x="30" y="620" class="label">Key Concepts:</text>
+  <text x="30" y="640" class="text-sm">• <tspan font-weight="bold">L1 Cache (Session Cache):</tspan> Per `EntityManager`. Stores managed entities. Mandatory.</text>
+  <text x="30" y="655" class="text-sm">• <tspan font-weight="bold">L2 Cache (SessionFactory Cache):</tspan> Shared. Optional. For frequently read, rarely modified data.</text>
+  <text x="30" y="670" class="text-sm">• <tspan font-weight="bold">Dirty Checking:</tspan> Detects changes in managed entities by comparing to an initial snapshot.</text>
+  <text x="450" y="640" class="text-sm">• <tspan font-weight="bold">Flush:</tspan> Synchronizes L1 cache state with the DB. Triggers dirty checking & SQL execution.</text>
+  <text x="450" y="655" class="text-sm">• <tspan font-weight="bold">Write-Behind:</tspan> SQL operations are queued and executed during flush, not immediately on entity modification.</text>
+
+</svg>

@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: 'postgres:16.0'
+    environment:
+      - 'POSTGRES_DB=shelfie'
+      - 'POSTGRES_PASSWORD=secret'
+      - 'POSTGRES_USER=admin'
+    ports:
+      - '5432'

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="Arial, sans-serif">
+  <!-- Background and Title -->
+  <rect width="800" height="500" fill="#0000" />
+  <text x="400" y="30" font-size="24" text-anchor="middle" font-weight="bold">Hibernate/JPA Caching and Persistence</text>
+
+  <!-- Application -->
+  <rect x="30" y="70" width="150" height="80" rx="5" fill="#e3f2fd" stroke="#0d47a1" stroke-width="2" />
+  <text x="105" y="110" font-size="16" text-anchor="middle" font-weight="bold">Java Application</text>
+  <text x="105" y="130" font-size="12" text-anchor="middle">Entity Objects</text>
+
+  <!-- Entity Manager -->
+  <rect x="250" y="60" width="300" height="210" rx="5" fill="#e8f5e9" stroke="#1b5e20" stroke-width="2" />
+  <text x="400" y="85" font-size="18" text-anchor="middle" font-weight="bold">Entity Manager</text>
+
+  <!-- First Level Cache -->
+  <rect x="270" y="100" width="260" height="80" rx="5" fill="#fff3e0" stroke="#e65100" stroke-width="2" />
+  <text x="400" y="125" font-size="16" text-anchor="middle" font-weight="bold">First Level Cache</text>
+  <text x="400" y="145" font-size="12" text-anchor="middle">Per Session/Transaction</text>
+  <text x="400" y="165" font-size="12" text-anchor="middle">Managed Entity Instances</text>
+
+  <!-- Persistence Context -->
+  <rect x="270" y="190" width="120" height="60" rx="5" fill="#e0f7fa" stroke="#006064" stroke-width="2" />
+  <text x="330" y="215" font-size="14" text-anchor="middle" font-weight="bold">Dirty Checking</text>
+  <text x="330" y="235" font-size="12" text-anchor="middle">Track Changes</text>
+
+  <!-- Flush Queue -->
+  <rect x="410" y="190" width="120" height="60" rx="5" fill="#f3e5f5" stroke="#4a148c" stroke-width="2" />
+  <text x="470" y="215" font-size="14" text-anchor="middle" font-weight="bold">Flush Queue</text>
+  <text x="470" y="235" font-size="12" text-anchor="middle">Pending Changes</text>
+
+  <!-- Second Level Cache -->
+  <rect x="250" y="290" width="300" height="80" rx="5" fill="#ffebee" stroke="#b71c1c" stroke-width="2" />
+  <text x="400" y="315" font-size="16" text-anchor="middle" font-weight="bold">Second Level Cache</text>
+  <text x="400" y="335" font-size="12" text-anchor="middle">Shared Across Sessions</text>
+  <text x="400" y="355" font-size="12" text-anchor="middle">Query Results, Entities, Collections</text>
+
+  <!-- Database -->
+  <rect x="620" y="150" width="150" height="100" rx="5" fill="#e8eaf6" stroke="#1a237e" stroke-width="2" />
+  <rect x="630" y="160" width="130" height="20" rx="2" fill="#c5cae9" stroke="#3949ab" stroke-width="1" />
+  <rect x="630" y="190" width="130" height="20" rx="2" fill="#c5cae9" stroke="#3949ab" stroke-width="1" />
+  <rect x="630" y="220" width="130" height="20" rx="2" fill="#c5cae9" stroke="#3949ab" stroke-width="1" />
+  <text x="695" y="135" font-size="16" text-anchor="middle" font-weight="bold">Database</text>
+
+  <!-- Arrows -->
+  <!-- App to EntityManager -->
+  <path d="M180 110 H230" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+
+  <!-- EntityManager to Database (flush) -->
+  <path d="M550 170 C585 170, 585 200, 620 200" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)" stroke-dasharray="5,3" />
+  <text x="585" y="170" font-size="12" text-anchor="middle">flush()</text>
+
+  <!-- Database to EntityManager (read) -->
+  <path d="M620 180 C585 180, 585 150, 550 150" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+  <text x="585" y="140" font-size="12" text-anchor="middle">read</text>
+
+  <!-- First Level to Second Level -->
+  <path d="M350 180 L350 290" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+  <text x="335" y="260" font-size="12" text-anchor="middle">overflow</text>
+
+  <!-- Second Level to First Level -->
+  <path d="M450 290 L450 180" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)" />
+  <text x="465" y="260" font-size="12" text-anchor="middle">lookup</text>
+
+  <!-- Arrowhead definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+    </marker>
+  </defs>
+
+  <!-- Transaction timeline -->
+  <line x1="150" y1="420" x2="650" y2="420" stroke="#333" stroke-width="2" />
+  <circle cx="200" cy="420" r="5" fill="#333" />
+  <text x="200" y="440" font-size="12" text-anchor="middle">Begin</text>
+
+  <circle cx="300" cy="420" r="5" fill="#333" />
+  <text x="300" y="440" font-size="12" text-anchor="middle">Modify</text>
+
+  <circle cx="400" cy="420" r="5" fill="#333" />
+  <text x="400" y="440" font-size="12" text-anchor="middle">More Changes</text>
+
+  <circle cx="500" cy="420" r="5" fill="#333" />
+  <text x="500" y="440" font-size="12" text-anchor="middle">flush()</text>
+
+  <circle cx="600" cy="420" r="5" fill="#333" />
+  <text x="600" y="440" font-size="12" text-anchor="middle">Commit</text>
+
+  <!-- Legend -->
+  <rect x="50" y="460" width="15" height="15" fill="#e8f5e9" stroke="#1b5e20" stroke-width="1" />
+  <text x="75" y="473" font-size="12" text-anchor="start">Entity Manager</text>
+
+  <rect x="200" y="460" width="15" height="15" fill="#fff3e0" stroke="#e65100" stroke-width="1" />
+  <text x="225" y="473" font-size="12" text-anchor="start">First Level Cache</text>
+
+  <rect x="350" y="460" width="15" height="15" fill="#ffebee" stroke="#b71c1c" stroke-width="1" />
+  <text x="375" y="473" font-size="12" text-anchor="start">Second Level Cache</text>
+
+  <rect x="500" y="460" width="15" height="15" fill="#f3e5f5" stroke="#4a148c" stroke-width="1" />
+  <text x="525" y="473" font-size="12" text-anchor="start">Write-Behind (Flush Queue)</text>
+
+  <!-- Notes -->
+  <text x="400" y="400" font-size="14" text-anchor="middle" font-style="italic">Write-Behind Pattern: Changes tracked but not immediately written to database</text>
+</svg>

@@ -1,3 +1,11 @@
 .idea
 node_modules
 .DS_Store
+
+manuscript-pandoc/generated
+!manuscript-pandoc/000-settings.md
+!manuscript-pandoc/config.text
+
+*.pdf
+
+workshop/

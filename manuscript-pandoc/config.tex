@@ -1,0 +1,61 @@
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\definecolor{ideagreen}{rgb}{0,0.5019607843137255,0}
+\definecolor{ideablue}{rgb}{0,0,0.5019607843137255}
+\definecolor{ideagray}{rgb}{0.5019607843137255,0.5019607843137255,0.5019607843137255}
+
+\usepackage{hyperref}
+
+\hypersetup{
+  pdfkeywords={Testing, Java, Spring Boot,JUnit 5},
+  pdfcreator={LaTeX via pandoc},
+  pdfproducer={latex},
+  colorlinks=true,        % Enable color for links
+  linkcolor=ideablue,   % Color of internal links (sections, table of contents)
+  citecolor=ideablue,    % Color of citations
+  urlcolor=ideablue    % Color of external links
+}
+
+\usepackage{sectsty}
+\sectionfont{\clearpage}
+
+\usepackage{listings}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,  % Code font size
+  keywordstyle=\color{ideablue}\bfseries, % Keywords
+  commentstyle=\color{ideagray},          % Comments
+  stringstyle=\color{ideagreen},            % Strings
+  columns=fullflexible,
+  stepnumber=1,               % Line number step
+  tabsize=2,                  % Set tab width
+  breaklines=true,   % Line breaking
+  captionpos=b,               % Caption position (b = bottom)
+  xleftmargin=10pt,           % Left margin
+  xrightmargin=10pt,           % Right margin
+  aboveskip=10pt, % Space above each listing
+  belowskip=10pt, % Space below each listing
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  keepspaces=false,
+}
+
+\lstdefinelanguage{XML}{
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  stringstyle=\color{black},
+  identifierstyle=\color{ideablue},
+  keywordstyle=\color{ideagray},
+  morekeywords={xmlns,type}% list your attributes here
+}
+
+%  Watermarking the footer
+%\usepackage{fancyhdr}
+%\usepackage{hyperref}
+%\pagestyle{fancy}
+%\fancyfoot{}
+%\fancyfoot[L]{This PDF copy licensed is to Foo Bar foo@bar.de}
+%\fancyfoot[R]{\thepage}

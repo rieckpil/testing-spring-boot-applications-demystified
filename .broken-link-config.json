@@ -8,6 +8,12 @@
     },
     {
       "pattern": " https://mvnrepository.com/*"
+    },
+    {
+      "pattern": "https://rieckpil.de/*"
+    },
+    {
+      "pattern": "https://www.linkedin.com/in/*"
     }
   ]
 }

@@ -2,31 +2,31 @@
 
 ## Spring Boot Testing Pitfalls
 
-Learning how to test a Spring Boot application effectively can be a hurdle, especially for newcomers. Without a basic knowledge of Spring's dependency injection mechanism and what Spring Boot's auto-configuration is all about, we might end up throwing annotations to our test. 
+Learning how to test a Spring Boot application effectively can be a hurdle, especially for newcomers. Without a basic knowledge of Spring's dependency injection mechanism and what Spring Boot's auto-configuration is all about, we might end up throwing annotations to our test.
 
 Trying to make things work. While this trial and error might fix the test setup for some cases, the result is usually a not-so-optimal test setup. With this section post, I've collected the most common pitfalls I've seen in projects and while answering questions [on Stack Overflow](https://stackoverflow.com/users/9085273/rieckpil?tab=profile) when it comes to testing Spring Boot applications.
 
 ### Spring Boot Testing Pitfall 1: @Mock vs. @MockBean
 
-One of the first Spring Boot testing pitfalls is mocking collaborators, the objects our class under test depends on. If we are already familiar with Mockito, we might know that we can use `@Mock` to create mocks for our unit tests. When writing tests for our Spring Boot applications, we don't have to un-learn any specific Mockito knowledge. Nevertheless, we have to be aware of what kind of test we're writing. Does our test work with or without a Spring TestContext? 
+One of the first Spring Boot testing pitfalls is mocking collaborators, the objects our class under test depends on. If we are already familiar with Mockito, we might know that we can use `@Mock` to create mocks for our unit tests. When writing tests for our Spring Boot applications, we don't have to un-learn any specific Mockito knowledge. Nevertheless, we have to be aware of what kind of test we're writing. Does our test work with or without a Spring TestContext?
 
-That's important because it determines whether to use [@Mock vs. @MockBean](https://rieckpil.de/difference-between-mock-and-mockbean-spring-boot-applications/). While both annotations create a mocked version of our collaborators, `@Mock` is only relevant for plain unit tests that work without a Spring TestContext. In such cases, we usually create mocks of the collaborators and inject them via the public constructor of our class under test. For tests that work with a Spring TestContext, e.g., when using a [Spring Boot Test slice annotation](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) or [@SpringBootTest](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/), things work differently. Here, we still want to mock the collaborator of your class under test. But this time, Spring assembles all our beans and performs dependency injection. 
+That's important because it determines whether to use [@Mock vs. @MockBean](https://rieckpil.de/difference-between-mock-and-mockbean-spring-boot-applications/). While both annotations create a mocked version of our collaborators, `@Mock` is only relevant for plain unit tests that work without a Spring TestContext. In such cases, we usually create mocks of the collaborators and inject them via the public constructor of our class under test. For tests that work with a Spring TestContext, e.g., when using a [Spring Boot Test slice annotation](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) or [@SpringBootTest](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/), things work differently. Here, we still want to mock the collaborator of your class under test. But this time, Spring assembles all our beans and performs dependency injection.
 
 Hence, we have to replace (or add) a mocked version of collaborator as a bean inside the Spring TestContext. That's where `@MockBean` comes into play. We use it on top of a test field to instruct Spring Test to add a mocked version of this bean inside our TestContext. Whether we use `@Mock` or `@MockBean`, the Mockito stubbing setup works the same for both. The pitfall here lies in either mixing both annotations in the same test or using one of the annotations for the wrong purpose. I've covered a comparison of both annotations and when to use them in a separate [@Mock vs. @MockBean](https://rieckpil.de/difference-between-mock-and-mockbean-spring-boot-applications/) blog post.
 
 ### Spring Boot Testing Pitfall 2: Extensive Usage of @SpringBootTest
 
-When starting with testing Spring Boot applications, we'll soon stumble over the `@SpringBootTest` annotation. Spring Boot even creates a basic test that uses this annotation for each new project generated from [start.spring.io](https://start.spring.io/). The name of the annotation might imply it's used and required for every Spring Boot test. That's not the case. We use [@SpringBootTest](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/) whenever we want to write an integration test that works with the entire Spring Context. Spring Test will create a TestContext for us that contains all our beans (`@Component`, `@Configuration`, `@Service`, etc.). This implies that we also have to provide every external infrastructure component we're connecting to. Imagine we're writing a CRUD application that connects to a database. 
+When starting with testing Spring Boot applications, we'll soon stumble over the `@SpringBootTest` annotation. Spring Boot even creates a basic test that uses this annotation for each new project generated from [start.spring.io](https://start.spring.io/). The name of the annotation might imply it's used and required for every Spring Boot test. That's not the case. We use [@SpringBootTest](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/) whenever we want to write an integration test that works with the entire Spring Context. Spring Test will create a TestContext for us that contains all our beans (`@Component`, `@Configuration`, `@Service`, etc.). This implies that we also have to provide every external infrastructure component we're connecting to. Imagine we're writing a CRUD application that connects to a database.
 
-We won't be able to create and use our repository classes if there's no database during test execution to connect to. If we would only use `@SpringBootTest` for our tests, we'll soon encounter that our test suite takes way longer than plain JUnit & Mockito tests. Starting a Spring Context results in slower test execution times as everything has to be instantiated and initialized. As a general recommendation, we should try to test and verify as much of our implementation as possible on a lower testing level. That means a specific if-block inside our `@Service` class can be tested with a unit test. Furthermore, we can ensure our Spring Security configuration is working by using `@WebMvcTest`. 
+We won't be able to create and use our repository classes if there's no database during test execution to connect to. If we would only use `@SpringBootTest` for our tests, we'll soon encounter that our test suite takes way longer than plain JUnit & Mockito tests. Starting a Spring Context results in slower test execution times as everything has to be instantiated and initialized. As a general recommendation, we should try to test and verify as much of our implementation as possible on a lower testing level. That means a specific if-block inside our `@Service` class can be tested with a unit test. Furthermore, we can ensure our Spring Security configuration is working by using `@WebMvcTest`.
 
 For integration tests that verify the interaction for multiple components, or when writing end-to-end tests, `@SpringBootTest` comes into play. Make yourself familiar with the [different Spring Boot test slice annotations](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/). Furthermore, there are [several ways to further tweak @SpringBootTest](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/), which we have to be aware of.
 
 ### Testing Pitfall 3: Not Testing At All
 
-I guess this Spring Boot testing pitfall goes without saying. If we're not testing our code, how can we ever say it's working? While we might have checked our implementation manually, how can we ensure any upcoming changes don't break our feature? If we don't test our application, our users definitely will, and they won't be delighted if they find half-backed features. Testing might not be the first priority when learning Spring Boot. 
+I guess this Spring Boot testing pitfall goes without saying. If we're not testing our code, how can we ever say it's working? While we might have checked our implementation manually, how can we ensure any upcoming changes don't break our feature? If we don't test our application, our users definitely will, and they won't be delighted if they find half-backed features. Testing might not be the first priority when learning Spring Boot.
 
-That's fine as long as we're making sure to return to the testing topic as soon as we feel comfortable with the framework. Whether we write the test before the implementation (aka. test-driven development) or afterward depends on personal preferences. I've had a great experience writing the test first, leading to more thoughtful design and smaller steps. Doing it the other way around and adding tests to our code right after we finish the implementation usually results in _not-so-well_ tests. We already know how the implementation looks like and are biased towards testing only the bare minimum. On top of this, we might already be late integrating our changes and, hence, have little time to test the implementation thoroughly. 
+That's fine as long as we're making sure to return to the testing topic as soon as we feel comfortable with the framework. Whether we write the test before the implementation (aka. test-driven development) or afterward depends on personal preferences. I've had a great experience writing the test first, leading to more thoughtful design and smaller steps. Doing it the other way around and adding tests to our code right after we finish the implementation usually results in _not-so-well_ tests. We already know how the implementation looks like and are biased towards testing only the bare minimum. On top of this, we might already be late integrating our changes and, hence, have little time to test the implementation thoroughly.
 
 
 The Spring Framework and Spring Boot emphasize the importance of testing and encourage us to write tests by having great testing support and tools. Testing is an essential part of every Spring Boot project as every new project already comes with a basic integration test and the [testing swiss-army knife](https://rieckpil.de/guide-to-testing-with-spring-boot-starter-test/). [Josh Long](https://twitter.com/starbuxman/) will personally visit us if we delete (or disable) this autogenerated test.
@@ -35,7 +35,7 @@ There's literally no excuse to write no test - except we don't know the _how_ (y
 
 ### Testing Pitfall 4: Not Reusing the Spring TestContext
 
-This is coupled to the second pitfall (Extensive usage of `@SpringBootTest`). Starting a new Spring TestContext for each and every test class is expensive. So why not cache an already started Spring TestContext? That's exactly what Spring Test does for us! Whenever we're about to start a new Spring TestContext, a sliced or the entire context, Spring considers an already started context for this test. 
+This is coupled to the second pitfall (Extensive usage of `@SpringBootTest`). Starting a new Spring TestContext for each and every test class is expensive. So why not cache an already started Spring TestContext? That's exactly what Spring Test does for us! Whenever we're about to start a new Spring TestContext, a sliced or the entire context, Spring considers an already started context for this test.
 
 If an existing context matches the context configuration for the test class we're about to run, Spring will reuse the context. If there's no suitable cache context already started (speak a cache miss), Spring starts a new one and stores the context afterward for further reuse of other tests. So how does Spring determine whether or not a context can be reused and how can we use this feature effectively? Imagine one integration test activates the profile `integration-test` while another test activates `web-test`. In such a case, Spring won't reuse the same context because our configuration looks entirely different due to the different profiles.
 
@@ -46,7 +46,7 @@ There are more than ten configuration and setup values that determine the unique
 
 Another common pitfall when testing Spring Boot applications that leads to weird test results is mixing JUnit 4 and JUnit 5 in the same test class. When answering questions on Stack Overflow, I see a lot of confusion around this topic. While the first version of JUnit 5 was released in 2017, there are still projects out there using the predecessor (which is fine).
 
-As JUnit 5 supports running JUnit 4 tests next to JUnit 5 tests, we can mix both for our projects during the migration/transition period. Using annotations and APIs from JUnit 4 and JUnit 5 (JUnit Jupiter, to be precise) won't work. It's either-or. While we can have both JUnit 4 and JUnit 5 tests in our project, thanks to the JUnit Vintage engine, one test class should either opt-in of version 4 or 5. Using JUnit 4 for `MyOrderTest` and JUnit 5 for `MyPricingServiceTest` is totally fine. The pitfall lies in mixing APIs and annotations of both versions within the same test. 
+As JUnit 5 supports running JUnit 4 tests next to JUnit 5 tests, we can mix both for our projects during the migration/transition period. Using annotations and APIs from JUnit 4 and JUnit 5 (JUnit Jupiter, to be precise) won't work. It's either-or. While we can have both JUnit 4 and JUnit 5 tests in our project, thanks to the JUnit Vintage engine, one test class should either opt-in of version 4 or 5. Using JUnit 4 for `MyOrderTest` and JUnit 5 for `MyPricingServiceTest` is totally fine. The pitfall lies in mixing APIs and annotations of both versions within the same test.
 
 There are [tools](https://github.com/junit-pioneer/convert-junit4-to-junit5) and [guides](https://www.arhohuttunen.com/junit-5-migration/) available to start the migration and help convert the low-hanging fruits. There's still some manual effort left when it comes to migrating custom `Runner` or `Rule` classes. Once the migration to JUnit 5 is done, I recommend excluding any JUnit 4 dependency from the project. This helps to identify JUnit 4 leftovers due to a failing compile step. It also reduces the likelihood to (accidentally) re-introduce JUnit 4 for a new test.
 
@@ -54,25 +54,25 @@ There are [tools](https://github.com/junit-pioneer/convert-junit4-to-junit5) and
 
 ### Correct Use Of Your Build Tool: Maven
 
-Starting with a new programming language is always exciting. However, it can be overwhelming as we have to get comfortable with the language, the tools, conventions, and the general development workflow. This holds true for both developing and testing our applications. 
+Starting with a new programming language is always exciting. However, it can be overwhelming as we have to get comfortable with the language, the tools, conventions, and the general development workflow. This holds true for both developing and testing our applications.
 
 When testing Java applications with Maven, there are several concepts and conventions to understand: Maven lifecycles, build phases, plugins, etc. With this section post, we'll cover the basic concepts for you to understand how testing Java applications with Maven _works_.
 
 #### What Do We Need Maven For?
 
-When writing applications with Java, we can't just pass our `.java` files to the JVM (Java Virtual Machine) to run our program. We first have to compile our Java source code to bytecode (`.class` files) using the Java Compiler (`javac`). 
+When writing applications with Java, we can't just pass our `.java` files to the JVM (Java Virtual Machine) to run our program. We first have to compile our Java source code to bytecode (`.class` files) using the Java Compiler (`javac`).
 
-Next, we pass this bytecode to the JVM (`java` binary on our machines) which then interprets our program and/or compiles parts of it even further to native machine code. Given this two-step process, someone has to compile our Java classes and package our application accordingly. Manually calling `javac` and passing the correct classpath is a cumbersome task. 
+Next, we pass this bytecode to the JVM (`java` binary on our machines) which then interprets our program and/or compiles parts of it even further to native machine code. Given this two-step process, someone has to compile our Java classes and package our application accordingly. Manually calling `javac` and passing the correct classpath is a cumbersome task.
 
-A build tool automates this process. As developers, we then only have to execute one command, and everything gets build automatically. The two most adopted build tools for the Java ecosystem are [Maven](https://maven.apache.org/) and [Gradle](https://gradle.org/). _Ancient devs_ might still prefer [Ant](https://ant.apache.org/), while _latest-greatest devs_ might advocate for [Bazel](https://bazel.build/) as a build tool for their Java applications. We're going to focus on Maven with this section. To build and test our Java applications, we need a [JDK](https://adoptopenjdk.net/) (Java Development Kit) installed on our machine and Maven. 
+A build tool automates this process. As developers, we then only have to execute one command, and everything gets build automatically. The two most adopted build tools for the Java ecosystem are [Maven](https://maven.apache.org/) and [Gradle](https://gradle.org/). _Ancient devs_ might still prefer [Ant](https://ant.apache.org/), while _latest-greatest devs_ might advocate for [Bazel](https://github.com/bazelbuild/bazel) as a build tool for their Java applications. We're going to focus on Maven with this section. To build and test our Java applications, we need a [JDK](https://adoptopenjdk.net/) (Java Development Kit) installed on our machine and Maven.
 
 We can either [install Maven as a command-line tool](https://maven.apache.org/install.html) (i.e., place the Maven binary on our system's `PATH`) or use the portable Maven Wrapper. The Maven Wrapper is a convenient way to work with Maven without having to install it locally. It allows us to conveniently build Java projects with Maven without having to install and configure Maven as a CLI tool on our machine When creating a new Spring Boot project, for example, you might have already wondered what the `mvnw` and `mvnw.cmd` files inside the root of the project are used for. That's the Maven Wrapper (the idea is borrowed from Gradle).
 
 #### Creating a New Maven Project
 
-There are several ways to bootstrap a new Maven project. Most of the popular Java application frameworks offer a project bootstrapping wizard-like interface. Good examples are the [Spring Initializr](https://start.spring.io/) for new Spring Boot applications, [Quarkus](https://code.quarkus.io/), [MicroProfile](https://start.microprofile.io/). 
+There are several ways to bootstrap a new Maven project. Most of the popular Java application frameworks offer a project bootstrapping wizard-like interface. Good examples are the [Spring Initializr](https://start.spring.io/) for new Spring Boot applications, [Quarkus](https://code.quarkus.io/), [MicroProfile](https://start.microprofile.io/).
 
-If we want to create a new Maven project without any framework support, we can use a [Maven Archetype](https://maven.apache.org/guides/introduction/introduction-to-archetypes.html) to create new projects. These archetypes are a project templating toolkit to generate a new Maven project conveniently. 
+If we want to create a new Maven project without any framework support, we can use a [Maven Archetype](https://maven.apache.org/guides/introduction/introduction-to-archetypes.html) to create new projects. These archetypes are a project templating toolkit to generate a new Maven project conveniently.
 
 Maven provides a set of [default Archetypes artifacts](https://maven.apache.org/archetypes/index.html) for several purposes like a new web app, a new Maven plugin project, or a simple quickstart project. We bootstrap a new Java project from one of these Archetypes using the `mvn` command-line tool:
 
@@ -110,10 +110,10 @@ mvn archetype:generate "-DarchetypeGroupId=de.rieckpil.archetypes" "-DarchetypeA
 
 We can adjust both `-DgroupId` and `-DartifactId` to our project's or company's preference. The generated project comes with a basic set of the [most central Java testing libraries](https://rieckpil.de/testing-tools-and-libraries-every-java-developer-must-know/). We can use it as a blueprint for our next project or explore testing Java applications with this playground. In summary, the following default configuration and libraries are part of this project shell:
 
-* Java 11 
-* JUnit Jupiter, Mockito, and Testcontainers dependencies 
-* A basic unit test 
-* Maven Surefire and Failsafe Plugin configuration 
+* Java 11
+* JUnit Jupiter, Mockito, and Testcontainers dependencies
+* A basic unit test
+* Maven Surefire and Failsafe Plugin configuration
 * A basic `.gitignore`
 * Maven Wrapper
 
@@ -158,9 +158,9 @@ First, let's take a look at the folders and files that are relevant for testing 
 
 * `src/test/java`
 
-This folder is the main place to add our Java test classes (`.java` files). As a general recommendation, we should try to mirror the package structure of our production code (`src/main/java`). Especially if there's a direct relationship between the test and a source class. 
+This folder is the main place to add our Java test classes (`.java` files). As a general recommendation, we should try to mirror the package structure of our production code (`src/main/java`). Especially if there's a direct relationship between the test and a source class.
 
-The corresponding `CustomerServiceTest` for a `CustomerService` class inside the package `com.company.customer` should be placed in the same package within `src/test/java`. This improves the likelihood that our colleagues (and our future us) locate the corresponding test for a particular Java class without too many facepalms. Most of the IDEs and editors provide further support to jump to a test class. 
+The corresponding `CustomerServiceTest` for a `CustomerService` class inside the package `com.company.customer` should be placed in the same package within `src/test/java`. This improves the likelihood that our colleagues (and our future us) locate the corresponding test for a particular Java class without too many facepalms. Most of the IDEs and editors provide further support to jump to a test class.
 
 IntelliJ IDEA, for example, provides a shortcut (Ctrl+ Shift + T) to navigate from a source file to its test classes(s) and vice-versa.
 
@@ -170,7 +170,7 @@ As part of this folder, we store static files that are only relevant for our tes
 
 * `target/test-classes`
 
-At this location, Maven places our compiled test classes (`.class` files) and test resources whenever the Maven compiler compiles our test sources. We can explicitly trigger this with `mvn test-compile` and add a `clean` if we want to remove the existing content of the entire `target` folder first. Usually, there's no need to perform any manual operations inside this folder as it contains build artifacts. 
+At this location, Maven places our compiled test classes (`.class` files) and test resources whenever the Maven compiler compiles our test sources. We can explicitly trigger this with `mvn test-compile` and add a `clean` if we want to remove the existing content of the entire `target` folder first. Usually, there's no need to perform any manual operations inside this folder as it contains build artifacts.
 
 Nevertheless, it's helpful to investigate the content for this folder whenever we face test failures because we, e.g., can't read a file from the classpath. Taking a look at this folder (after the Maven compiler did its work), can help understanding where a resources file ended up on the classpath.
 
@@ -229,7 +229,7 @@ In short, the several phases have the following responsibilities:
 * `install`: install the distributable format into our local repository (`~/.m2` folder)
 * `deploy`: deploy the project to a remote repository (e.g., Maven Central or a company hosted Nexus Repository/Artifactory)
 
-These build phases represent the central phases of the `default` lifecycle. There are actually more phases. For a complete list, please refer to the [Lifecycle Reference](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference) of the official Maven documentation. Whenever we execute a build phase, our project will go through all build phases and sequentially until the build phase we specified. 
+These build phases represent the central phases of the `default` lifecycle. There are actually more phases. For a complete list, please refer to the [Lifecycle Reference](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference) of the official Maven documentation. Whenever we execute a build phase, our project will go through all build phases and sequentially until the build phase we specified.
 
 To phrase it differently, when we run `mvn package`, for example, Maven will execute the default lifecycle phases up to `package` in order:
 
@@ -282,7 +282,7 @@ class MainTest {
 }
 ```
 
-Depending on the Maven version and distribution format of our application (e.g., JAR or WAR), Maven defines [default versions for the core plugins](https://maven.apache.org/ref/3.8.1/maven-core/default-bindings.html). Besides the Maven Compiler Plugin, the Maven Resource Plugin, and other plugins, the Maven Surefire Plugin is such a core plugin. 
+Depending on the Maven version and distribution format of our application (e.g., JAR or WAR), Maven defines [default versions for the core plugins](https://maven.apache.org/ref/3.8.1/maven-core/default-bindings.html). Besides the Maven Compiler Plugin, the Maven Resource Plugin, and other plugins, the Maven Surefire Plugin is such a core plugin.
 
 When packaging our application as a JAR file and using Maven 3.8.1, for example, Maven picks the Maven Surefire Plugin with version 2.12.4 by default unless we override it. As the default versions are sometimes a little bit behind the latest plugin versions, it's worth updating the plugin versions and manually specifying the plugin version inside our `pom.xml`:
 
@@ -425,20 +425,20 @@ mvn verify -Dmaven.test.skip=true
 
 #### Summary of Testing Java Applications With Maven
 
-Maven is a powerful, mature, and well-adopted build tool for Java projects. As a newcomer or when coming from a different programming language, the basics of the Maven build lifecycle and how and when different Maven Plugins interact is something to understand first. With the help of Maven Archetypes or using a framework initializer, we can easily bootstrap new Maven projects. 
+Maven is a powerful, mature, and well-adopted build tool for Java projects. As a newcomer or when coming from a different programming language, the basics of the Maven build lifecycle and how and when different Maven Plugins interact is something to understand first. With the help of Maven Archetypes or using a framework initializer, we can easily bootstrap new Maven projects.
 
 There's no need to install Maven as a CLI tool for our machine as we can instead use the portable Maven Wrapper. Furthermore, keep this in mind when testing your Java applications and use Maven as the build tool:
 
-* With Maven, we can separate the unit and integration test execution 
-* The Maven Surefire Plugin runs our unit tests 
-* The Maven Failsafe Plugin runs our integration tests 
-* By following the default naming conventions for both plugins, we can easily separate our tests 
-* The Maven default lifecycle consists of several build phases that are executed in order and sequentially 
+* With Maven, we can separate the unit and integration test execution
+* The Maven Surefire Plugin runs our unit tests
+* The Maven Failsafe Plugin runs our integration tests
+* By following the default naming conventions for both plugins, we can easily separate our tests
+* The Maven default lifecycle consists of several build phases that are executed in order and sequentially
 * Use the [Java Testing Toolkit Maven archetype](https://github.com/rieckpil/custom-maven-archetypes) for your next testing adventure
 
 ### Use GitHub Actions
 
-I was recently wasting time and energy to get the CI pipelines for my two main GitHub repositories working with Travis CI. Even though the documentation provides examples for Maven-based Java projects, it took me still some time to find the correct setup. 
+I was recently wasting time and energy to get the CI pipelines for my two main GitHub repositories working with Travis CI. Even though the documentation provides examples for Maven-based Java projects, it took me still some time to find the correct setup.
 
 While working on these pipelines, I remembered that GitHub now also provides its own CI/CD solution: [GitHub Actions](https://github.com/features/actions). As I wasn't quite satisfied with Travis CI, I gave it a try and got everything up- and running in less than one hour.
 
@@ -502,11 +502,11 @@ jobs:
         run: mvn -B compile
 ```
 
-We configure the job to run on a hosted ubuntu-20.04 runner. GitHub let's use choose between Ubuntu, Windows, and Mac as GitHub-hosted runners. Those runners already come with a decent amount of binaries and tools installed (e.g. AWS CLI, Maven, etc.). 
+We configure the job to run on a hosted ubuntu-20.04 runner. GitHub let's use choose between Ubuntu, Windows, and Mac as GitHub-hosted runners. Those runners already come with a decent amount of binaries and tools installed (e.g. AWS CLI, Maven, etc.).
 
-For a complete list of installed software, see the [documentation on supported software](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software). 
+For a complete list of installed software, see the [documentation on supported software](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software).
 
-Next, we define a matrix strategy to run the same job multiple times (in parallel) with different Java versions. The source code for the repository is not checked out on the runner by default. 
+Next, we define a matrix strategy to run the same job multiple times (in parallel) with different Java versions. The source code for the repository is not checked out on the runner by default.
 
 We use the `checkout@v2` action for this purpose. The `setup-java@v2` action is used to set up the specific Java version on the runner and as part of the last step, we're compiling the Java project with Maven. With `working-directory` we define in which folder we want to execute the commands. This way we don't have to explicitly perform any `cd` operation. Next comes the `build` job:
 
@@ -549,7 +549,7 @@ jobs:
 
 By default, GitHub executes all jobs in parallel unless we specify that the job depends on the outcome of a previous job. This way we can ensure a sequential order. Each GitHub Actions job starts with a fresh GitHub runner and hence we have to perform the VCS checkout and Java setup again.
 
-As an alternative, we can (and should have) performed the Maven build as part of the previous job. Similar to the previous job, we're using Maven to now build the `.jar` file. We'll now cache the contents of the `.m2` folder to speed up subsequent builds as they don't have to download our dependencies over and over. 
+As an alternative, we can (and should have) performed the Maven build as part of the previous job. Similar to the previous job, we're using Maven to now build the `.jar` file. We'll now cache the contents of the `.m2` folder to speed up subsequent builds as they don't have to download our dependencies over and over.
 
 After we've successfully built our project, we want to share the build artifact with an upcoming job. As the jobs don't share the same filesystem we have to upload it. Once we've uploaded an artifact (this might also be a screenshot from a failing web test), another job can download it. Furthermore, we can also manually download any build artifacts ourselves: ![GitHub Actions Download Artifact](https://rieckpil.de/wp-content/uploads/2019/12/github-actions-download-build-artifact-e1623407894167.png) And finally, we're (artificially) deploying the project:
 
@@ -601,19 +601,19 @@ Over the past month, I've migrated most of my GitHub projects to GitHub Actions 
 * Aggregating Selenide screenshots to download in case of test failures for the [Spring Boot Applications Masterclass](https://github.com/rieckpil/testing-spring-boot-applications-masterclass/blob/master/.github/workflows/maven.yml)
 * Checking for [rotten links in markdown files](https://github.com/rieckpil/blog-tutorials/blob/master/.github/workflows/broken-links.yml) (must-have when writing eBooks)
 
-To summarize, I can highly recommend GitHub Actions for Maven-based Java projects. The configuration is simple and you are ready in minutes. Whether you are building a Java library or an application in a private repository, GitHub Actions allows you to easily set up CI/CD. Give it a try! 
+To summarize, I can highly recommend GitHub Actions for Maven-based Java projects. The configuration is simple and you are ready in minutes. Whether you are building a Java library or an application in a private repository, GitHub Actions allows you to easily set up CI/CD. Give it a try!
 
-The [Spring Boot application](https://github.com/rieckpil/blog-tutorials/tree/master/github-actions-java-maven) and the [workflow](https://github.com/rieckpil/blog-tutorials/blob/master/.github/workflows/sampleJavaMavenProject.yml) definition is available on GitHub. 
+The [Spring Boot application](https://github.com/rieckpil/blog-tutorials/tree/master/github-actions-java-maven) and the [workflow](https://github.com/rieckpil/blog-tutorials/blob/master/.github/workflows/sampleJavaMavenProject.yml) definition is available on GitHub.
 
 ### Parallelizing Unit Tests with Maven and JUnit 5
 
-The more our project and test suite grow, the longer the feedback loop becomes. Fortunately, there are techniques available to speed up our build time. One of such techniques is parallelizing our tests. Instead of running our tests in sequence, we can run them in parallel to save time. The parallelization may not work for all kinds of tests, and hence we'll learn with this section how to only parallelize our unit tests with JUnit 5 and Maven. 
+The more our project and test suite grow, the longer the feedback loop becomes. Fortunately, there are techniques available to speed up our build time. One of such techniques is parallelizing our tests. Instead of running our tests in sequence, we can run them in parallel to save time. The parallelization may not work for all kinds of tests, and hence we'll learn with this section how to only parallelize our unit tests with JUnit 5 and Maven.
 
 The upcoming technique is framework independent, and we can apply it to any Java project (Spring Boot, Quarkus, Micronaut, Jakarta EE, etc.) that uses JUnit 5 (JUnit Jupiter, to be precise) and Maven.
 
 #### Upfront Requirement: Separation of Tests
 
-Before we jump right into the required configuration setup for parallelizing our unit tests, we first have to split our tests into at least two categories. The reason for this is to allow a separate parallelization strategy (or no parallelization at all) depending on the test category. While there are many different types of tests in the literature, one can endlessly discuss what's the correct name and category. 
+Before we jump right into the required configuration setup for parallelizing our unit tests, we first have to split our tests into at least two categories. The reason for this is to allow a separate parallelization strategy (or no parallelization at all) depending on the test category. While there are many different types of tests in the literature, one can endlessly discuss what's the correct name and category.
 
 Sticking to two basic test categories is usually sufficient: unit and integration tests. Where to draw the line between unit and integration tests is yet another discussion. In general, if a test meets the following criteria, we can usually refer to it as a unit test:
 
@@ -623,7 +623,7 @@ Sticking to two basic test categories is usually sufficient: unit and integratio
 * The test executes fast
 * We can parallelize the test as there are no side effects from other tests
 
-While this list of requirements is not exhaustive, it's a first good indicator of what a unit test is. Any test that doesn't fit in this category will be labeled an integration test. When it comes to labeling and separating our tests, we have multiple options when using JUnit and Maven. First, JUnit 5 lets us tag `@Tag("integration-test")` (former JUnit 4 categories) our test class to label them. However, when adding a new test to our project, we may forget to add these tags, and in general, it requires a little bit more maintenance effort on our end. 
+While this list of requirements is not exhaustive, it's a first good indicator of what a unit test is. Any test that doesn't fit in this category will be labeled an integration test. When it comes to labeling and separating our tests, we have multiple options when using JUnit and Maven. First, JUnit 5 lets us tag `@Tag("integration-test")` (former JUnit 4 categories) our test class to label them. However, when adding a new test to our project, we may forget to add these tags, and in general, it requires a little bit more maintenance effort on our end.
 
 A more pragmatic approach is to use the convenient defaults of two Maven plugins that are involved in our testing lifecycle: the Maven Surefire and Maven Failsafe Plugin. By default, the Maven Surefire plugin will run any test that has the postfix `*Test` (e.g., `CustomerServiceTest`). The Maven Failsafe Plugin, on the other hand, only executes tests with the postfix `*IT` (for integration test).
 
@@ -631,7 +631,7 @@ We can even override these naming strategies and come up with our own postfix. S
 
 #### Upfront Requirement: Independent Unit Tests
 
-Another requirement we have to conform to is the independence of our unit tests. As soon as we've split up our test suite into unit and integration tests by naming them differently, we have to ensure our unit test can run in parallel. For this to work, there shouldn't be an implicit order that dictates the success or failure of our unit tests. Our unit tests should pass or fail independently of the order they were invoked. 
+Another requirement we have to conform to is the independence of our unit tests. As soon as we've split up our test suite into unit and integration tests by naming them differently, we have to ensure our unit test can run in parallel. For this to work, there shouldn't be an implicit order that dictates the success or failure of our unit tests. Our unit tests should pass or fail independently of the order they were invoked.
 
 As our unit tests ran in sequence before, we may not have noticed any violation of this requirment. It's very likely that some tests fail this requirement, especially the longer our project exists. The parallelization acts as a litmus test for the independence of our unit test.
 
@@ -665,7 +665,7 @@ class StringFormatterTest {
 }
 ```
 
-The actual implementation that is being tested by this unit test is secondary. Our `StringFormatterTest` test class contains three unit tests that we artificially slow down with a `Thread.sleep()`. 
+The actual implementation that is being tested by this unit test is secondary. Our `StringFormatterTest` test class contains three unit tests that we artificially slow down with a `Thread.sleep()`.
 
 This will help us see an actual difference once we enable the parallelization of our unit tests. Running the three tests of this class in sequence takes three seconds:
 
@@ -675,9 +675,9 @@ This will help us see an actual difference once we enable the parallelization of
 [INFO] -------------------------------------------------------
 [INFO] Running de.rieckpil.blog.StringFormatterTest
 [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.056 s - in de.rieckpil.blog.StringFormatterTest
-[INFO] 
+[INFO]
 [INFO] Results:
-[INFO] 
+[INFO]
 [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 ```
 
@@ -738,13 +738,13 @@ Using the configuration above to run all tests concurrently, we get the followin
 [INFO] -------------------------------------------------------
 [INFO] Running de.rieckpil.blog.StringFormatterTest
 [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.031 s - in de.rieckpil.blog.StringFormatterTest
-[INFO] 
+[INFO]
 [INFO] Results:
-[INFO] 
+[INFO]
 [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 ```
 
-The total test execution time (see the time elapsed) went down from three seconds to one second as now all three tests run in parallel. While this time improvement may seem negligible in this example, imagine the same 300% speed improvement for a bigger project. As we don't override the parallelization strategy, JUnit will fall back to the default `dynamic` parallization and parallelize by the number of available processors/cores. Per default, JUnit uses one thread per core. 
+The total test execution time (see the time elapsed) went down from three seconds to one second as now all three tests run in parallel. While this time improvement may seem negligible in this example, imagine the same 300% speed improvement for a bigger project. As we don't override the parallelization strategy, JUnit will fall back to the default `dynamic` parallization and parallelize by the number of available processors/cores. Per default, JUnit uses one thread per core.
 
 Hence, if we run the tests on a machine with only two cores, the build time will be two seconds as only two tests can run in parallel. That's why we might see build time differences when comparing our local build time with our build agent (e.g., GitHub Actions, Jenkins). We can override the degree to which parallelize by using either a custom, fixed, or dynamic strategy (factor x available cores):
 
@@ -780,7 +780,7 @@ The previous Maven Surefire Plugin configuration only propagates the JUnit 5 con
 </plugin>
 ```
 
-The `configurationParameters` from the Surefire Plugin are not shared, and hence we can isolate the configuration for both test executions. If our integration test suite allows for parallel test execution, we can even configure different parallelism and concurrent execution. 
+The `configurationParameters` from the Surefire Plugin are not shared, and hence we can isolate the configuration for both test executions. If our integration test suite allows for parallel test execution, we can even configure different parallelism and concurrent execution.
 
 We may want to only parallelize on an integration test class level and run the test methods in sequence. This can be achieved with the following configuration:
 
@@ -794,19 +794,19 @@ As soon as both our unit and integration tests share the same parallelism config
 
 #### Conclusion of Parallelizing Java Unit Tests with JUnit 5 and Maven
 
-Parallelizing our Java unit tests with JUnit 5 and Maven is a simple technique to speed up our Maven build. The parallelization feature of JUnit 5 allows for a fine-grained parallelization configuration. By separating our tests into two categories and by using two different Maven plugins, we can isolate the parallelization setup. Depending on how many existing unit tests we already have, parallelizing them may take some initial setup effort. 
+Parallelizing our Java unit tests with JUnit 5 and Maven is a simple technique to speed up our Maven build. The parallelization feature of JUnit 5 allows for a fine-grained parallelization configuration. By separating our tests into two categories and by using two different Maven plugins, we can isolate the parallelization setup. Depending on how many existing unit tests we already have, parallelizing them may take some initial setup effort.
 
 Not all tests may have been written to be run in parallel in any order. Fixing them is worth the effort. A sample JUnit 5 Maven project with this parallelization setup is [available on GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/maven-junit-paralellize-tests).
 
 ### Run Java Tests With Maven Silently (Only Log on Failure)
 
-When running our Java tests with Maven they usually produce a lot of noise in the console. While this log output can help understand test failures, it's typically superfluous when our test suite is passing. Nobody will take a look at the entire output if the tests are green. 
+When running our Java tests with Maven they usually produce a lot of noise in the console. While this log output can help understand test failures, it's typically superfluous when our test suite is passing. Nobody will take a look at the entire output if the tests are green.
 
 It's only making the build logs more bloated. A better solution would be to run our tests with Maven silent with no log output and only dump the log output once the tests fail. This blog post demonstrates how to achieve this simple yet convenient technique to run Java tests with Maven silently for a compact and followable build log.
 
 #### The Status Quo: Noisy Java Tests
 
-Based on our logging configuration, our tests produce quite some log output. When running our entire test suite locally or on a CI server (e.g., GitHub Actions or Jenkins), analyzing a test failure is tedious when there's a lot of noise in the logs. We first have to find our way to the correct position by scrolling or using the search functionality of, e.g., our browser or the integrated terminal of our IDE. 
+Based on our logging configuration, our tests produce quite some log output. When running our entire test suite locally or on a CI server (e.g., GitHub Actions or Jenkins), analyzing a test failure is tedious when there's a lot of noise in the logs. We first have to find our way to the correct position by scrolling or using the search functionality of, e.g., our browser or the integrated terminal of our IDE.
 
 A demo output for a test that verifies email functionality using [GreenMail](https://rieckpil.de/use-greenmail-for-spring-mail-javamailsender-junit-5-integration-tests/) looks like the following:
 
@@ -819,7 +819,7 @@ There's usually a lot of default noise of frameworks and test libraries that add
 
 ```
 [INFO] --- maven-surefire-plugin:3.0.0-M5:test (default-test) @ spring-boot-example ---
-[INFO] 
+[INFO]
 [INFO] -------------------------------------------------------
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
@@ -859,13 +859,13 @@ Will run only once after all tests of this class
 06:55:31.189 [main] INFO  o.e.j.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@5ff29e8b{/__admin,null,STOPPED}
 ```
 
-While we could tweak our logger configuration and set the log level to `ERROR` for the framework and libraries logs, their `INFO` can still be quite relevant when analyzing a test failure. When scrolling through the log output of passing tests, we might also see stack traces and exceptions that are intended but might confuse newcomers as they wonder if something went wrong there. Having a clean build log without much noise would better help us follow the current build. 
+While we could tweak our logger configuration and set the log level to `ERROR` for the framework and libraries logs, their `INFO` can still be quite relevant when analyzing a test failure. When scrolling through the log output of passing tests, we might also see stack traces and exceptions that are intended but might confuse newcomers as they wonder if something went wrong there. Having a clean build log without much noise would better help us follow the current build.
 
 The bigger our test suite, the more we have to scroll. If all tests pass, why pollute the console with log output from the tests? Our Maven build might also fail for different reasons than test failures, e.g., a [failing OWASP dependency check or a dependency convergence issue](https://rieckpil.de/top-3-maven-plugins-to-ensure-quality-and-security-for-your-project/). Getting fast to the root cause of the build failure is much simpler with a compact build log.
 
 #### The Goal: Run Tests with Maven Silently
 
-Our goal for this optimization is to have a compact Maven build log and only log the test output if it's really necessary (aka. tests are failing). Gradle is doing this already by default. When running tests with Gradle, we'll only see a test summary after running our tests. There's no intermediate noise inside our console. The goal is to achieve a somehow similar behavior as Gradle and run our tests silently. 
+Our goal for this optimization is to have a compact Maven build log and only log the test output if it's really necessary (aka. tests are failing). Gradle is doing this already by default. When running tests with Gradle, we'll only see a test summary after running our tests. There's no intermediate noise inside our console. The goal is to achieve a somehow similar behavior as Gradle and run our tests silently.
 
 If they're passing, we're fine, and there's (usually) no need to investigate the log outcome of our tests. If one of our tests fails, report the build log to the console to analyze the test failure. In short, with our target solution, we have two scenarios:
 
@@ -893,7 +893,7 @@ As a first step, we configure the desired log level for testing:
 </configuration>
 ```
 
-We're using Logback (any logger works) and log any `INFO` (and above) statement to the console for the example above. We don't differentiate between our application's log and framework or test libraries. Next comes the important configuration that'll make our test silent. 
+We're using Logback (any logger works) and log any `INFO` (and above) statement to the console for the example above. We don't differentiate between our application's log and framework or test libraries. Next comes the important configuration that'll make our test silent.
 
 The [Maven Surefire (unit tests) and the Failsafe (integration tests)](https://rieckpil.de/maven-setup-for-testing-java-applications/) plugin allow redirecting the console output to a file. We won't see any test log output in the console with this configuration as it's stored within a file:
 
@@ -933,7 +933,7 @@ This configuration for bot the Surefire and Failsafe plugin will mute our test r
 
 ```
 [INFO] --- maven-surefire-plugin:3.0.0-M5:test (default-test) @ spring-boot-example ---
-[INFO] 
+[INFO]
 [INFO] -------------------------------------------------------
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
@@ -975,7 +975,7 @@ For each test class, we'll find (at least) one text file that contains the test 
 *   `de.rieckpil.blog.greenmail.MailServiceTest-output.txt`: All console output of the test
 *   `de.rieckpil.blog.greenmail.MailServiceTest.txt`: The test summary, as seen in the build log
 
-What's left is to extract the content of all our `*-output.txt` files if our build is failing. As long as our tests are all green, we can ignore the content of the output files. In case of a test failure, we must become active and dump the file contents to the console. 
+What's left is to extract the content of all our `*-output.txt` files if our build is failing. As long as our tests are all green, we can ignore the content of the output files. In case of a test failure, we must become active and dump the file contents to the console.
 
 For this purpose, we're using a combination of `find` and `tail`.For demonstration purposes, we'll use GitHub Actions. However, the present solution is portable to any other build server that provides functionality to detect a build failure and execute shell commands:
 
@@ -1004,7 +1004,7 @@ jobs:
         run: find . -type f -path "*test-reports/*-output.txt" -exec tail -n +1 {} +
 ```
 
-As part of the last step of our build workflow, we find all `*-output.txt` files and print their content. We only print the content of the test output files in case of a failure. With GitHub Actions, we can conditionally execute a step using a boolean expression: `if: failure() || cancelled()`. Both `failure()` and `cancelled()` are built-in functions of GitHub Actions. Every other CI server provides some similar functionality. 
+As part of the last step of our build workflow, we find all `*-output.txt` files and print their content. We only print the content of the test output files in case of a failure. With GitHub Actions, we can conditionally execute a step using a boolean expression: `if: failure() || cancelled()`. Both `failure()` and `cancelled()` are built-in functions of GitHub Actions. Every other CI server provides some similar functionality.
 
 We include `cancelled()` to the expression to cover the scenario when our test suite is stuck and we manually stop (aka. cancel) the build. If the build is passing, this last logging step is skipped, and no test log output is logged. By using `tail -n +1 {}` we print the file name before dumping its content to the console. This helps search for the failed test class to start the investigation:
 
@@ -1016,7 +1016,7 @@ We include `cancelled()` to the expression to cover the scenario when our test s
 
 #### Summary: Silent and Compact Build Logs
 
-We'll get compact Maven build logs with this small tweak to the Maven Surefire and Failsafe plugin and the additional step inside our build server. No more noisy test runs. We won't lose any test log output as we temporarily park it inside files and inspect the files if a test fails. This configuration will only affect the way our tests are run with Maven. We can still see the console output when executing tests within our IDE. 
+We'll get compact Maven build logs with this small tweak to the Maven Surefire and Failsafe plugin and the additional step inside our build server. No more noisy test runs. We won't lose any test log output as we temporarily park it inside files and inspect the files if a test fails. This configuration will only affect the way our tests are run with Maven. We can still see the console output when executing tests within our IDE.
 
 We'll capture any test console output with this mechanism, both from logging libraries and plain `System.out.println` calls. This technique also works when running our tests in parallel. However, if we parallelize the test methods, the console statements may be out of order inside the test output file.
 
@@ -1024,7 +1024,7 @@ If you want to see this technique in action for a public repository, take a look
 
 ### What the Heck Is the SpringExtension Used For?
 
-I've seen a lot of confusion recently about the SpringExtension. When failing to get the context configuration for a test right, some developers randomly throw `@ExtendWith(SpringExtension.class)` to their test classes to (hopefully) get their tests running. With this blog post, I want to shed some light on the SpringExtension and its usage when testing Spring Boot application. 
+I've seen a lot of confusion recently about the SpringExtension. When failing to get the context configuration for a test right, some developers randomly throw `@ExtendWith(SpringExtension.class)` to their test classes to (hopefully) get their tests running. With this blog post, I want to shed some light on the SpringExtension and its usage when testing Spring Boot application.
 
 At the end of this section, you'll understand when, why, and how to use this extension. TL;DR: The `SpringExtension` enables seamless integration of JUnit Jupiter tests with Spring's TestContext framework. Most of the time, you don't need to explicitly register the SpringExtesion, as all Spring Boot test slice annotations already do this.
 
@@ -1032,9 +1032,9 @@ At the end of this section, you'll understand when, why, and how to use this ext
 
 The first question we have to answer when we want to understand the `SpringExtension` is what a JUnit Jupiter extension is all about. The JUnit Jupiter extension model is a single concept (in contrast to JUnit 4's `Runner` and `Rule` API) to enhance testing functionality and intercept the lifecycles of our tests programmatically. There are many different extension points for both the lifecycle (e.g., `BeforeAllCallback`) and other utility functions (e.g., `ParameterResolver`) available.
 
-For a complete list of all available extension APIs, please take a look at the `Extension` interface and all interfaces that extend it. Their usage is versatile. 
+For a complete list of all available extension APIs, please take a look at the `Extension` interface and all interfaces that extend it. Their usage is versatile.
 
-We can do housekeeping tasks before or after a test, resolve parameters, or decide whether to execute a test or skip it. Most of the time, we implement cross-cutting concerns that relate to multiple tests with an extension. For example, when writing web tests, instead of wrapping the browser interaction with a try-catch block for every test to make screenshots on failure, we could write an extension for this. JUnit Jupiter offers the `TestExecutionExceptionHandler` interface to handle exceptions for our test methods at a central place. (PS: [Selenide](https://rieckpil.de/write-concise-web-tests-with-selenide-for-java-projects/) already comes with such a screenshot extension on failure). Writing a custom extension is no rocket science. 
+We can do housekeeping tasks before or after a test, resolve parameters, or decide whether to execute a test or skip it. Most of the time, we implement cross-cutting concerns that relate to multiple tests with an extension. For example, when writing web tests, instead of wrapping the browser interaction with a try-catch block for every test to make screenshots on failure, we could write an extension for this. JUnit Jupiter offers the `TestExecutionExceptionHandler` interface to handle exceptions for our test methods at a central place. (PS: [Selenide](https://rieckpil.de/write-concise-web-tests-with-selenide-for-java-projects/) already comes with such a screenshot extension on failure). Writing a custom extension is no rocket science.
 
 As part of the [Testing Spring Boot Applications Masterclass](https://rieckpil.de/testing-spring-boot-applications-masterclass/), we develop a custom extension to inject random `UUID`s to our test methods. Whenever we want to activate a JUnit Jupiter extension for our test, we have to explicitly register the extension with `@ExtendWith` on top of the test class:
 
@@ -1061,13 +1061,13 @@ For more information about the extension model and its various APIs, consult the
 As a next step, let's investigate the cross-cutting functionality the `SpringExtension` implements. The best way to start our investigation is to take a look at the source code of the `SpringExtension` to understand which extension APIs it implements:
 
 ```
-public class SpringExtension implements BeforeAllCallback, 
-    AfterAllCallback, 
-    TestInstancePostProcessor, 
-    BeforeEachCallback, 
-    AfterEachCallback, 
-    BeforeTestExecutionCallback, 
-    AfterTestExecutionCallback, 
+public class SpringExtension implements BeforeAllCallback,
+    AfterAllCallback,
+    TestInstancePostProcessor,
+    BeforeEachCallback,
+    AfterEachCallback,
+    BeforeTestExecutionCallback,
+    AfterTestExecutionCallback,
     ParameterResolver {
 
   // ...
@@ -1080,7 +1080,7 @@ That's a lot. As we can see from the source code above, the `SpringExtension` is
 * manage the lifecycle of the Spring `TestContext` (e.g., start a new one or [get a cached context](https://rieckpil.de/improve-build-times-with-context-caching-from-spring-test/))
 * support dependency injection for parameters (e.g., test class constructor or test method)
 * cleanup and housekeeping tasks after the test
- 
+
 
 The `SpringExtension` acts as a glue between JUnit Jupiter and Spring Test. Most of the time the `SpringExtension` delegates its responsibilities to the `TestContextManager` to do the heavy lifting:
 
@@ -1117,13 +1117,13 @@ public class SpringExtension {
   // ...
 
   @Override
-  public boolean supportsParameter(ParameterContext parameterContext, 
+  public boolean supportsParameter(ParameterContext parameterContext,
   ExtensionContext extensionContext) {
     // determine whether or not this extension is responsible to resolve the parameter
   }
 
   @Nullable
-  public Object resolveParameter(ParameterContext parameterContext, 
+  public Object resolveParameter(ParameterContext parameterContext,
   ExtensionContext extensionContext) {
     // return the bean from the TestContext
   }
@@ -1140,7 +1140,7 @@ class ApplicationIT {
 
   @Autowired
   // injected by the DependencyInjectionTestExecutionListener
-  private CustomerService customerService; 
+  private CustomerService customerService;
 
   @Test
   void needsEnvironmentBeanToVerifySomething(
@@ -1153,7 +1153,7 @@ class ApplicationIT {
 
 #### When Do We Need To Register the SpringExtension?
 
-Most of the time, we don't need to explicitly register this extension because it's already activated for us. This is the case whenever we use a Spring Boot test annotation. All [Spring Boot test slice annotations](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) and also [@SpringBootTest](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/) register the `SpringExtension` out-of-the-box. This is beneficial, as otherwise, the tests would fail to start as they require a TestContext to work with. 
+Most of the time, we don't need to explicitly register this extension because it's already activated for us. This is the case whenever we use a Spring Boot test annotation. All [Spring Boot test slice annotations](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) and also [@SpringBootTest](https://rieckpil.de/guide-to-springboottest-for-spring-boot-integration-tests/) register the `SpringExtension` out-of-the-box. This is beneficial, as otherwise, the tests would fail to start as they require a TestContext to work with.
 
 Hence this opinionated approach saves us some keystrokes, and we don't encounter weird test failures because we've forgotten to register the `SpringExtension`. We can see this by taking a look at the source code of the `@WebMvcTest` annotation:
 
@@ -1221,7 +1221,7 @@ Furthermore, for projects that use plain Spring without Spring Boot, we're also 
 
 #### Summary
 
-The `SpringExtension` implements several JUnit Jupiter extension model callback methods for seamless integration between JUnit and Spring. When testing Spring Boot applications, most of the time, we don't have to explicitly register this extension as all sliced context annotations (e.g. `@WebMvcTest)` do this for us. 
+The `SpringExtension` implements several JUnit Jupiter extension model callback methods for seamless integration between JUnit and Spring. When testing Spring Boot applications, most of the time, we don't have to explicitly register this extension as all sliced context annotations (e.g. `@WebMvcTest)` do this for us.
 
 The official [documentation](https://docs.spring.io/spring-framework/docs/current/reference/html/testing.html#testcontext-junit-jupiter-extension) is also an excellent source of information if you want to dive deeper into this topic. Consider the following blog posts to learn more about Spring Boot's excellent testing capabilities:
 
@@ -1325,7 +1325,7 @@ void testMethodName(TestInfo testInfo, TestReporter testReporter,
   RepetitionInfo repetitionInfo) {
   System.out.println(testInfo.getTestMethod().get().getName());
   testReporter.publishEntry("secretMessage", "JUnit 5");
-  System.out.println(repetitionInfo.getCurrentRepetition() + 
+  System.out.println(repetitionInfo.getCurrentRepetition() +
     " from " + repetitionInfo.getTotalRepetitions());
 }
 ```
@@ -1341,13 +1341,13 @@ public class RandomUUIDParameterResolver implements ParameterResolver {
   }
 
   @Override
-  public boolean supportsParameter(ParameterContext parameterContext, 
+  public boolean supportsParameter(ParameterContext parameterContext,
   ExtensionContext extensionContext) {
     return parameterContext.isAnnotated(RandomUUID.class);
   }
 
   @Override
-  public Object resolveParameter(ParameterContext parameterContext, 
+  public Object resolveParameter(ParameterContext parameterContext,
    ExtensionContext extensionContext) {
     return UUID.randomUUID().toString();
   }
@@ -1447,7 +1447,7 @@ public class DisabledOnMidnightCondition implements ExecutionCondition {
 
   @Override
   public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-    Optional<DisabledOnMidnight> optional = 
+    Optional<DisabledOnMidnight> optional =
     findAnnotation(context.getElement(), DisabledOnMidnight.class);
     if (optional.isPresent()) {
       LocalDateTime now = LocalDateTime.now();
@@ -1468,7 +1468,7 @@ There is a dedicated [testing category](https://rieckpil.de/category/other/testi
 
 ### Testing the Web Layer
 
-Did you ever found yourself saying: _I usually ignore testing my Spring Web MVC controller endpoints because the security setup is tricky_. That belongs to the past. With MockMvc, Spring provides an excellent tool for testing Spring Boot applications. 
+Did you ever found yourself saying: _I usually ignore testing my Spring Web MVC controller endpoints because the security setup is tricky_. That belongs to the past. With MockMvc, Spring provides an excellent tool for testing Spring Boot applications.
 
 This guide provides you with recipes to verify your `@Controller` and `@RestController` endpoints and other relevant Spring Web MVC components using `MockMvc`.
 
@@ -1510,15 +1510,15 @@ That's easy to answer: Everything related to Spring MVC! This includes our contr
 * Can only users with the role ADMIN access the DELETE endpoint?
 * etc.
 
-With `MockMvc` we perform requests against a **mocked servlet environment**. There won't be any real HTTP communication for such tests. We directly work with the mocked environment provided by Spring. 
+With `MockMvc` we perform requests against a **mocked servlet environment**. There won't be any real HTTP communication for such tests. We directly work with the mocked environment provided by Spring.
 
 `MockMvc` acts as the **entry point** to this mocked servlet environment. Similar to the `WebTestClient` when accessing our started Servlet container over HTTP.
 
 #### MockMvc Test Setup
 
-There are two ways to create a `MockMvc` instance: using Spring Boot's auto-configuration or hand-crafting it. Following Spring Boot's auto-configuration principle, we only need to annotate our test with `@WebMvcTest`. 
+There are two ways to create a `MockMvc` instance: using Spring Boot's auto-configuration or hand-crafting it. Following Spring Boot's auto-configuration principle, we only need to annotate our test with `@WebMvcTest`.
 
-This annotation not only ensures to auto-configure `MockMvc` but also creates a [sliced Spring context](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) containing only MVC-related beans. To keep the sliced test context small, we can pass the class name of the controller we want to test: `@WebMvcTest(MyController.cass)`. 
+This annotation not only ensures to auto-configure `MockMvc` but also creates a [sliced Spring context](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) containing only MVC-related beans. To keep the sliced test context small, we can pass the class name of the controller we want to test: `@WebMvcTest(MyController.cass)`.
 
 Otherwise, Spring will create a context including all our controller endpoints. The second approach is helpful if we're using Spring without Spring Boot or if we want to fine-tune the setup. The `MockMvcBuilders` class provides several entry points to construct a `MockMvc` instance:
 
@@ -1591,7 +1591,7 @@ public class UserController {
   }
 
   @PostMapping
-  public ResponseEntity<Void> createNewUser(@RequestBody @Valid User user, 
+  public ResponseEntity<Void> createNewUser(@RequestBody @Valid User user,
   UriComponentsBuilder uriComponentsBuilder) {
   UriComponentsBuilder uriComponentsBuilder) {
     this.userService.storeNewUser(user);
@@ -1602,7 +1602,7 @@ public class UserController {
 }
 ```
 
-With a first test, we want to ensure the JSON payload from `/api/users` is what we expect. As our `UserController` has a dependency on a `UserService` bean, we'll mock it. 
+With a first test, we want to ensure the JSON payload from `/api/users` is what we expect. As our `UserController` has a dependency on a `UserService` bean, we'll mock it.
 
 This ensures we can solely focus on testing the web layer and don't have to provide further infrastructure for our service classes to work (e.g. remote systems, databases, etc.). The minimal test setup looks like the following:
 
@@ -1638,9 +1638,9 @@ void shouldReturnAllUsersForUnauthenticatedUsers() throws Exception {
 }
 ```
 
-Next, we use `MockMvcRequestBuilders` to construct our request against the mocked servlet environment. This allows us to specify the HTTP method, any HTTP headers, and the HTTP body. Once we invoke our endpoint with `perform`, we can verify the HTTP response using fluent assertions to inspect: headers, status code, and the body. 
+Next, we use `MockMvcRequestBuilders` to construct our request against the mocked servlet environment. This allows us to specify the HTTP method, any HTTP headers, and the HTTP body. Once we invoke our endpoint with `perform`, we can verify the HTTP response using fluent assertions to inspect: headers, status code, and the body.
 
-[JsonPath](https://github.com/json-path/JsonPath) is quite helpful here to verify the API contract of our endpoint. Using its standardized expressions (somehow similar to XPath for XML) we can write assertions for any attribute of the HTTP response. 
+[JsonPath](https://github.com/json-path/JsonPath) is quite helpful here to verify the API contract of our endpoint. Using its standardized expressions (somehow similar to XPath for XML) we can write assertions for any attribute of the HTTP response.
 
 Our next test focuses on testing the HTTP POST endpoint to create new users. This time we need to send data alongside our `MockMvc` request:
 
@@ -1668,7 +1668,7 @@ Due to the great MockMvc and Spring Security integration, we can create this tok
 
 #### Writing Tests for a Thymeleaf Controller
 
-There is more to Spring MVC than writing API endpoints: exposing server-side rendered views following the MVC (Model View Controller) pattern. 
+There is more to Spring MVC than writing API endpoints: exposing server-side rendered views following the MVC (Model View Controller) pattern.
 
 To showcase this kind of controller test, let's assume our application exposes one Thymeleaf view including a pre-filled `Model`:
 
@@ -1724,7 +1724,7 @@ class DashboardControllerTest {
 }
 ```
 
-The `MockMvc` request setup looks similar to the tests in the last section. What's different is the way we assert the response. As this endpoint returns a view rather than JSON, we make use of the `ResultMatcher` `.model()`. 
+The `MockMvc` request setup looks similar to the tests in the last section. What's different is the way we assert the response. As this endpoint returns a view rather than JSON, we make use of the `ResultMatcher` `.model()`.
 
 And can now write assertions for the big M in MVC: the `Model`. There is also a `ResultMatcher` available to ensure any `FlashAttributues` are present if you follow the [POST - redirect - GET pattern](https://en.wikipedia.org/wiki/Post/Redirect/Get).
 
@@ -1769,7 +1769,7 @@ public class TaskController {
   }
 
   @PostMapping
-  public ResponseEntity<Void> createNewTask(@RequestBody JsonNode payload, 
+  public ResponseEntity<Void> createNewTask(@RequestBody JsonNode payload,
                                             UriComponentsBuilder uriComponentsBuilder) {
 
     Long taskId = this.taskService.createTask(payload.get("taskTitle").asText());
@@ -1821,7 +1821,7 @@ When we now want to test the happy path of creating a task, we need an authentic
 
 ```
 @Test
-void shouldReturnLocationOfReviewWhenUserIsAuthenticatedAndCreatesReview() 
+void shouldReturnLocationOfReviewWhenUserIsAuthenticatedAndCreatesReview()
   throws Exception {
 
   when(taskService.createTask(anyString())).thenReturn(42L);
@@ -1895,13 +1895,13 @@ class ApplicationTests {
 }
 ```
 
-As with this setup, we still test against a mocked servlet environment, we should at least add some happy-path tests that invoke our application over HTTP. 
+As with this setup, we still test against a mocked servlet environment, we should at least add some happy-path tests that invoke our application over HTTP.
 
-For this test scenario, the [WebTestClient](https://rieckpil.de/spring-webtestclient-for-efficient-testing-of-your-rest-api/) fits perfectly. You can find the demo application for this testing Spring Boot MVC controllers example using MockMvc on [GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/testing-spring-boot-applications-with-mockmvc). 
+For this test scenario, the [WebTestClient](https://rieckpil.de/spring-webtestclient-for-efficient-testing-of-your-rest-api/) fits perfectly. You can find the demo application for this testing Spring Boot MVC controllers example using MockMvc on [GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/testing-spring-boot-applications-with-mockmvc).
 
 ### Testing the Database Layer
 
-Similar to testing our web layer in isolation with `@WebMvcTest`, Spring Boot provides a convenient way to test our Spring Boot JPA persistence layer. Using the @DataJpaTest [test slice annotation](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/), we can easily write integration tests for our JPA persistence layer. 
+Similar to testing our web layer in isolation with `@WebMvcTest`, Spring Boot provides a convenient way to test our Spring Boot JPA persistence layer. Using the @DataJpaTest [test slice annotation](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/), we can easily write integration tests for our JPA persistence layer.
 
 While the default configuration expects an embedded database, this section demonstrates how to test any Spring Data JPA repository with a running database server using [Testcontainers](https://rieckpil.de/howto-write-spring-boot-integration-tests-with-a-real-database/) and [Flyway](https://rieckpil.de/howto-best-practices-for-flyway-and-hibernate-with-spring-boot/). We're using Spring Boot 2.5, Java 17, and a PostgreSQL database for the sample application.
 
@@ -1924,9 +1924,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 }
 ```
 
-These methods are validated on application startup. If we refer to an unknown column of our entity or don't follow the naming convention, our application won't start. 
+These methods are validated on application startup. If we refer to an unknown column of our entity or don't follow the naming convention, our application won't start.
 
-Testing these derived queries of our `JpaRepository` doesn't add many benefits, similar to testing the default CRUD methods. With such tests, we would again test the Spring Data framework, which we want to avoid as we want to focus on testing our application. 
+Testing these derived queries of our `JpaRepository` doesn't add many benefits, similar to testing the default CRUD methods. With such tests, we would again test the Spring Data framework, which we want to avoid as we want to focus on testing our application.
 
 
 Next, what about testing the entity mapping? Should we make sure that our JPA entity model maps to our database schema? To validate that the mapping is correct, we can rely on a feature of Hibernate that validates the schema on application startup:
@@ -1938,7 +1938,7 @@ spring:
       ddl-auto: validate
 ```
 
-This ensures that a corresponding database table exists for our JPA entities, all columns are present, and they have the correct column type. There are still scenarios that this validation does not cover, like checking for constraints like `unique`. 
+This ensures that a corresponding database table exists for our JPA entities, all columns are present, and they have the correct column type. There are still scenarios that this validation does not cover, like checking for constraints like `unique`.
 
 Hence we shouldn't explicitly focus on testing this but ensure that all entity lifecycles are implicitly covered with an integration test. We should also ensure that our integration tests not only interact with Hibernate's first-level cache but also do full database roundtrips. The `TestEntityManager` can help here.
 
@@ -1988,13 +1988,13 @@ Knowing what to test now brings us to the topic of how to test it.
 
 #### How to Test the Spring Data JPA Persistence Layer
 
-We have multiple options to verify the native query of the `OrderRepository`. We could write a unit test. As the Spring Data JPA repositories are Java interfaces, there is not much to achieve with a unit test. These repositories only work in combination with Spring Data. 
+We have multiple options to verify the native query of the `OrderRepository`. We could write a unit test. As the Spring Data JPA repositories are Java interfaces, there is not much to achieve with a unit test. These repositories only work in combination with Spring Data.
 
-We need to test these repositories _in action_. Starting the whole Spring application context for this would be overkill. Spring Boot provides a test annotation that allows us [to start a sliced Spring Context](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) with only relevant JPA components: `@DataJpaTest`. By default, this would start an in-memory database like H2 or Derby. As long as our project doesn't use an in-memory database, starting one for our tests is counterproductive. 
+We need to test these repositories _in action_. Starting the whole Spring application context for this would be overkill. Spring Boot provides a test annotation that allows us [to start a sliced Spring Context](https://rieckpil.de/spring-boot-test-slices-overview-and-usage/) with only relevant JPA components: `@DataJpaTest`. By default, this would start an in-memory database like H2 or Derby. As long as our project doesn't use an in-memory database, starting one for our tests is counterproductive.
 
 Our Flyway migration scripts might use database-specific features that are not compatible with the in-memory database. Maintaining a second set of DDL migration scripts for the in-memory database is a non-negligible effort.
 
-In the pre-container times, using an in-memory database might have been the easiest solution as you would otherwise have to install or provide a test database for every developer. With the rise of Docker, we are now able to start any containerized software on-demand with ease. 
+In the pre-container times, using an in-memory database might have been the easiest solution as you would otherwise have to install or provide a test database for every developer. With the rise of Docker, we are now able to start any containerized software on-demand with ease.
 
 This includes databases. Testcontainers makes it convenient to start any Docker container of choice for testing purposes. I'm not going to explain Testcontainers in detail here, as there are already several articles available:
 
@@ -2004,7 +2004,7 @@ This includes databases. Testcontainers makes it convenient to start any Docker 
 
 #### Create the Database Schema for Our @DataJpaTest
 
-An empty database container doesn't help us much with our test case. We need a solution to create our database tables prior to the test execution. When working with `@DataJpaTest` and an embedded database, we can achieve this with Hibernate's `ddl-auto` feature set to `create-drop`. This ensures first to create the database schema based on our Java entity definitions and then drop it afterward. 
+An empty database container doesn't help us much with our test case. We need a solution to create our database tables prior to the test execution. When working with `@DataJpaTest` and an embedded database, we can achieve this with Hibernate's `ddl-auto` feature set to `create-drop`. This ensures first to create the database schema based on our Java entity definitions and then drop it afterward.
 
 While this works and might feel convenient (we don't have to write any SQL), we should instead stick to our handcrafted Flyway migration scripts. Otherwise, there might be a difference between our database schema during the test and production. Remember: We want to be as close as possible to our production setup when testing our application. The migration script for our examples contains a single DDL statement:
 
@@ -2020,7 +2020,7 @@ When starting our sliced Spring context with `@DataJpaTest`, Flyway's auto-confi
 
 #### Preloading Data for the Test
 
-Having the database tables created, we now have multiple options to populate data: during the test, using the `@Sql` annotation, as part of JUnit's `@BeforeEach` lifecycle or using a custom Docker image. 
+Having the database tables created, we now have multiple options to populate data: during the test, using the `@Sql` annotation, as part of JUnit's `@BeforeEach` lifecycle or using a custom Docker image.
 
 Let's start with the most straightforward approach. Every test prepares the data that it needs for verifying a specific method. As the Spring Test Context contains all our Spring Data JPA repositories, we can inject the repository of our choice and save our entities:
 
@@ -2031,11 +2031,11 @@ orderRepository.save(createOrder("42", "[]"));
 Next comes the `@Sql` annotation. With this annotation, we can execute any SQL script before running our test. We can place our init scripts inside `src/test/resources`. It's not necessary to put them on the classpath as we can also reference, e.g., a file on disk or an HTTP resource (basically anything that can be resolved by Spring's `ResouceUtils` class):
 
 ```
-INSERT INTO orders (tracking_number, items) VALUES 
+INSERT INTO orders (tracking_number, items) VALUES
   ('42', '[{"name": "MacBook Pro", "amount" : 42}]');
-INSERT INTO orders (tracking_number, items) 
+INSERT INTO orders (tracking_number, items)
   VALUES ('43', '[{"name": "Kindle", "amount" : 13}]');
-INSERT INTO orders (tracking_number, items) 
+INSERT INTO orders (tracking_number, items)
   VALUES ('44', '[]');
 ```
 
@@ -2055,13 +2055,13 @@ void initData() {
 }
 ```
 
-We can also create a custom database image that already contains our database with a preset of data. This can also mirror the size of production. 
+We can also create a custom database image that already contains our database with a preset of data. This can also mirror the size of production.
 
 We save a lot of time with this approach for bigger projects as Flyway doesn't have to migrate any script. The only downside of this approach is to maintain and keep this test image up-to-date.
 
 #### Writing the Test for Our Spring Data JPA Repository
 
-Putting it all together, we can now write our test to verify our Spring Boot JPA persistence layer with `@DataJpaTest`. 
+Putting it all together, we can now write our test to verify our Spring Boot JPA persistence layer with `@DataJpaTest`.
 
 As we use Testcontainers to start our PostgreSQL database server, we use `@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE`) to avoid starting an embedded database:
 
@@ -2114,7 +2114,7 @@ class OrderRepositoryTest {
 }
 ```
 
-Testcontainers maps the PostgreSQL port to a random ephemeral port, so we can't hardcode the JDBC URL. In the example above, we are using `@DynamicPropertySource` to set all required `datasource` attributes in a dynamic fashion based on the started container. 
+Testcontainers maps the PostgreSQL port to a random ephemeral port, so we can't hardcode the JDBC URL. In the example above, we are using `@DynamicPropertySource` to set all required `datasource` attributes in a dynamic fashion based on the started container.
 
 We can even write a shorter test with less _setup ceremony_ using [Testcontainers JDBC support](https://www.testcontainers.org/modules/databases/jdbc/) feature:
 
@@ -2137,19 +2137,19 @@ class OrderRepositoryShortTest {
 }
 ```
 
-Note the `tc` keyword after `jdbc` for the data source URL. The 12 indicates the PostgreSQL version. With this modification, Testcontainers will start the dockerized PostgreSQL for our test class in the background. 
+Note the `tc` keyword after `jdbc` for the data source URL. The 12 indicates the PostgreSQL version. With this modification, Testcontainers will start the dockerized PostgreSQL for our test class in the background.
 
 If you want to optimize this setup further when running multiple tests for your persistence layer, you can [reuse already started containers](https://rieckpil.de/reuse-containers-with-testcontainers-for-fast-integration-tests/) with Testcontainers.
 
 #### Database Cleanup After the Test
 
-The `@DataJpaTest` meta-annotation contains the `@Transactional` annotation. This ensures our test execution is wrapped with a transaction that gets rolled back after the test. The rollback happens for both successful test cases as well as failures. 
+The `@DataJpaTest` meta-annotation contains the `@Transactional` annotation. This ensures our test execution is wrapped with a transaction that gets rolled back after the test. The rollback happens for both successful test cases as well as failures.
 
 Hence, we don't have to clean up our tests, and every test starts with empty tables (except we initialize data with our migration scripts). The source code for this `@DataJpaTest` example is [available on GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/spring-boot-datajpatest).
 
 ### Testing HTTP Clients
 
-Fetching data via HTTP from a remote system is a task almost every application has to solve. Fortunately, there are mature Java HTTP client libraries available that are robust and have a user-friendly API. 
+Fetching data via HTTP from a remote system is a task almost every application has to solve. Fortunately, there are mature Java HTTP client libraries available that are robust and have a user-friendly API.
 
 Most of the frameworks ship their own HTTP client (e.g Spring with `WebClient` and `RestTemplate`, Jakarta EE with the JAX-RS Client), but there are also standalone clients available: OkHttp, Apache HttpClient, Unirest, etc.
 
@@ -2161,15 +2161,15 @@ Most of the Java HTTP clients are instantiated with static methods. In addition,
 
 > Every time a mock returns a mock a fairy dies.
 
-We end up in a _mocking hell_ and have to mock the whole setup. With this approach, we also almost duplicate our production code as the stubbing setup has to match our usage. While we could test conditionals e.g. behavior on non 200 HTTP responses or how our implementation handles exceptions, there is not much benefit with this approach. 
+We end up in a _mocking hell_ and have to mock the whole setup. With this approach, we also almost duplicate our production code as the stubbing setup has to match our usage. While we could test conditionals e.g. behavior on non 200 HTTP responses or how our implementation handles exceptions, there is not much benefit with this approach.
 
 A better solution for testing our Java HTTP clients would be to actually test them _in action_ and see how they behave to different responses. This also allows us to test more niche scenarios like slow responses, different HTTP status codes, etc.
 
 #### A Better Approach for Testing HTTP Clients
 
-Instead of heavy lifting with Mockito, we'll spawn a local web server and queue HTTP responses. We can then let our HTTP clients connect to this local server and test our code. 
+Instead of heavy lifting with Mockito, we'll spawn a local web server and queue HTTP responses. We can then let our HTTP clients connect to this local server and test our code.
 
-Whether or not we are still writing a unit test depends on your definition and scope. However, we are still testing a unit of our application in isolation. Going further, we also have to take a small overhead (time-wise) into account. Most of the time this is negligible. The two most common libraries for this are [WireMock](http://wiremock.org/) and the [MockWebServer from OkHttp](https://github.com/square/okhttp/tree/master/mockwebserver). 
+Whether or not we are still writing a unit test depends on your definition and scope. However, we are still testing a unit of our application in isolation. Going further, we also have to take a small overhead (time-wise) into account. Most of the time this is negligible. The two most common libraries for this are [WireMock](http://wiremock.org/) and the [MockWebServer from OkHttp](https://github.com/square/okhttp/tree/master/mockwebserver).
 
 We'll use the lightweight `MockWebServer` for this demo, but you can achieve the same with WireMock. There's already an example on how to use WireMock with JUnit 5 for testing a Spring Boot application on my blog: [Spring Boot Integration Tests with WireMock and JUnit 5](https://rieckpil.de/spring-boot-integration-tests-with-wiremock-and-junit-5/) We include the `MockWebServer` with the following Maven import:
 
@@ -2195,17 +2195,17 @@ mockWebServer.enqueue(new MockResponse()
 MyClient client = new MyClient(mockWebServer.url("/").toString());
 ```
 
-Unlike WireMock, where we stub responses for given URLs, the `MockWebServer` queues every `MockResponse` and returns them in order (FIFO). 
+Unlike WireMock, where we stub responses for given URLs, the `MockWebServer` queues every `MockResponse` and returns them in order (FIFO).
 
 When specifying the mocked HTTP response, we can set any HTTP body, status, and header. With the `MockWebServer` we can even simulate slow responses using `.setBodyDelay()`. For our use case, we store a successful JSON response body inside `src/test/resources/stubs` to test the happy-path.
 
 #### First Java HTTP Client Test Example: Java's HttpClient
 
-As a first HTTP client example, we're using Java's own `HttpClient`. This client is part of the [JDK since Java 11](https://openjdk.java.net/groups/net/httpclient/intro.html) (in incubator mode since Java 9) and allows HTTP communication without any further dependency. For demonstration purposes, we're requesting [a random quote of the day](https://quotes.rest/) from a public REST API as JSON. 
+As a first HTTP client example, we're using Java's own `HttpClient`. This client is part of the [JDK since Java 11](https://openjdk.java.net/groups/net/httpclient/intro.html) (in incubator mode since Java 9) and allows HTTP communication without any further dependency. For demonstration purposes, we're requesting [a random quote of the day](https://quotes.rest/) from a public REST API as JSON.
 
-As the `HttpClient` only provides basic converters of the HTTP response body (to e.g. `String` or `byte[]`) we need a library for marshaling JSON payloads. We're going to use Jackson for this purpose. 
+As the `HttpClient` only provides basic converters of the HTTP response body (to e.g. `String` or `byte[]`) we need a library for marshaling JSON payloads. We're going to use Jackson for this purpose.
 
-First, we'll convert the response to a Java `String` and then use Jackson's `ObjectMapper` to map it our `RandomQuoteResponse` Java class for type-safe access of the response. To test different behaviors of our client, later on, we're returning a default quote whenever the HTTP response code is not 200 or an exception is thrown (e.g. `IOException` due to a network timeout). 
+First, we'll convert the response to a Java `String` and then use Jackson's `ObjectMapper` to map it our `RandomQuoteResponse` Java class for type-safe access of the response. To test different behaviors of our client, later on, we're returning a default quote whenever the HTTP response code is not 200 or an exception is thrown (e.g. `IOException` due to a network timeout).
 
 A simple implementation of our use case can look like the following:
 
@@ -2411,7 +2411,7 @@ Again, we're creating the class under test (short `cut` ) on our own and pass th
 
 #### Third Java HTTP Client Test Example: Apache HttpClient
 
-To complete the demonstration of popular Java HTTP clients, let's use the [Apache HttpClient](https://hc.apache.org/httpcomponents-client-ga/index.html) as the last example.
+To complete the demonstration of popular Java HTTP clients, let's use the [Apache HttpClient](https://hc.apache.org/) as the last example.
 
 ```
 <dependency>
@@ -2474,17 +2474,17 @@ void init() {
 
 #### What About Other Java HTTP Clients?
 
-But what about my fancy HTTP client library? How can I test it? I assume there are even more Java HTTP client libraries available than logging libraries... 
+But what about my fancy HTTP client library? How can I test it? I assume there are even more Java HTTP client libraries available than logging libraries...
 
-With the client example above, we saw that there is actually no big difference when it comes to testing code that uses them. As long as we are able to configure (at least) the base URL, we can test any client with this recipe. 
+With the client example above, we saw that there is actually no big difference when it comes to testing code that uses them. As long as we are able to configure (at least) the base URL, we can test any client with this recipe.
 
 So it doesn't matter whether we use the JAX-RS Client, the Spring WebFlux `WebClient` , the Spring `RestTemplate` or your `MyFancyHttpClient`, as this technique is applicable to all of them.
 
-For both the [WebClient](https://rieckpil.de/test-spring-webclient-with-mockwebserver-from-okhttp/) and [RestTemplate](https://rieckpil.de/testing-your-spring-resttemplate-with-restclienttest/) you'll find dedicated articles on my blog. If you are curious and want to know how to achieve the same with `WireMock`, take a look at this [Spring Boot integration test example using WireMock and JUnit 5](https://rieckpil.de/spring-boot-integration-tests-with-wiremock-and-junit-5/). The source code for testing these different Java HTTP clients is [available on GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/test-java-http-clients). 
+For both the [WebClient](https://rieckpil.de/test-spring-webclient-with-mockwebserver-from-okhttp/) and [RestTemplate](https://rieckpil.de/testing-your-spring-resttemplate-with-restclienttest/) you'll find dedicated articles on my blog. If you are curious and want to know how to achieve the same with `WireMock`, take a look at this [Spring Boot integration test example using WireMock and JUnit 5](https://rieckpil.de/spring-boot-integration-tests-with-wiremock-and-junit-5/). The source code for testing these different Java HTTP clients is [available on GitHub](https://github.com/rieckpil/blog-tutorials/tree/master/test-java-http-clients).
 
 ### Writing End-to-End Tests
 
-Good old web tests - extremely valuable, sometimes hard to maintain, and annoying once they get flaky. If you are familiar with Selenium, you might find your self-writing helper functions to e.g., wait on elements to be present in the DOM, or AJAX calls to finish. 
+Good old web tests - extremely valuable, sometimes hard to maintain, and annoying once they get flaky. If you are familiar with Selenium, you might find your self-writing helper functions to e.g., wait on elements to be present in the DOM, or AJAX calls to finish.
 
 As Selenium is more or less a low-level API to manage the browser, this usually leads to boilerplate code for your projects. The [Selenide](https://selenide.org/) project eliminates the shortcoming of the low-level API nature of Selenium. With Selenide, you can write concise, stable, and short web tests for your Java projects. This section showcases Selenide 6 with Selenium 4 and Testcontainers using a Spring Boot Java 11 application with a Thymeleaf frontend.
 
@@ -2501,7 +2501,7 @@ For a Maven-based project, we have to include the following dependency:
 </dependency>
 ```
 
-That's all we need. The Selenide dependency already includes Selenium's [selenium-java](https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java) dependency, so we don't have to include any Selenium-related dependency on our own. 
+That's all we need. The Selenide dependency already includes Selenium's selenium-java dependency, so we don't have to include any Selenium-related dependency on our own.
 
 All specific browser APIs are part of this library, and we can start writing automated web tests for Chrome, Edge, Firefox, Opera, Safari, etc. In case Spring Boot's dependency management selects an incompatible Selenium version, we can override the Selenium version with a property:
 
@@ -2511,11 +2511,11 @@ All specific browser APIs are part of this library, and we can start writing aut
 </properties>
 ```
 
-Apart from this, Selenide also ships with the [WebDriverManager](https://github.com/bonigarcia/webdrivermanager). This is a useful utility library to automate the management of browser drivers. 
+Apart from this, Selenide also ships with the [WebDriverManager](https://github.com/bonigarcia/webdrivermanager). This is a useful utility library to automate the management of browser drivers.
 
 As we always need the driver binary of our target browser (e.g. `chromedriver`) installed while executing the web tests, manually downloading them, and managing their versions is cumbersome.
 
-The WebDriverManager project takes over this task for us. Prior to executing a web test, the WebDriverManager ensures to download the required driver binary or use an already existing one. Hence we don't have to fiddle around with setting any parameters like `-Dwebdriver.chrome.driver`. 
+The WebDriverManager project takes over this task for us. Prior to executing a web test, the WebDriverManager ensures to download the required driver binary or use an already existing one. Hence we don't have to fiddle around with setting any parameters like `-Dwebdriver.chrome.driver`.
 
 At the end of this section post, we'll also see how we can utilize the [WebDriver module of Testcontainers](https://www.testcontainers.org/modules/webdriver_containers/) so that the driver is running in isolation as part of a Docker container.
 
@@ -2537,9 +2537,9 @@ class BookStoreWT {
 }
 ```
 
-For demonstration purposes, let's assume we'll use a Spring Boot application that exposes one Thymleaf view and a REST API endpoint. The view displays a table of books whenever someone clicks a button to fetch them via AJAX. Once the browser window opens our application, we can access HTML elements. 
+For demonstration purposes, let's assume we'll use a Spring Boot application that exposes one Thymleaf view and a REST API endpoint. The view displays a table of books whenever someone clicks a button to fetch them via AJAX. Once the browser window opens our application, we can access HTML elements.
 
-Selenide provides two functions to access any `SelenideEelement` (a wrapper around Selenium's `WebElement`): `$` and `$$` (good old jQuery memories). Using `$`, we'll get the first element that matches your search, whereas with `$$` we get a list of all the elements that match. 
+Selenide provides two functions to access any `SelenideEelement` (a wrapper around Selenium's `WebElement`): `$` and `$$` (good old jQuery memories). Using `$`, we'll get the first element that matches your search, whereas with `$$` we get a list of all the elements that match.
 
 Selenide provides different mechanisms (similar to Selenium) to locate elements by ...
 
@@ -2566,7 +2566,7 @@ $(By.tagName("h1")).shouldHave(CollectionCondition.size(1));
 
 #### Make Screenshots During the Web Test Execution
 
-Most of the time, the execution of our web test is automated on a CI server (e.g., Jenkins or Gitlab CI). This makes it hard to actually _see_ the automated test and understand the reason whenever the test fails. Fortunately, Selenide creates a screenshot and captures the HTML for every failing test out-of-the-box. 
+Most of the time, the execution of our web test is automated on a CI server (e.g., Jenkins or Gitlab CI). This makes it hard to actually _see_ the automated test and understand the reason whenever the test fails. Fortunately, Selenide creates a screenshot and captures the HTML for every failing test out-of-the-box.
 
 What's left to adjust is the location where Selenide stores these files. By default, it's `build/reports`. As a Maven fanboy, I want the location to be inside the `target` folder. For those of you that use JUnit Jupiter, you can override this by registering the `ScreenShooterExtension`:
 
@@ -2655,7 +2655,7 @@ class BookStoreTestcontainersWT {
 }
 ```
 
-Keep in mind that the driver is now running in an isolated Docker container, and we can't use `localhost` to refer to our application. That's why we expose the host port we want to access from within the `BrowserWebDriverContainer`. 
+Keep in mind that the driver is now running in an isolated Docker container, and we can't use `localhost` to refer to our application. That's why we expose the host port we want to access from within the `BrowserWebDriverContainer`.
 
 Exposing the [host port with Testcontainers](https://www.testcontainers.org/features/networking/#exposing-host-ports-to-the-container) has to happen after we start our Tomcat server but before we start the Docker container.
 

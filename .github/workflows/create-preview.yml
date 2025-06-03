@@ -15,7 +15,23 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Set up Node 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Install NPM packages
+        run: npm i
+
+      - name: Verify book manuscript
+        run: ./verify-book.sh
+
+      - name: Check for broken links
+        # Issue with inline anchor as part of markdown-link-check > 3.9.0, wait for https://github.com/tcort/markdown-link-check/issues/91#issuecomment-1073230831
+        run: npm run check-links
 
       - name: Send webhook to Leanpub API
         timeout-minutes: 5

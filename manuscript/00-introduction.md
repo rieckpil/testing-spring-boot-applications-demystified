@@ -14,7 +14,7 @@ By the end of this book, you'll transform testing from a frustrating afterthough
 
 ## About the Author
 
-Under the slogan **Testing Spring Boot Applications Made Simple**, Philip provides recipes and tips & tricks to make Spring Boot developers more productive and confident with their code changes.
+Under the slogan Testing Spring Boot Applications Made Simple, Philip provides recipes and tips & tricks to make Spring Boot developers more productive and confident with their code changes.
 
 He's on a mission to transform the perception of testing from a frustrated afterthought to an enjoyable daily practice.
 
@@ -35,9 +35,9 @@ In software development, testing is often reduced to an afterthought, hastily ad
 
 Well-designed tests provide three critical benefits:
 
-- **Increased Confidence**: Tests enable fearless refactoring by catching issues early, allowing you to make changes with certainty that you haven't broken existing functionality.
-- **Improved Documentation**: Tests serve as living documentation, making it easier for developers to understand your code's intended behavior and purpose.
-- **Enhanced Productivity**: A reliable test suite significantly boosts productivity by catching bugs early, reducing debugging time, and preventing regressions.
+- Increased Confidence: Tests enable fearless refactoring by catching issues early, allowing you to make changes with certainty that you haven't broken existing functionality.
+- Improved Documentation: Tests serve as living documentation, making it easier for developers to understand your code's intended behavior and purpose.
+- Enhanced Productivity: A reliable test suite significantly boosts productivity by catching bugs early, reducing debugging time, and preventing regressions.
 
 Effective testing isn't just about quality assurance - it's about creating a solid foundation that supports continuous improvement and innovation.
 
@@ -78,6 +78,38 @@ After reading this book, you'll be able to:
 
 By applying the principles and practices in this book, you'll transform testing from a necessary evil into a competitive advantage that enables you to deliver higher-quality software more efficiently.
 
+## A First Glimpse: A Simple Spring Boot Test
+
+Before we dive deep into the world of Spring Boot testing, let's take a look at a simple test to get a feel for what's to come.
+
+This example demonstrates a basic test for a Spring Boot REST controller.
+
+```java
+@WebMvcTest(BookController.class)
+class BookControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private BookService bookService;
+
+    @Test
+    void shouldReturnListOfBooks() throws Exception {
+        when(bookService.getAllBooks()).thenReturn(List.of(new Book("42", "The Hitchhiker's Guide to the Galaxy")));
+
+        mockMvc.perform(get("/api/books"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].isbn", is("42")))
+                .andExpect(jsonPath("$[0].title", is("The Hitchhiker's Guide to the Galaxy")));
+    }
+}
+```
+
+Don't worry if some of the annotations or classes are unfamiliar. We'll cover `@WebMvcTest`, `@MockitoBean`, `MockMvc`, and much more in the upcoming chapters.
+
+This example is just to give you a taste of how Spring Boot helps you write clean and expressive tests for your web layer.
+
 ## Who This Book Is For
 
 This eBook is for Java Spring Boot developers who are already familiar with the Spring framework, Spring Boot, and Java.
@@ -88,9 +120,9 @@ By learning what Spring Boot and Java have to offer in terms of testing, you wil
 
 ### Prerequisites
 
-* **Spring Boot Knowledge**: You should already be comfortable with the fundamental features of Spring and Spring Boot, especially its auto-configuration (we recommend the article [How Spring Boot's Autoconfigurations Work](https://www.marcobehler.com/guides/spring-boot-autoconfiguration) from Marco Behler)
-* **Java Proficiency**: This book assumes you have a solid understanding of the Java language. We won't be covering specific Java language features in detail.
-* **Testing Experience**: Ideally, you have some basic experience with testing, specifically with JUnit and Mockito.
+* Spring Boot Knowledge: You should already be comfortable with the fundamental features of Spring and Spring Boot, especially its auto-configuration (we recommend the article [How Spring Boot's Autoconfigurations Work](https://www.marcobehler.com/guides/spring-boot-autoconfiguration) from Marco Behler)
+* Java Proficiency: This book assumes you have a solid understanding of the Java language. We won't be covering specific Java language features in detail.
+* Testing Experience: Ideally, you have some basic experience with testing, specifically with JUnit and Mockito.
 
 This book aims to teach you how to effectively test Spring Boot applications, leveraging what Java and Spring Boot specifically offer in terms of testing.
 
@@ -102,12 +134,12 @@ Our goal is to help you expand your existing knowledge to new testing libraries 
 
 Here's what you can expect in the following chapters:
 
-* **Introduction & Motivation**: Understand the Motivation Behind Testing and an Overview of the book and its objectives.
-* **Chapter 1**: Testing with Spring Boot Fundamentals: Covering the basics of unit testing with Spring Boot.
-* **Chapter 2**: Testing with a Sliced Application Context: Exploring how to test specific slices of your application.
-* **Chapter 3**: Testing with `@SpringBootTest`: Write integration tests with a full-blown application context.
-* **Chapter 4**: Testing Pitfalls and Best Practices: Identifying common testing pitfalls and best practices.
-* **Conclusion**: Wrapping up with an outlook on the future of testing in Spring Boot applications.
+* Introduction & Motivation: Understand the Motivation Behind Testing and an Overview of the book and its objectives.
+* Chapter 1: Testing with Spring Boot Fundamentals: Covering the basics of unit testing with Spring Boot.
+* Chapter 2: Testing with a Sliced Application Context: Exploring how to test specific slices of your application.
+* Chapter 3: Testing with `@SpringBootTest`: Write integration tests with a full-blown application context.
+* Chapter 4: Testing Pitfalls and Best Practices: Identifying common testing pitfalls and best practices.
+* Conclusion: Wrapping up with an outlook on the future of testing in Spring Boot applications.
 
 By following this agenda, you will gain a comprehensive understanding of how to test Spring Boot applications effectively.
 

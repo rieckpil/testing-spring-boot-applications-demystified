@@ -6,20 +6,13 @@
 ./convert-to-pandoc.sh && ./create-pdf-book.sh
 ```
 
+Make sure to locally install:
+
 - LaTeX installed
 - Fonts installed
 
-## Version 2.0
+## Upload the new version
 
-- Aim 80-100 pages of content with a high density of information
-- Create new sample project
-- Foreword by Sam Brannen?
-- Design a 50-minute talk and 2h workshop out of it
-- Get it back on Amazon and ask friends for reviews
-- Upsell for the Masterclass, don't push it too hard
-- Upsell for the newsletter
-
-- Create Excalidraw diagrams for the book:
-  - Test type overview
-  - Application Context Overview with slices
-  -
+- Build the final PDF as described above
+- Take the Preview Markdown PDF from Leanpub and attach the first three PDF pages manually (don't automate this as it will break the internal PDF structure)
+- Manually upload the final PDF to Leanpub and inform the users

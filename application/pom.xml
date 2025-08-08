@@ -109,6 +109,12 @@
       <artifactId>h2</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>digital.pragmatech.testing</groupId>
+      <artifactId>spring-test-profiler</artifactId>
+      <version>0.0.11</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

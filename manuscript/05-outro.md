@@ -22,15 +22,15 @@ By investing time in writing good tests, you're not just verifying your code wor
 
 As you apply what you've learned in this book, keep these key principles in mind:
 
-1. **Test the right things at the right level**: Choose the appropriate testing approach based on what you're trying to verify. Unit tests for business logic, integration tests for component interactions, and end-to-end tests for critical user journeys.
+1. Test the right things at the right level: Choose the appropriate testing approach based on what you're trying to verify. Unit tests for business logic, integration tests for component interactions, and end-to-end tests for critical user journeys.
 
-2. **Focus on behavior, not implementation**: Write tests that verify what your code does, not how it does it. This makes your tests more resilient to refactoring.
+2. Focus on behavior, not implementation: Write tests that verify what your code does, not how it does it. This makes your tests more resilient to refactoring.
 
-3. **Use Spring Boot's testing tools effectively**: Take advantage of the specialized testing annotations, slices, and utilities that Spring Boot provides to make your tests more focused and efficient.
+3. Use Spring Boot's testing tools effectively: Take advantage of the specialized testing annotations, slices, and utilities that Spring Boot provides to make your tests more focused and efficient.
 
-4. **Maintain a fast feedback cycle**: Organize your tests to provide quick feedback. Fast unit tests should run on every code change, while slower integration tests can run less frequently.
+4. Maintain a fast feedback cycle: Organize your tests to provide quick feedback. Fast unit tests should run on every code change, while slower integration tests can run less frequently.
 
-5. **Keep your tests clean and maintainable**: Test code deserves the same level of care as production code. Refactor tests when needed, use meaningful names, and avoid duplication.
+5. Keep your tests clean and maintainable: Test code deserves the same level of care as production code. Refactor tests when needed, use meaningful names, and avoid duplication.
 
 ## Continuous Learning
 
@@ -43,21 +43,43 @@ The testing landscape continues to evolve, with new tools and techniques emergin
 
 Remember that testing is both a technical skill and an art. As you gain experience, you'll develop intuition about what to test and how to test it most effectively.
 
+### A Roadmap for Further Learning
+
+To continue your journey and deepen your expertise, here is a curated roadmap of resources:
+
+1. Official Spring Documentation (The Source of Truth)
+
+* [Spring Boot Testing Documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/testing.html): This should be your first stop. The official documentation is comprehensive and always up-to-date.
+* [Spring Framework Testing Documentation](https://docs.spring.io/spring-framework/docs/current/reference/html/testing.html): For a deeper understanding of the underlying TestContext Framework.
+
+2. Influential Blog Posts and Articles
+
+* [Martin Fowler - The Practical Test Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html): A foundational article on how to think about structuring your test suite.
+* [Baeldung - Introduction to Spring Boot Testing](https://www.baeldung.com/spring-boot-testing): A great collection of practical, code-focused tutorials on various aspects of Spring Boot testing.
+* [Vlad Mihalcea's Blog](https://vladmihalcea.com/blog/): While focused on Hibernate and JPA, Vlad's articles offer invaluable insights into testing data access layers effectively.
+
+3. Recommended Books and Courses
+
+* [Testing Spring Boot Applications Masterclass](https://rieckpil.de/testing-spring-boot-applications-masterclass/): For a deep, hands-on dive into the topics covered in this book and more.
+* [Modern Software Engineering by Dave Farley](https://www.oreilly.com/library/view/modern-software-engineering/9781492082282/): This book provides a higher-level view of the engineering practices that make testing effective.
+* [Release It! by Michael T. Nygard](https://pragprog.com/titles/mnee2/release-it-second-edition/): Essential reading for understanding how to build resilient and production-ready systems, with a strong emphasis on testing for failure.
+
 ## The Simple Truth About Spring Boot Testing
 
-After everything we've covered, here's the bottom line: **Testing Spring Boot applications is simple once you know the tools.**
+After everything we've covered, here's the bottom line: Testing Spring Boot applications is simple once you know the tools.
 
 ### It's All About the Right Tools
 
 Spring Boot provides an incredible testing toolkit out of the box:
-- **@SpringBootTest** for full integration testing
-- **Test slices** for focused, fast component testing
-- **MockMvc** for web layer testing without starting a server
-- **@DataJpaTest** for repository testing with an in-memory database
-- **Testcontainers** for real database and service testing
-- **AssertJ** for readable, fluent assertions
 
-These aren't just random libraries—they're carefully designed to work together seamlessly.
+- @SpringBootTest for full integration testing
+- Test slices for focused, fast component testing
+- MockMvc for web layer testing without starting a server
+- @DataJpaTest for repository testing with an in-memory database
+- Testcontainers for real database and service testing
+- AssertJ for readable, fluent assertions
+
+These aren't just random libraries - they're carefully designed to work together seamlessly.
 
 Once you understand when and how to use each tool, testing becomes straightforward and even enjoyable.
 
@@ -135,40 +157,43 @@ Testing failure modes and resilience will become more mainstream, with developer
 
 Here's your action plan:
 
-1. **Start small**: Pick one testing technique from this book and apply it tomorrow
-2. **Practice deliberately**: Write at least one test every day for the next week
-3. **Share knowledge**: Teach a colleague one testing trick you've learned
-4. **Build momentum**: As testing becomes easier, you'll naturally write more tests
+1. Start small: Pick one testing technique from this book and apply it tomorrow
+2. Practice deliberately: Write at least one test every day for the next week
+3. Share knowledge: Teach a colleague one testing trick you've learned
+4. Build momentum: As testing becomes easier, you'll naturally write more tests
 
 ### Become a Testing Champion
 
 The real multiplier effect comes from sharing your knowledge:
-- **Run a lunch-and-learn** on test slices for your team
-- **Pair program** with a colleague struggling with integration tests
-- **Create team standards** based on the patterns in this book
-- **Lead by example** with well-tested code in your pull requests
+
+- Run a lunch-and-learn on test slices for your team
+- Pair program with a colleague struggling with integration tests
+- Create team standards based on the patterns in this book
+- Lead by example with well-tested code in your pull requests
 
 When your entire team embraces testing, everyone moves faster and ships with confidence.
 
 ### The Secret? There Is No Secret
 
-Testing Spring Boot applications isn't magic—it's a learnable skill. The "experts" simply know which tool to use when. Now you do too.
+Testing Spring Boot applications isn't magic - it's a learnable skill. The "experts" simply know which tool to use when. Now you do too.
 
 Remember:
-- **Unit tests** for business logic (fast, isolated, numerous)
-- **Integration tests** for component interactions (focused, reliable)
-- **End-to-end tests** for critical paths (few but valuable)
-- **The right tool for the right job** makes all the difference
+
+- Unit tests for business logic (fast, isolated, numerous)
+- Integration tests for component interactions (focused, reliable)
+- End-to-end tests for critical paths (few but valuable)
+- The right tool for the right job makes all the difference
 
 ### Your Future Self Will Thank You
 
 Imagine six months from now:
+
 - Your test suite runs in under 5 minutes
 - Refactoring is stress-free because tests catch regressions
 - New team members understand the codebase through test examples
 - Deployments happen with confidence, not crossed fingers
 
-This isn't a dream—it's the natural result of applying what you've learned.
+This isn't a dream - it's the natural result of applying what you've learned.
 
 ## Ready to Master Spring Boot Testing?
 
@@ -176,40 +201,40 @@ This isn't a dream—it's the natural result of applying what you've learned.
 
 This book has given you a solid foundation in Spring Boot testing. But what if you want to go deeper?
 
-
 What if you want hands-on experience with real-world scenarios, expert guidance, and a community of fellow learners?
 
-That's where the **[Testing Spring Boot Applications Masterclass](https://rieckpil.de/testing-spring-boot-applications-masterclass/)** comes in.
+That's where the [Testing Spring Boot Applications Masterclass](https://rieckpil.de/testing-spring-boot-applications-masterclass/) comes in.
 
-#### What Makes the Masterclass Different?
+What sets the Masterclass apart is its comprehensive, hands-on approach. While this book provides the essential knowledge, the Masterclass takes you on a complete journey:
 
-While this book provides the essential knowledge, the Masterclass takes you on a complete journey:
+Real-World Project: Build and test a production-ready Spring Boot application from scratch
 
-**Real-World Project**: Build and test a production-ready Spring Boot application from scratch
 - Start with requirements and architecture
 - Implement features test-first
 - Handle complex scenarios like async processing, caching, and security
 - Deploy with confidence using comprehensive test suites
 
-**Deep-Dive Topics**: Go beyond the basics
+Deep-Dive Topics: Go beyond the basics
+
 - Advanced Testcontainers patterns
 - Testing microservices and event-driven architectures
 - Security testing strategies
 
-**Expert Support**: Learn from experienced practitioners
+Expert Support: Learn from experienced practitioners
+
 - Live Q&A sessions
 - Access to a private community
 - Lifetime updates as Spring Boot evolves
 
-**Practical Outcomes**: Skills you can use immediately
+Practical Outcomes: Skills you can use immediately
+
 - Cut your test execution time by 80%
 - Eliminate flaky tests from your codebase
 - Build test suites that actually catch bugs
 - Lead testing initiatives in your team
 
-#### Who Is the Masterclass For?
+We designed the Masterclass for developers who are ready to take their testing skills to the next level. It's perfect if you:
 
-The Masterclass is perfect if you:
 - Want to become the testing expert on your team
 - Need to modernize a legacy test suite
 - Are building microservices and need advanced testing strategies
@@ -220,15 +245,15 @@ The Masterclass is perfect if you:
 
 Now that you have the knowledge and tools needed to write comprehensive and effective tests for your Spring Boot applications, it's time to put them into practice. Here are some concrete next steps:
 
-1. **Audit your current test suite**: Identify gaps in coverage and areas where you can apply the techniques from this book.
+1. Audit your current test suite: Identify gaps in coverage and areas where you can apply the techniques from this book.
 
-2. **Implement test slices**: Start using `@WebMvcTest`, `@DataJpaTest`, and other slices to make your tests faster and more focused.
+2. Implement test slices: Start using `@WebMvcTest`, `@DataJpaTest`, and other slices to make your tests faster and more focused.
 
-3. **Refactor existing tests**: Apply the best practices to improve readability and maintainability of your current tests.
+3. Refactor existing tests: Apply the best practices to improve readability and maintainability of your current tests.
 
-4. **Establish testing standards**: Work with your team to create testing guidelines based on the patterns in this book.
+4. Establish testing standards: Work with your team to create testing guidelines based on the patterns in this book.
 
-5. **Measure and improve**: Track metrics like test execution time and flakiness, then work to improve them.
+5. Measure and improve: Track metrics like test execution time and flakiness, then work to improve them.
 
 ## Further Resources
 
@@ -251,11 +276,12 @@ Good tests are the foundation of maintainable software. They give us confidence 
 
 By avoiding common pitfalls and following established practices, we create test suites that serve as both safety nets and documentation.
 
-Remember: **Tests are not a cost, they're an investment in your application's future.**
+Remember: Tests are not a cost, they're an investment in your application's future.
 
-Thank you for reading **Testing Spring Boot Applications Demystified**.
+Thank you for reading Testing Spring Boot Applications Demystified.
 
 May your tests be fast, your builds be green, and your applications be bug-free!
 
 Joyful testing,
+
 Philip

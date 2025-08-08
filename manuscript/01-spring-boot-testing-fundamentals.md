@@ -10,58 +10,46 @@ This chapter focuses on pure Java testing fundamentals that form the backbone of
 
 ### The Importance of a Testing Strategy
 
-Before diving into the technical details of testing Spring Boot applications, it's crucial to define our testing strategy and discuss testing in general.
+Before diving into the technical details of testing Spring Boot applications, it's crucial to establish a clear testing strategy. A well-defined strategy provides a roadmap for writing effective tests, ensuring that we cover all critical aspects of our application without wasting effort.
 
-There are many testing strategies in the literature, such as the testing pyramid, the testing honeycomb, or the testing trophy. Each of these models offers a different perspective on how testing should be approached.
+### The Testing Pyramid: A Foundational Model
 
-### Our Approach to Testing
+A widely recognized model for structuring a testing strategy is the Testing Pyramid. It provides a simple, visual guide for allocating testing efforts across different levels of granularity.
 
-We don't advocate for any specific model.
+The pyramid is divided into three main layers:
 
-Instead, our central goal is to gain confidence in deploying changes to production and receiving feedback about code changes as quickly as possible.
+1.  Unit Tests (Base of the Pyramid):
+    *   Scope: These form the largest part of your test suite. They test individual components (e.g., a single class or method) in isolation from the rest of the system.
+    *   Characteristics: They are fast, reliable, and cheap to write and maintain. They don't involve network calls, database connections, or file system access.
+    *   Spring Boot Alignment: These are typically plain JUnit/Mockito tests that do *not* load a Spring `ApplicationContext`.
 
-Since applications differ widely, there is no one-size-fits-all testing strategy.
+2.  Integration Tests (Middle of the Pyramid):
+    *   Scope: These tests verify that different components work together as expected. This can range from testing the interaction between a service and a database repository to testing a REST endpoint with its underlying logic.
+    *   Characteristics: They are slower than unit tests because they often require external infrastructure (like a database or a message queue) and may load parts of the Spring context.
+    *   Spring Boot Alignment: Spring Boot provides excellent support for integration tests. Test Slices (e.g., `@WebMvcTest`, `@DataJpaTest`) are perfect for this layer, as they load only a relevant portion of the application context. Full context tests with `@SpringBootTest` also fall into this category.
 
-For example:
+3.  End-to-End (E2E) Tests (Top of the Pyramid):
+    *   Scope: These are the fewest in number. They validate the entire application flow from start to finish, simulating real user scenarios. For a web application, an E2E test might involve using a browser automation tool to click through a user journey.
+    *   Characteristics: They are the slowest, most brittle, and most expensive tests to write and maintain.
+    *   Spring Boot Alignment: While Spring Boot can be used to set up the application for E2E tests, these tests are often run against a fully deployed application using tools like Selenium, Cypress, or Playwright.
 
-- Algorithmic Libraries: A cryptographic encryption library may achieve confidence with a broad set of unit tests.
-- CRUD Applications: RESTful microservices will require more integration tests, ensuring the application works.
-- Fullstack Applications: Applications that interact with a front-end, have checkout integrations (e.g., with PayPal), and fetch data from remote services will require a different testing strategy to cover all use cases.
+The core idea of the pyramid is to write many fast, simple unit tests at the base and progressively fewer, more complex tests as you move up the layers. This approach provides a fast feedback loop and a stable test suite.
 
-### Customizing Your Testing Strategy
+### Our Practical Approach
 
-It's challenging to define a universal testing strategy upfront that fits all applications.
+While the Testing Pyramid is an excellent mental model, we won't follow it dogmatically. Our central goal is to gain confidence in deploying changes to production and receive feedback about those changes as quickly as possible.
 
-The primary aim is to achieve confidence in the deployment process. While confidence is hard to measure and quantify, it requires experiences and listening to your team to reflect on your confidence level when making changes.
+The ideal mix of tests depends on your application. For example:
+-   A complex algorithmic library might rely almost entirely on unit tests.
+-   A standard CRUD-based microservice will benefit greatly from a solid suite of integration tests.
 
-Whether it's a well-written unit tests, a covering integration tests or a full-blown end-to-end tests that brings more confidence in your particular scenario, depends on your specific needs.
+Throughout this book, we will use the following terms, which align well with the pyramid's layers:
 
-### Establishing Common Testing Terms
+1.  Unit Tests: Fast, isolated tests with no Spring context.
+2.  Integration Tests: Tests that involve the Spring framework, from focused test slices to full `@SpringBootTest` contexts.
+3.  End-to-End Tests: The broadest tests that validate the entire application stack, often from a user's perspective.
 
-A crucial step is to define a common understanding of different testing types within your team or organization.
-
-The literature identifies many testing types, such as unit tests, white box tests, black box tests, integration tests, web tests, end-to-end tests, fast tests, and slow tests, etc.
-
-Having a shared language for these terms is vital.
-
-### A Simple Three-Step Approach
-
-We advocate for a straightforward categorization of tests:
-
-1. **Unit Tests**:
-- Characteristics: Fast and isolated, with no external dependencies (e.g., file systems, databases).
-- Tools: Typically use Mockito and JUnit.
-- Scope: Do not interact with the Spring context.
-
-2. **Integration Tests**:
-- Characteristics: Slower than unit tests and may involve infrastructure such as databases, messaging queues, or remote systems.
-- Tools: Often use the Spring test context and interact with multiple beans.
-
-3. **End-to-End Tests**:
-- Characteristics: The slowest of all categories, involving interaction with the application as a whole. Testing full user journeys, tests might be scheduled nightly.
-- Scope: Includes user interactions (for web applications) or full interaction with a RESTful web service, ensuring the application works as an integrated system.
-
-These conventions will guide our discussion and examples throughout the book.
+By understanding these categories, you can build a balanced and effective testing strategy for any Spring Boot application.
 
 ## Build Tool Configuration
 
@@ -75,18 +63,18 @@ Let's explore how both Maven and Gradle manage our tests, starting with Maven.
 
 ### Maven Testing Configuration
 
-#### Test Structure and Organization
+To understand how Maven manages our tests effectively, let's first examine how Maven organizes test structure.
 
 Maven follows a strict convention for organizing tests:
 
-- **Test classes**: `src/test/java` - All test classes must be placed here
-- **Test resources**: `src/test/resources` - Configuration files, test data, and other resources
-- **Production code**: `src/main/java` - Your actual application code
-- **Production resources**: `src/main/resources` - Application configuration files
+- Test classes: `src/test/java` - All test classes must be placed here
+- Test resources: `src/test/resources` - Configuration files, test data, and other resources
+- Production code: `src/main/java` - Your actual application code
+- Production resources: `src/main/resources` - Application configuration files
 
 This separation ensures a clear boundary between production and test code.
 
-#### Dependency Scoping
+With the directory structure in place, we need to configure dependencies properly using Maven's scoping mechanism.
 
 The `<scope>test</scope>` declaration is critical for keeping our production artifacts lean:
 
@@ -98,39 +86,43 @@ The `<scope>test</scope>` declaration is critical for keeping our production art
 </dependency>
 ```
 
-This Maven dependency declaration adds Spring Boot's testing starter to your project. The `<scope>test</scope>` is crucial - it tells Maven this dependency is only needed during testing, not in production. This keeps your deployed application smaller and more secure by excluding testing libraries like Mockito, AssertJ, and JUnit from the final JAR file.
+This Maven dependency declaration adds Spring Boot's testing starter to your project. The `<scope>test</scope>` is crucial - it tells Maven this dependency is only needed during testing, not in production. This keeps your deployed application smaller by excluding testing libraries like Mockito, AssertJ, and JUnit from the final JAR file.
 
 This scoping mechanism ensures test dependencies never reach production, keeping our deployable artifacts smaller and more secure.
 
-#### The Two-Plugin Strategy
+Maven's test execution relies on a sophisticated two-plugin strategy that separates different types of tests.
 
 Maven employs two separate plugins for different test types:
 
-1. **Maven Surefire Plugin** - Executes unit tests during the `test` phase
-2. **Maven Failsafe Plugin** - Executes integration tests during the `integration-test` and `verify` phases
+1. Maven Surefire Plugin - Executes unit tests during the `test` phase
+2. Maven Failsafe Plugin - Executes integration tests during the `integration-test` and `verify` phases
 
-**Why Two Plugins?**
+Why Two Plugins?
 
 This separation provides several benefits:
-- **Fast feedback**: Unit tests run first, failing fast if basic functionality is broken
-- **Build optimization**: Skip slow integration tests during development with `mvn test`
-- **Parallel execution**: Configure different parallelization strategies for each test type
-- **Resource management**: Integration tests can have different JVM settings and timeouts
 
-#### Test Naming Conventions
+- Fast feedback: Unit tests run first, failing fast if basic functionality is broken
+- Build optimization: Skip slow integration tests during development with `mvn test`
+- Parallel execution: Configure different parallelization strategies for each test type
+- Resource management: Integration tests can have different JVM settings and timeouts
 
-**Surefire Plugin** (Unit Tests):
+For this separation to work correctly, Maven follows specific test naming conventions that determine which plugin executes which tests.
+
+Surefire Plugin (Unit Tests):
+
 - `**/Test*.java`
 - `**/*Test.java` -> Recommended
 - `**/*Tests.java`
 - `**/*TestCase.java`
 
-**Failsafe Plugin** (Integration Tests):
+Failsafe Plugin (Integration Tests):
+
 - `**/IT*.java`
 - `**/*IT.java` -> Recommended
 - `**/*ITCase.java`
 
-**Best Practice**: Stick to one convention per test type:
+Best Practice: Stick to one convention per test type:
+
 - Unit tests: `BookServiceTest.java`
 - Integration tests: `BookServiceIT.java`
 
@@ -138,13 +130,14 @@ This consistency makes it immediately clear what type of test you're looking at.
 
 ### Gradle Testing Configuration
 
-#### Test Structure in Gradle
+Gradle follows many of the same conventions as Maven when it comes to test structure.
 
 Gradle follows the same directory structure as Maven:
+
 - `src/test/java` - Test classes
 - `src/test/resources` - Test resources
 
-#### Dependency Configuration
+Next, we need to properly configure test dependencies in Gradle.
 
 ```gradle
 dependencies {
@@ -156,9 +149,9 @@ dependencies {
 
 The `testImplementation` configuration ensures dependencies are only available during testing.
 
-#### Gradle Test Configuration Best Practices
+To get the most out of Gradle's testing capabilities, we should configure test logging and create proper task separation.
 
-**1. Configure Test Logging**
+Within our `build.gralde` file we can configure the logging events that Gradle should print to stdout when running the tests:
 
 ```gradle
 test {
@@ -170,18 +163,42 @@ test {
 }
 ```
 
-TODO: *IT task with Gradle
+Furthermore, with Gradle, we need to explicitly define a task to run the integration tests:
+
+```groovy
+tasks.register('integrationTest', Test) {
+  description = 'Runs integration tests.'
+  group = 'verification'
+
+  useJUnitPlatform()
+  include '**/*IT.class'
+
+  testLogging {
+    events "passed"
+  }
+}
+
+tasks.named('check') {
+  dependsOn integrationTest
+}
+```
+
+In this configuration setup we follow the similar naming-scheme pattern of Maven where integration test classes have the postfix `*IT`.
+
+As part of the [official Gradle documentation](https://docs.gradle.org/current/userguide/java_testing.html#sec:configuring_java_integration_tests), we can also see an example of how one would configure Gradle to find integration test classes in a separate folder to split unit and integration tests stricter.
 
 ### Understanding Test Execution
 
 Both Maven and Gradle delegate test execution to a test runner. With Spring Boot, this is JUnit 5's Jupiter engine by default.
 
-**Maven Lifecycle**:
-- `compile` -> `test` (unit tests) -> `package` → `verify` (integration tests)
+Maven Lifecycle:
+
+- `compile` → `test` (unit tests) → `package` → `verify` (integration tests)
 - Running `mvn test` only executes unit tests
 - Running `mvn verify` executes both unit and integration tests
 
-**Gradle Tasks**:
+Gradle Tasks:
+
 - `gradle test` - Runs unit tests
 - `gradle integrationTest` - Runs integration tests
 
@@ -194,11 +211,12 @@ These principles apply to any Java project and form the foundation of a solid te
 ### What Makes a Good Unit Test?
 
 A unit test should be:
-- **Fast**: Executes in milliseconds, not seconds
-- **Isolated**: Tests a single unit of code without external dependencies
-- **Repeatable**: Produces the same result every time
-- **Self-validating**: Either passes or fails with no manual interpretation
-- **Timely**: Written close to the production code
+
+- Fast: Executes in milliseconds, not seconds
+- Isolated: Tests a single unit of code without external dependencies
+- Repeatable: Produces the same result every time
+- Self-validating: Either passes or fails with no manual interpretation
+- Timely: Written close to the production code
 
 ### The AAA Pattern
 
@@ -299,6 +317,7 @@ class PriceCalculatorTest {
     // Expected: 80 * 1.08 = 86.40
     assertEquals(86.40, finalPrice, 0.01);
   }
+}
 ```
 
 This test verifies that purchases under $100 don't receive a discount. The third parameter to `assertEquals` is the delta - we allow 1 cent difference for floating-point precision.
@@ -351,24 +370,29 @@ The `spring-boot-starter-test` is a comprehensive testing starter that brings to
 
 Here's what it includes transitively:
 
-**Core Testing Framework:**
-- **JUnit 5 (JUnit Jupiter)**: The modern testing framework for Java
+Core Testing Framework:
 
-**Assertion Libraries:**
-- **AssertJ**: Fluent assertion library with rich, readable assertions
-- **Hamcrest**: Matcher library for building complex test conditions
+- JUnit 5 (JUnit Jupiter): The modern testing framework for Java
 
-**Mocking Frameworks:**
-- **Mockito**: The most popular mocking framework for Java
+Assertion Libraries:
 
-**Spring Test Support:**
-- **Spring Test**: Core Spring testing features including TestContext framework
-- **Spring Boot Test**: Auto-configuration support for tests
+- AssertJ: Fluent assertion library with rich, readable assertions
+- Hamcrest: Matcher library for building complex test conditions
 
-**Additional Utilities:**
-- **JSONAssert**: For testing JSON responses
-- **JsonPath**: XPath-like syntax for JSON
-- **XMLUnit**: For XML testing (if needed)
+Mocking Frameworks:
+
+- Mockito: The most popular mocking framework for Java
+
+Spring Test Support:
+
+- Spring Test: Core Spring testing features including TestContext framework
+- Spring Boot Test: Auto-configuration support for tests
+
+Additional Utilities:
+
+- JSONAssert: For testing JSON responses
+- JsonPath: XPath-like syntax for JSON
+- XMLUnit: For XML testing (if needed)
 
 This means when we add just one dependency:
 
@@ -384,9 +408,7 @@ We get a complete testing toolkit without managing individual library versions. 
 
 ### JUnit 5: The Modern Testing Framework
 
-JUnit 5 (Jupiter) is the backbone of Java testing. Key improvements include:
-
-#### Basic Assertions
+JUnit 5 (Jupiter) is the backbone of Java testing. Let's explore its key improvements, starting with basic assertions that form the foundation of any test.
 
 ```java
 class StringUtilsTest {
@@ -418,7 +440,7 @@ class StringUtilsTest {
 }
 ```
 
-#### Exception Testing
+Beyond basic assertions, JUnit 5 provides excellent support for testing exceptions, which is crucial for validating error handling.
 
 ```java
 class ValidationServiceTest {
@@ -445,7 +467,7 @@ class ValidationServiceTest {
 }
 ```
 
-#### Understanding JUnit Jupiter Extensions (Coming from JUnit 4)
+For developers transitioning from JUnit 4, understanding JUnit Jupiter's extension model is crucial, as it replaces the older runner system with something much more powerful.
 
 If you're coming from JUnit 4, you might be familiar with `@RunWith` and custom runners.
 
@@ -471,11 +493,12 @@ class MyTest {
 
 This composability is crucial for real-world testing where you often need features from multiple frameworks.
 
-#### JUnit 5 Extension Points
+To understand how frameworks integrate with JUnit 5, we need to explore the various extension points available to developers.
 
 The extension model provides several callback interfaces that frameworks can implement:
 
-**Test Lifecycle Callbacks:**
+Test Lifecycle Callbacks:
+
 - `BeforeAllCallback` - Runs before all tests in a class
 - `BeforeEachCallback` - Runs before each test method
 - `BeforeTestExecutionCallback` - Runs immediately before test execution
@@ -483,21 +506,24 @@ The extension model provides several callback interfaces that frameworks can imp
 - `AfterEachCallback` - Runs after each test method
 - `AfterAllCallback` - Runs after all tests in a class
 
-**Parameter Resolution:**
+Parameter Resolution:
+
 - `ParameterResolver` - Provides parameters to test methods and constructors
 
-**Test Execution:**
+Test Execution:
+
 - `ExecutionCondition` - Controls whether tests should run
 - `TestInstancePostProcessor` - Processes test instances after creation
 - `TestInstancePreDestroyCallback` - Cleanup before test instance destruction
 
-**Exception Handling:**
+Exception Handling:
+
 - `TestExecutionExceptionHandler` - Handles exceptions thrown during test execution
 - `LifecycleMethodExecutionExceptionHandler` - Handles exceptions in lifecycle methods
 
 Let's see how popular frameworks use these extension points:
 
-**Mockito Extension Example:**
+Mockito Extension Example:
 
 ```java
 public class MockitoExtension implements
@@ -513,7 +539,7 @@ public class MockitoExtension implements
 
 The Mockito extension uses `BeforeEachCallback` to initialize mocks before each test and `ParameterResolver` to inject mocks as method parameters.
 
-**Spring Extension Example:**
+Spring Extension Example:
 
 ```java
 public class SpringExtension implements
@@ -531,7 +557,7 @@ public class SpringExtension implements
 
 Spring uses `TestInstancePostProcessor` to perform dependency injection after JUnit creates the test instance.
 
-**Creating Your Own Extension:**
+Creating Your Own Extension:
 
 Here's a practical example - a timing extension that warns about slow tests:
 
@@ -569,7 +595,7 @@ class PerformanceTests {
 }
 ```
 
-**Extension Store for State Management:**
+Extension Store for State Management:
 
 Extensions can store state using the ExtensionContext's Store:
 
@@ -583,17 +609,17 @@ Object value = store.get("key");
 
 This store is namespaced and hierarchical, allowing extensions to maintain state without conflicts.
 
-**Common Framework Extensions:**
+Common Framework Extensions:
 
-- **MockitoExtension**: Initializes mocks and injects them
-- **SpringExtension**: Manages Spring context and dependency injection
-- **TempDirectory**: Provides temporary directories for file testing
-- **TestContainersExtension**: Manages Docker containers for integration tests
-- **WireMockExtension**: Sets up mock HTTP servers
+- MockitoExtension: Initializes mocks and injects them
+- SpringExtension: Manages Spring context and dependency injection
+- TempDirectory: Provides temporary directories for file testing
+- TestContainersExtension: Manages Docker containers for integration tests
+- WireMockExtension: Sets up mock HTTP servers
 
 The extension model is what makes JUnit 5 so powerful for integration with modern frameworks and tools.
 
-#### Parameterized Tests
+One of JUnit 5's most valuable features for reducing test duplication is parameterized tests, which allow us to run the same test logic with different inputs.
 
 Parameterized tests let us run the same test logic with different inputs. This is one of JUnit 5's most powerful features for reducing test duplication.
 
@@ -650,7 +676,7 @@ void shouldValidateEmailsWithExpectedResults(
 
 Each line in `@CsvSource` provides values for both parameters. This is much cleaner than writing four separate test methods.
 
-#### Test Lifecycle Annotations
+To manage test setup and cleanup effectively, JUnit 5 provides several lifecycle annotations that control when initialization and cleanup code runs.
 
 JUnit 5 provides lifecycle annotations that control when setup and teardown code runs. If you're coming from JUnit 4, here's the mapping:
 
@@ -727,7 +753,7 @@ static void closePool() {
 
 Like `@BeforeAll`, this must be static and runs just once after all tests complete.
 
-#### Nested Tests for Better Organization
+When testing complex classes with multiple behaviors, nested tests provide an excellent way to organize related test cases together.
 
 Nested tests help organize related test cases together. This is particularly useful when testing different aspects of the same class.
 
@@ -821,9 +847,7 @@ class ProductServiceTest {
 }
 ```
 
-AssertJ shines with complex assertions:
-
-#### String Assertions
+AssertJ really shines when working with complex data types. String assertions, for example, offer rich validation capabilities that make tests more expressive.
 
 AssertJ provides rich string assertions that make tests more expressive. Let's start with basic checks:
 
@@ -863,7 +887,7 @@ assertThat(result)
 
 The `matches` method accepts regular expressions, while `isEqualToIgnoringCase` is perfect for user input validation.
 
-#### Collection Assertions
+When working with collections, AssertJ provides extensive assertion capabilities that go far beyond simple size checks.
 
 AssertJ excels at collection assertions. Let's start with a simple list of numbers:
 
@@ -935,7 +959,7 @@ assertThat(team)
 
 The `tuple` method groups multiple values for comparison. This is cleaner than writing separate assertions for each property.
 
-#### Map Assertions
+For testing map-based data structures, AssertJ provides specialized assertions that validate both keys and values efficiently.
 
 ```java
 @Test
@@ -956,7 +980,7 @@ void testMapAssertions() {
 }
 ```
 
-#### Custom Assertions
+When built-in assertions aren't sufficient for complex objects, AssertJ allows us to create custom validation logic using the `satisfies` method.
 
 ```java
 @Test
@@ -978,9 +1002,7 @@ void testCustomAssertions() {
 
 ### Mockito: Isolating Units for True Unit Tests
 
-Mockito is essential for creating test doubles to isolate the unit under test. Let's explore how to use it effectively.
-
-#### Basic Mocking
+Mockito is essential for creating test doubles to isolate the unit under test. Let's explore how to use it effectively, starting with basic mocking techniques that form the foundation of isolated unit testing.
 
 First, let's create mocks manually:
 
@@ -1037,7 +1059,7 @@ assertThat(order.getTransactionId()).isEqualTo("TXN-123");
 assertThat(order.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
 ```
 
-#### Using Mockito Annotations
+While manual mock creation works well, Mockito annotations provide a cleaner approach that reduces boilerplate code.
 
 Mockito annotations make tests cleaner. First, enable Mockito with the extension:
 
@@ -1108,9 +1130,9 @@ verify(emailService, never()).sendOrderConfirmation(any());
 
 The `never()` verification ensures a method wasn't called - crucial for testing error paths.
 
-#### Advanced Mocking Techniques
+Beyond basic mocking, Mockito offers advanced techniques for handling complex testing scenarios.
 
-**Stubbing Consecutive Calls**
+Stubbing Consecutive Calls
 
 Sometimes a method returns different values on successive calls. Mockito handles this elegantly:
 
@@ -1134,7 +1156,7 @@ assertEquals(99, random.nextInt(100));
 
 This is useful for testing retry logic or state-dependent behavior.
 
-**Throwing Exceptions**
+Throwing Exceptions
 
 To test error handling, mocks can throw exceptions:
 
@@ -1155,7 +1177,7 @@ assertThrows(UserNotFoundException.class,
 
 This verifies your service properly handles repository exceptions.
 
-**Argument Captors**
+Argument Captors
 
 Sometimes you need to inspect complex objects passed to mocks. First, create a captor:
 
@@ -1189,7 +1211,7 @@ assertThat(sentEmail.getBody()).contains("John Doe");
 
 This ensures the email was constructed correctly with user data.
 
-**Using Spies for Partial Mocking**
+Using Spies for Partial Mocking
 
 Spies wrap real objects, allowing you to override specific methods while keeping others real:
 
@@ -1227,7 +1249,7 @@ assertEquals("one", spyList.get(0));
 assertEquals(100, spyList.size());
 ```
 
-**Answer for Dynamic Stubbing**
+Answer for Dynamic Stubbing
 
 For complex stubbing logic, use `Answer` to calculate returns dynamically:
 
@@ -1714,18 +1736,21 @@ This tests your `formatName()` method's capitalization logic - actual business v
 
 In this chapter, we've covered the fundamentals of testing in Spring Boot projects:
 
-**Build Tool Configuration**:
+Build Tool Configuration:
+
 - Maven uses Surefire for unit tests and Failsafe for integration tests
 - Gradle provides similar separation with custom test tasks
 - Following naming conventions (`*Test.java` and `*IT.java`) ensures proper test detection
 
-**Testing Toolkit**:
+Testing Toolkit:
+
 - JUnit 5 provides the foundation with improved assertions and lifecycle management
 - AssertJ offers fluent, readable assertions for all data types
 - Mockito enables true unit testing by isolating dependencies
 - All these tools work together seamlessly in Spring Boot projects
 
-**Unit Testing Best Practices**:
+Unit Testing Best Practices:
+
 - Write fast, isolated, repeatable tests
 - Follow the AAA (Arrange-Act-Assert) or Given/When/Then pattern
 - Test one behavior per test method

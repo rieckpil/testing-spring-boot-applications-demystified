@@ -17,6 +17,34 @@ Use `@SpringBootTest` when:
 - Validating production-like scenarios
 - Testing features that require the full Spring context
 
+### The Trade-offs of Full Context Testing
+
+While `@SpringBootTest` is powerful, it comes with trade-offs that are important to understand. Choosing between a full context test and a test slice is a key decision in designing an effective testing strategy.
+
+Here is a comparison to help you decide:
+
+| Aspect                  | `@SpringBootTest` (Full Context)                               | Test Slices (e.g., `@WebMvcTest`, `@DataJpaTest`)                |
+| ----------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Execution Speed     | Slower, as it loads the entire `ApplicationContext`.           | Faster, as they load only a specific, relevant part of the context. |
+| Scope & Brittleness | Broad. Tests the integration of many components. Changes in unrelated components can break the test, making it more brittle. | Narrow and focused. Tests are isolated to a specific layer, making them less brittle and easier to debug. |
+| Realism             | High. Closely mimics the production environment.               | Lower. Mocks are often used, so it's not a full integration test. |
+| Feedback Loop       | Longer feedback loop due to slower execution.                  | Shorter feedback loop, ideal for rapid, iterative development.   |
+| Use Case            | Best for critical end-to-end workflows and ensuring all parts of the application work together correctly. | Best for testing the logic within a specific layer (e.g., a controller or repository) in isolation. |
+
+When to Prefer `@SpringBootTest`:
+
+-   You need to verify a critical business workflow that spans multiple layers (e.g., from a REST endpoint to the database).
+-   You are testing application startup, configuration properties, or profile-specific behavior.
+-   The interaction between components is complex and cannot be easily mocked.
+
+When to Prefer Test Slices:
+
+-   You are focused on the logic of a single component, like a controller or a repository.
+-   You want fast feedback while developing a specific feature.
+-   The dependencies of your component are easy to mock (e.g., a service dependency in a controller test).
+
+A balanced testing strategy will include a mix of both. Use test slices for the bulk of your component-level testing and reserve `@SpringBootTest` for a smaller number of high-value integration tests that cover your most critical user journeys.
+
 ### Configuring the Application Context for Tests
 
 `@SpringBootTest` offers several configuration options.
@@ -32,11 +60,8 @@ class BookshelfApplicationIT {
 }
 ```
 
-This configuration showcases `@SpringBootTest`'s flexibility:
-
-- `RANDOM_PORT` starts a real embedded servlet container (usually Tomcat) on an available port, preventing conflicts when tests run in parallel
-
 The `webEnvironment` options include:
+
 - `MOCK` (default): Loads a web ApplicationContext with a mock servlet environment
 - `RANDOM_PORT`: Starts an embedded server on a random port
 - `DEFINED_PORT`: Starts an embedded server on the port defined in properties
@@ -44,16 +69,14 @@ The `webEnvironment` options include:
 
 ### Managing Context Caching for Performance
 
-#### Understanding Context Caching Theory
-
-Spring Test framework implements an intelligent caching mechanism for application contexts. When a test runs, Spring creates an application context and caches it for reuse.
+To understand how to optimize our test performance, let's first explore how Spring Test framework implements an intelligent caching mechanism for application contexts. When a test runs, Spring creates an application context and caches it for reuse.
 
 The cache key is based on:
 
-1. **Configuration classes**: The `@SpringBootTest` classes or `@ContextConfiguration`
-2. **Active profiles**: Set via `@ActiveProfiles`
-3. **Properties**: Defined in `@TestPropertySource` or test properties
-4. **Context customizers**: Including `@MockBean`, `@SpyBean`, and custom test configurations
+1. Configuration classes: The `@SpringBootTest` classes or `@ContextConfiguration`
+2. Active profiles: Set via `@ActiveProfiles`
+3. Properties: Defined in `@TestPropertySource` or test properties
+4. Context customizers: Including `@MockBean`, `@SpyBean`, and custom test configurations
 5. ... and further context customizations, see the [docs](https://docs.spring.io/spring-framework/reference/testing/testcontext-framework/ctx-management/caching.html).
 
 Here's how context caching works in practice:
@@ -92,9 +115,7 @@ class BookControllerIT {
 
 `@MockBean` creates a new context because Spring must replace the real bean with a mock. Understanding these rules is crucial for optimizing test suite performance.
 
-#### Optimizing for Context Caching
-
-1. **Create a standardized base test configuration**:
+Now that we understand the theory, let's explore practical strategies for optimizing context caching. The first approach is to create a standardized base test configuration:
 
 Start with a base test class that all integration tests can extend:
 
@@ -151,7 +172,7 @@ class BookControllerIT extends BaseIntegrationTest {
 
 This second test class also inherits the configuration. Spring recognizes the identical setup and reuses the same context. The first test class creates the context (slow), but all subsequent classes reuse it (fast). This pattern can reduce test suite runtime from minutes to seconds.
 
-2. **Understanding what breaks context caching**:
+2. Understanding what breaks context caching:
 
 Here's an anti-pattern that breaks caching:
 
@@ -186,7 +207,7 @@ class DifferentContextWithPropertyTest {
 
 Different properties mean different application behavior, requiring a new context. If you have 10 test classes each with different `@MockBean` annotations, you'll have 10 different contexts, significantly slowing down your test suite.
 
-3. **Smart mocking strategy to preserve context caching**:
+3. Smart mocking strategy to preserve context caching:
 
 Instead of using `@MockBean` which breaks caching, use `@TestConfiguration`:
 
@@ -213,7 +234,7 @@ This approach:
 - Reduces test execution time
 - Saves memory
 
-3. **Use `@DirtiesContext` judiciously**:
+3. Use `@DirtiesContext` judiciously:
 
 ```java
 // Only use when absolutely necessary
@@ -228,7 +249,7 @@ void shouldModifyApplicationState() {
 
 Use this sparingly, only when a test genuinely corrupts the context (like modifying a singleton bean's state). Each use adds significant time to your test suite. Consider refactoring the test to avoid state modification instead.
 
-4. **Monitor context creation**:
+4. Monitor context creation:
 
 ```properties
 # Enable logging to see context caching
@@ -484,18 +505,14 @@ Finally, we verify that the book was actually saved to the database with the cor
 
 ### Testing with Mock External Services
 
-#### Introduction to WireMock
+When our applications interact with external HTTP APIs, we need a way to test these integrations reliably. WireMock is a library for stubbing and mocking HTTP services. It helps us test components that depend on external HTTP APIs without actually calling those services. This is crucial for:
 
-WireMock is a library for stubbing and mocking HTTP services. It helps us test components that depend on external HTTP APIs without actually calling those services. This is crucial for:
+1. Test Isolation: Tests don't depend on external service availability
+2. Predictable Responses: Control exactly what the external service returns
+3. Error Simulation: Test how your code handles various error scenarios
+4. Performance: No network latency in tests
 
-1. **Test Isolation**: Tests don't depend on external service availability
-2. **Predictable Responses**: Control exactly what the external service returns
-3. **Error Simulation**: Test how your code handles various error scenarios
-4. **Performance**: No network latency in tests
-
-#### Adding WireMock to Your Project
-
-Add the WireMock dependency to your test dependencies:
+To get started with WireMock, we need to add the WireMock dependency to our test dependencies:
 
 ```xml
 <dependency>
@@ -508,9 +525,7 @@ Add the WireMock dependency to your test dependencies:
 
 The `test` scope ensures WireMock is only available during testing, not in production.
 
-#### Basic WireMock Usage
-
-WireMock can be used as a JUnit extension or started programmatically. Here's a comprehensive example testing an OpenLibrary API client:
+With WireMock added to our project, let's explore how to use it. WireMock can be used as a JUnit extension or started programmatically. Here's a comprehensive example testing an OpenLibrary API client:
 
 ```java
 class OpenLibraryApiClientTest {
@@ -542,9 +557,7 @@ Key points:
 2. Point the WebClient to WireMock's URL instead of the real API
 3. Create a fresh client for each test to ensure isolation
 
-#### Testing Successful Responses
-
-First, set up a successful response stub:
+Let's start by testing the happy path scenario where our external API returns a successful response. First, we set up a successful response stub:
 
 ```java
 @Test
@@ -593,9 +606,7 @@ assertThat(result.numberOfPages()).isEqualTo(431);
 
 Verify that the client correctly parses the mocked response.
 
-#### Testing Error Scenarios
-
-Testing error handling is equally important. Configure WireMock to return an error:
+While testing successful responses is important, we also need to ensure our application handles failures gracefully. Testing error handling is equally important. Configure WireMock to return an error:
 
 ```java
 @Test
@@ -628,11 +639,9 @@ WebClientResponseException exception = assertThrows(
 assertThat(exception.getStatusCode().value()).isEqualTo(500);
 ```
 
-This ensures your application gracefully handles external service failures.
+This ensures our application gracefully handles external service failures.
 
-#### Testing Network Issues
-
-WireMock can simulate network problems like slow responses:
+Beyond simple error responses, WireMock can also simulate network problems like slow responses:
 
 ```java
 @Test
@@ -665,12 +674,12 @@ This ensures your timeout and retry configurations work correctly.
 
 ## Best Practices for @SpringBootTest
 
-1. **Use sparingly**: Full context tests are slower, reserve them for critical integration scenarios
-2. **Prefer test slices**: When testing specific layers, use focused test slices
-3. **Manage test data carefully**: Use `@Sql`, `@Transactional`, or custom cleanup strategies
-4. **Mock external dependencies**: Use `@MockBean` for external services to ensure test reliability
-5. **Profile your tests**: Use different profiles for different testing scenarios
-6. **Monitor context caching**: Group tests with similar configurations to maximize context reuse
-7. **Keep tests independent**: Each test should be able to run in isolation
+1. Use sparingly: Full context tests are slower, reserve them for critical integration scenarios
+2. Prefer test slices: When testing specific layers, use focused test slices
+3. Manage test data carefully: Use `@Sql`, `@Transactional`, or custom cleanup strategies
+4. Mock external dependencies: Use `@MockBean` for external services to ensure test reliability
+5. Profile your tests: Use different profiles for different testing scenarios
+6. Monitor context caching: Group tests with similar configurations to maximize context reuse
+7. Keep tests independent: Each test should be able to run in isolation
 
 By mastering `@SpringBootTest`, we can write comprehensive integration tests that give us confidence our application works correctly as a whole, while still maintaining reasonable test execution times through careful design and configuration.

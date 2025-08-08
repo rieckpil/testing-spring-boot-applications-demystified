@@ -14,15 +14,9 @@ Testing anti-patterns are practices that seem reasonable at first but ultimately
 
 ### Over-Mocking: The Isolation Trap
 
-**The Problem**: Excessive mocking creates tests that pass but don't reflect real system behavior. When we mock everything, we're essentially testing our mocks, not our code.
+The Problem: Excessive mocking creates tests that pass but don't reflect real system behavior. When we mock everything, we're essentially testing our mocks, not our code.
 
-#### Why Over-Mocking Hurts
-
-1. **False Confidence**: Tests pass even when integration would fail
-2. **Brittle Tests**: Any refactoring breaks tests, even if behavior is unchanged
-3. **Maintenance Burden**: Updating mocks becomes more work than the actual code
-4. **Lost Integration Issues**: Problems between components go undetected
-5. **Unclear Intent**: It's hard to understand what the test actually verifies
+Over-mocking hurts our testing efforts in several critical ways. First, it creates false confidence - tests pass even when integration would fail in production. Second, it leads to brittle tests where any refactoring breaks tests, even if behavior remains unchanged. The maintenance burden becomes overwhelming as updating mocks becomes more work than the actual code. We also lose the ability to catch integration issues, as problems between components go undetected. Finally, the test's intent becomes unclear - it's hard to understand what the test actually verifies when everything is mocked.
 
 ```java
 // Anti-pattern: Over-mocked test
@@ -72,14 +66,9 @@ The actual business logic we're testing is just one line! The `verify()` method 
 
 We're testing that methods were called, not that the system behaves correctly. This is like checking that a chef used a knife, but not tasting if the food is good.
 
-**The Solution**: Use integration tests for complex workflows and mock only external boundaries.
+The Solution: Use integration tests for complex workflows and mock only external boundaries.
 
-#### Guidelines for Effective Mocking
-
-1. **Mock External Dependencies Only**: Databases, web services, email servers
-2. **Use Real Components When Possible**: Let Spring wire real beans
-3. **Prefer Test Slices**: Use `@DataJpaTest`, `@WebMvcTest` for focused testing
-4. **Mock at System Boundaries**: Not between your own components
+Effective mocking follows clear guidelines that help us avoid these pitfalls. We should mock external dependencies only - databases, web services, email servers - while using real components whenever possible and letting Spring wire real beans. We can prefer test slices like `@DataJpaTest` and `@WebMvcTest` for focused testing, and remember to mock at system boundaries, not between our own components.
 
 ```java
 // Better: Integration test with selective mocking
@@ -98,15 +87,9 @@ We use `@Autowired` to inject real Spring beans, not mocks. The only mock is `@M
 
 ### Testing Implementation Details
 
-**The Problem**: Tests that verify internal implementation make refactoring difficult and don't ensure correct behavior.
+The Problem: Tests that verify internal implementation make refactoring difficult and don't ensure correct behavior.
 
-#### Signs You're Testing Implementation
-
-1. **Using Reflection**: Accessing private fields or methods
-2. **Verifying Method Calls**: Testing HOW instead of WHAT
-3. **Spy Objects**: Spying on the class under test
-4. **Exact Call Counts**: Counting internal method invocations
-5. **White-Box Testing**: Tests that know too much about internals
+We can recognize when we're testing implementation by watching for several warning signs. Using reflection to access private fields or methods is a clear indicator, as is verifying method calls - essentially testing HOW something works instead of WHAT it does. Creating spy objects to monitor the class under test, counting exact method invocations, and writing tests that know too much about internal details all point to implementation-focused testing rather than behavior-focused testing.
 
 ```java
 // Anti-pattern: Testing HOW it works, not WHAT it does
@@ -147,15 +130,9 @@ This is the worst anti-pattern: using Java reflection to access private fields. 
 
 This completely breaks encapsulation - one of the fundamental principles of object-oriented programming. Private fields are private for a reason!
 
-**The Solution**: Test behavior and outcomes, not implementation.
+The Solution: Test behavior and outcomes, not implementation.
 
-#### How to Test Behavior Correctly
-
-1. **Focus on Public API**: Only test through public methods
-2. **Verify Outcomes**: Check return values and side effects
-3. **Test State Changes**: Verify database or external changes
-4. **Ignore Implementation**: Don't care HOW it's done
-5. **Black-Box Testing**: Treat the component as a black box
+To test behavior correctly, we need to shift our focus to what matters to the business. We should focus on the public API by only testing through public methods, verify outcomes by checking return values and side effects, and test state changes by verifying database or external changes. The key is to ignore implementation details - we don't care HOW something is done, only that it produces the correct result. This black-box testing approach treats components as sealed units where we only care about inputs and outputs.
 
 ```java
 // Better: Testing WHAT it does, not HOW
@@ -207,15 +184,13 @@ This tests the complete behavior: the book is no longer marked as borrowed in ou
 
 ### The Fragile Test
 
-**The Problem**: Tests that break with minor, unrelated changes indicate tight coupling to implementation.
+The Problem: Tests that break with minor, unrelated changes indicate tight coupling to implementation.
 
-#### What Makes Tests Fragile
+Several factors make tests fragile and prone to breaking with unrelated changes. Exact string matching tests precise formatting that might change for aesthetic reasons.
 
-1. **Exact String Matching**: Testing precise formatting
-2. **Order Dependencies**: Assuming specific ordering
-3. **Timing Assumptions**: Hard-coded delays or timeouts
-4. **Environmental Dependencies**: Tests that only work on specific OS/locale
-5. **Shared State**: Tests that depend on other tests
+Order dependencies assume specific ordering that might be optimized later. Timing assumptions rely on hard-coded delays or timeouts that work inconsistently across environments. Environmental dependencies create tests that only work on specific operating systems or locales.
+
+Finally, shared state between tests creates dependencies where one test's behavior affects another, leading to unpredictable failures.
 
 ```java
 // Anti-pattern: Breaks if formatting changes slightly
@@ -246,17 +221,15 @@ assertThat(result).isEqualTo(
 );
 ```
 
-This assertion expects an exact string match, including specific spacing, line breaks (\n), and field order. If someone adds an extra space, changes the order of fields, or adds a colon, this test breaks even though the information is still correct. This makes refactoring painful.
+This assertion expects an exact string match, including specific spacing, line breaks, and field order. If someone adds an extra space, changes the order of fields, or adds a colon, this test breaks even though the information is still correct. This makes refactoring painful.
 
-**The Solution**: Test essential characteristics, not exact formatting.
+The Solution: Test essential characteristics, not exact formatting.
 
-#### Making Tests Resilient
+Making tests resilient requires focusing on what truly matters rather than superficial details. We should test content rather than format by verifying that information is present without caring about its exact presentation.
 
-1. **Test Content, Not Format**: Verify information is present
-2. **Use Flexible Matchers**: Contains, matches patterns
-3. **Parameterize Tests**: Make tests data-driven
-4. **Abstract Assertions**: Create domain-specific assertions
-5. **Test Contracts**: Focus on what must be true
+Using flexible matchers like "contains" or pattern matching makes tests more forgiving of minor changes.
+
+Parameterizing tests makes them data-driven and less brittle. Creating domain-specific assertions abstracts away formatting concerns. Most importantly, we should test contracts - focusing on what must be true from a business perspective rather than implementation details.
 
 ```java
 // Better: Tests what matters, ignores formatting
@@ -287,17 +260,46 @@ The `containsIgnoringCase()` method doesn't care about capitalization, and `cont
 
 This test will survive formatting changes while still ensuring correctness.
 
+### Identifying and Mitigating Flaky Tests
+
+A flaky test is a test that can both pass and fail for the same code. These are among the most damaging types of tests because they erode trust in the entire test suite. When developers can't trust the test results, they start ignoring failures, and the value of the test suite diminishes.
+
+Common Causes of Flakiness:
+
+*   Asynchronous Operations: Tests that don't properly wait for asynchronous operations to complete are a primary source of flakiness. A test might pass if the operation finishes quickly but fail if there's a slight delay.
+*   Shared State: If tests are not properly isolated, one test can leave the system in a state that causes a subsequent test to fail.
+*   Concurrency Issues: In parallel test execution, tests that are not thread-safe can interfere with each other.
+*   External Dependencies: Relying on external services that may be slow or unavailable can cause tests to fail intermittently.
+
+Strategies for Mitigation:
+
+1.  Use `Awaitility` for Asynchronous Code: Instead of using `Thread.sleep()`, which leads to both slow and flaky tests, use a library like [Awaitility](https://github.com/awaitility/awaitility). It provides a powerful DSL for waiting for asynchronous operations to complete.
+
+    ```java
+    // Don't do this:
+    // Thread.sleep(2000);
+    // assertThat(asyncService.isDone()).isTrue();
+
+    // Do this instead:
+    await().atMost(5, TimeUnit.SECONDS).until(() -> asyncService.isDone());
+    ```
+
+2.  Ensure Test Isolation: As discussed earlier, use `@Transactional` for database tests, clean up created files, and reset mocks between tests to ensure that each test runs in a clean, predictable environment.
+
+3.  Use Resource Locks for Parallel Tests: When running tests in parallel, use JUnit 5's `@ResourceLock` annotation to prevent tests that use shared resources from running concurrently.
+
+4.  Mock External Services: Use tools like WireMock or `@MockBean` to create stable, predictable responses from external dependencies.
+
+
 ### The Slow Test Suite
 
-**The Problem**: Slow tests discourage frequent execution and delay feedback.
+The Problem: Slow tests discourage frequent execution and delay feedback.
 
-#### Common Causes of Slow Tests
+Several factors commonly contribute to slow test execution. Large data sets with thousands of records often provide no additional testing value compared to smaller, representative samples.
 
-1. **Large Data Sets**: Testing with thousands of records
-2. **Real Time Delays**: Using `Thread.sleep()` or real timeouts
-3. **Full Context Loading**: Using `@SpringBootTest` unnecessarily
-4. **External Services**: Calling real APIs or databases
-5. **Inefficient Queries**: N+1 problems in tests
+Real time delays using `Thread.sleep()` or actual timeouts waste precious development time. Full context loading through unnecessary use of `@SpringBootTest` adds overhead when lighter test slices would suffice.
+
+Calling real external services like APIs or remote databases introduces network latency and reliability issues. Finally, inefficient queries and N+1 problems that might be acceptable in production can significantly slow down test execution.
 
 ```java
 // Anti-pattern: Multiple problems making test slow
@@ -335,15 +337,13 @@ assertThat(bookRepository.count()).isEqualTo(10000);
 
 Over many tests, these delays add up to minutes or hours of wasted time. There are better ways to handle asynchronous operations.
 
-**The Solution**: Use appropriate test sizes and avoid real delays.
+The Solution: Use appropriate test sizes and avoid real delays.
 
-#### Strategies for Faster Tests
+Several strategies can dramatically improve test performance. Using representative data means choosing the minimum dataset that proves our point rather than massive collections.
 
-1. **Representative Data**: Use minimum data that proves the point
-2. **Test Slices**: Use `@DataJpaTest` instead of `@SpringBootTest`
-3. **Async Utilities**: Replace `sleep()` with Awaitility
-4. **Mock Time**: Use Clock abstraction for time-based logic
-5. **Parallel Execution**: Run independent tests concurrently
+Using test slices like `@DataJpaTest` instead of `@SpringBootTest` loads only necessary components.
+
+Replacing `Thread.sleep()` with async utilities like Awaitility provides faster, more reliable waiting mechanisms. Mocking time through Clock abstractions makes time-based logic testable without real delays. Finally, running independent tests concurrently through parallel execution takes advantage of modern multi-core systems.
 
 ```java
 // Better: Fast, focused test
@@ -389,17 +389,11 @@ The custom repository method `countByGenre()` efficiently counts books without l
 
 ### Context Caching Strategies
 
-#### Understanding Context Cache Impact
-
 Spring's context caching can reduce test execution time by 50-90%. When Spring loads an application context for a test, it caches it and reuses it for other tests with identical configuration. This saves the expensive initialization process.
 
-#### What Breaks Context Caching
+Several factors can break context caching and force Spring to create new contexts. Different `@MockBean` or `@SpyBean` configurations mean each unique mock creates a new context. Any property differences force a new context, as do different active profiles since they're part of the cache key.
 
-1. **Different @MockBean/@SpyBean**: Each unique mock creates a new context
-2. **Different Properties**: Any property difference forces new context
-3. **Different Profiles**: Active profiles are part of the cache key
-4. **@DirtiesContext**: Explicitly marks context as dirty
-5. **Different Configuration Classes**: Additional @Import or @TestConfiguration
+The `@DirtiesContext` annotation explicitly marks a context as dirty, and different configuration classes through additional `@Import` or `@TestConfiguration` annotations also prevent reuse.
 
 ```java
 // Good: Share base configuration for context reuse
@@ -424,15 +418,9 @@ Both test classes inherit the same configuration from `BaseIntegrationTest`. Spr
 
 Without this pattern, each test class might create its own context, doubling the startup time.
 
-#### Avoiding Context Pollution
-
 Context pollution occurs when tests modify shared state, forcing Spring to create new contexts. This dramatically slows down test execution.
 
-**Common Pollution Sources:**
-- Modifying singleton beans
-- Changing system properties
-- Altering database schemas
-- Clearing caches
+Common pollution sources include modifying singleton beans, changing system properties, altering database schemas, and clearing caches.
 
 ```java
 // Bad: Forces context recreation
@@ -464,15 +452,180 @@ void setUp() {
 
 Instead of modifying the real cache and dirtying the context, we mock the CacheManager. Each test gets a fresh, isolated cache instance. The `@BeforeEach` method runs before each test, ensuring clean state without the expensive context recreation. This approach is hundreds of times faster.
 
+### Visualizing Test Performance with Spring Test Profiler
+
+While understanding context caching theory is important, seeing the actual impact on our test suite provides valuable insight. The [Spring Test Profiler](https://github.com/PragmaTech-GmbH/spring-test-profiler) is an open-source tool developed by [PragmaTech](https://pragmatech.digital/) that helps us visualize and optimize Spring Test execution by providing detailed reports on context caching behavior.
+
+Key Benefits:
+
+- Visual Reports: HTML reports showing context reuse statistics
+- Cache Hit Analysis: Identify which tests share contexts and which create new ones
+- Optimization Opportunities: Discover tests that could be grouped for better caching
+- Performance Metrics: Track context creation times and memory usage
+
+The tool is particularly valuable for large test suites where context caching optimization can dramatically reduce build times.
+
+First, let's add the Spring Test Profiler dependency to our `pom.xml`:
+
+```xml
+<dependency>
+  <groupId>digital.pragmatech.testing</groupId>
+  <artifactId>spring-test-profiler</artifactId>
+  <version>0.0.11</version> <!-- use the latest version -->
+  <scope>test</scope>
+</dependency>
+```
+
+The profiler requires Java 17+ and works with Spring Boot 3.x applications. Adding it to our Shelfie application is straightforward since we're already using Spring Boot > 3.X.
+
+The profiler offers two activation methods.
+
+The recommended approach uses Spring's auto-configuration mechanism.
+
+Create a file `src/test/resources/META-INF/spring.factories`:
+
+```properties
+# Enable Spring Test Profiler automatically
+org.springframework.test.context.TestExecutionListener=\
+digital.pragmatech.testing.SpringTestProfilerListener
+org.springframework.context.ApplicationContextInitializer=\
+digital.pragmatech.testing.diagnostic.ContextDiagnosticApplicationInitializer
+```
+
+This registers the profiler as a `TestExecutionListener`, which automatically tracks all Spring test executions without requiring changes to individual test classes.
+
+Alternative manual activation (useful for selective profiling):
+
+```java
+@SpringBootTest
+@TestExecutionListeners(
+  value = SpringTestProfilerListener.class,
+  mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
+)
+@ContextConfiguration(initializers = ContextDiagnosticApplicationInitializer.class)
+class BookshelfServiceIT {
+  // Test methods
+}
+```
+
+After running tests, the profiler generates an HTML report at:
+
+- Maven: `target/spring-test-profiler/latest.html`
+- Gradle: `build/spring-test-profiler/latest.html`
+
+The report includes several key sections:
+
+- Context Summary: Shows total contexts created, reused, and cache hit ratio
+- Test Execution Timeline: Visualizes when contexts are created vs. reused
+- Context Details: Lists all unique contexts with their configuration hash
+- Test Groupings: Shows which tests share the same context
+
+Let's examine what different scenarios look like in our Shelfie application:
+
+Poor Caching Example
+
+```java
+// Each test creates its own context
+@SpringBootTest(properties = "debug=true")
+class BookServiceSlowTest { }
+
+@SpringBootTest(properties = "logging.level.org.hibernate=DEBUG")
+class BookRepositorySlowTest { }
+
+@SpringBootTest
+@MockBean
+class BookControllerSlowTest {
+  @MockBean
+  private BookService bookService;
+}
+```
+
+In the profiler report, we'd see:
+
+- Context Reuse: 0%
+- Contexts Created: 3
+- Each test waits for full context initialization
+
+Optimized Caching Example:
+```java
+// Base configuration shared across tests
+@SpringBootTest
+@ActiveProfiles("test")
+public abstract class BaseIntegrationTest {
+  @Container
+  @ServiceConnection
+  static PostgreSQLContainer<?> postgres =
+    new PostgreSQLContainer<>("postgres:16-alpine");
+}
+
+// These tests share the same context
+class BookServiceOptimizedTest extends BaseIntegrationTest { }
+class BookRepositoryOptimizedTest extends BaseIntegrationTest { }
+class BookControllerOptimizedTest extends BaseIntegrationTest { }
+```
+
+The profiler report would show:
+
+- Context Reuse: 67% (2 of 3 tests reuse context)
+- Contexts Created: 1
+- Significant time savings for subsequent tests
+
+Let's add the profiler to our Shelfie application and run a real optimization cycle.
+
+First, run our existing tests to see the baseline:
+
+```bash
+./mvnw verify
+```
+
+The profiler generates a report showing current context usage patterns.
+
+A sample report [looks like this](https://github.com/PragmaTech-GmbH/spring-test-profiler?tab=readme-ov-file#features).
+
+In our case, we might discover:
+
+- Integration tests using different `@MockBean` configurations
+- Property variations breaking context caching
+- Opportunities to create shared base classes
+
+After identifying issues, we can refactor for better caching:
+
+```java
+// Before: Multiple contexts due to different mocks
+@SpringBootTest
+class BookBorrowingIT {
+  @MockBean private EmailService emailService;
+}
+
+@SpringBootTest
+class BookReturnIT {
+  @MockBean private NotificationService notificationService;
+}
+
+// After: Shared context with consolidated mocks
+@SpringBootTest
+public abstract class BaseLibraryIT {
+  @MockBean protected EmailService emailService;
+  @MockBean protected NotificationService notificationService;
+}
+
+class BookBorrowingIT extends BaseLibraryIT { }
+class BookReturnIT extends BaseLibraryIT { }
+```
+
+Re-running tests with the profiler active shows the improvement in context reuse metrics.
+
+When using the Spring Test Profiler effectively, we should run it regularly and include profiling in CI/CD to track performance trends. Focus on high-impact changes by prioritizing optimization of tests with the longest context creation times.
+
+Balance context reuse against test isolation - don't sacrifice test independence for minor performance gains. Finally, document successful caching patterns and share them across your team.
+
+The Spring Test Profiler transforms abstract context caching concepts into actionable insights, making test suite optimization much more approachable for development teams.
+
 ### Reducing Test Startup Time
 
-#### Techniques for Faster Startup
+Several techniques can significantly reduce test startup time. Lazy initialization creates beans only when needed, while disabling unused auto-configuration turns off unnecessary starters.
 
-1. **Lazy Initialization**: Beans created only when needed
-2. **Disable Auto-Configuration**: Turn off unused starters
-3. **Specific Component Scanning**: Limit package scanning
-4. **Skip Database Migration**: Use pre-created schemas
-5. **Conditional Beans**: Use `@ConditionalOnProperty`
+Specific component scanning limits package scanning to relevant areas, and skipping database migration in favor of pre-created schemas eliminates setup overhead. Finally, conditional beans using `@ConditionalOnProperty` allow us to exclude expensive components during testing.
 
 ```java
 // Slow: Loads everything
@@ -494,22 +647,14 @@ class FastTest { }
 ```
 
 By specifying exactly which classes to load, Spring creates a minimal context with just these components and their dependencies.
+
 ### Parallel Test Execution
 
-#### Two Modes of Test Parallelization
-
-There are two distinct approaches to parallelize test execution, each with different trade-offs:
-
-1. **Build Tool Level**: Forks multiple JVM processes
-2. **Test Runner Level**: Uses multiple threads within a single JVM
-
-Understanding both modes helps us choose the right strategy for our specific needs.
-
-#### Build Tool Level Parallelization (JVM Forking)
+There are two distinct approaches to parallelize test execution, each with different trade-offs. Build tool level parallelization forks multiple JVM processes, while test runner level parallelization uses multiple threads within a single JVM. Understanding both modes helps us choose the right strategy for our specific needs.
 
 Build tools like Maven and Gradle can spawn multiple JVM processes to run tests in parallel. Each fork is a completely isolated Java process with its own memory space.
 
-**Maven Surefire Configuration:**
+Maven Surefire Configuration:
 
 ```xml
 <plugin>
@@ -524,7 +669,7 @@ Build tools like Maven and Gradle can spawn multiple JVM processes to run tests 
 
 This configuration creates 4 separate JVM processes. The `reuseForks=true` setting reuses processes between test classes for better performance. Each fork gets 1GB of heap memory.
 
-**Maven Failsafe Configuration (Integration Tests):**
+Maven Failsafe Configuration (Integration Tests):
 
 ```xml
 <plugin>
@@ -538,7 +683,7 @@ This configuration creates 4 separate JVM processes. The `reuseForks=true` setti
 
 For integration tests, we often disable fork reuse (`reuseForks=false`) to ensure complete isolation.
 
-**Gradle Configuration:**
+Gradle Configuration:
 
 ```groovy
 test {
@@ -551,22 +696,22 @@ test {
 
 Gradle dynamically calculates the number of forks based on available CPU cores. The `forkEvery` setting creates fresh JVMs periodically to prevent memory leaks from accumulating.
 
-**Advantages of JVM Forking:**
+Advantages of JVM Forking:
+
 - Complete isolation between test groups
 - No shared memory concerns
 - Crashes in one fork don't affect others
 - Can use different JVM settings per fork
 
-**Disadvantages:**
+Disadvantages:
+
 - High memory overhead (each JVM needs its own heap)
 - Slower startup time for each fork
 - Context must be loaded in each fork
 
-#### Test Runner Level Parallelization (Thread-Based)
-
 Test runners like JUnit 5 can execute tests using multiple threads within the same JVM. This approach shares memory and loaded contexts between threads.
 
-**JUnit 5 Parallel Configuration:**
+JUnit 5 Parallel Configuration:
 
 Create a `junit-platform.properties` file in `src/test/resources`:
 
@@ -585,7 +730,7 @@ junit.jupiter.execution.parallel.config.dynamic.factor=1.0
 
 The `dynamic` strategy calculates thread count as: `availableProcessors * factor`. A factor of 1.0 means one thread per CPU core.
 
-**Fixed Thread Pool Configuration:**
+Fixed Thread Pool Configuration:
 
 ```properties
 junit.jupiter.execution.parallel.config.strategy=fixed
@@ -594,7 +739,7 @@ junit.jupiter.execution.parallel.config.fixed.parallelism=4
 
 This creates exactly 4 threads regardless of available CPU cores. Useful for consistent behavior across different environments.
 
-**Controlling Parallel Execution in Code:**
+Controlling Parallel Execution in Code:
 
 ```java
 @Execution(ExecutionMode.CONCURRENT)
@@ -610,7 +755,7 @@ class SequentialTest {
 
 Use `@Execution` to override the default behavior for specific test classes. This is essential for tests that can't run in parallel due to shared resources.
 
-**Resource Locks for Shared Resources:**
+Resource Locks for Shared Resources:
 
 ```java
 class DatabaseTest {
@@ -629,8 +774,6 @@ class DatabaseTest {
 ```
 
 JUnit 5's `@ResourceLock` prevents conflicts when tests share resources. READ locks allow concurrent access, while READ_WRITE locks ensure exclusive access.
-
-#### Combining Both Approaches
 
 We can use both parallelization modes together for maximum performance:
 
@@ -655,18 +798,7 @@ We can use both parallelization modes together for maximum performance:
 
 This configuration creates 2 JVM processes, each running tests in parallel using multiple threads. On an 8-core machine, this could utilize all cores effectively.
 
-#### Benefits and Risks of Parallel Testing
-
-**Benefits:**
-- Faster test execution
-- Better resource utilization
-- Faster CI/CD pipelines
-
-**Risks:**
-- Race conditions in tests
-- Database conflicts
-- Port conflicts
-- Shared file system issues
+Parallel testing offers significant benefits including faster test execution, better resource utilization, and faster CI/CD pipelines. However, it also introduces risks such as race conditions in tests, database conflicts, port conflicts, and shared file system issues.
 
 ### Selective Testing for Faster Feedback
 
@@ -709,19 +841,52 @@ These Maven commands use the tag system to run specific test groups. During deve
 
 The CI pipeline runs all tests to ensure complete coverage. This selective execution strategy keeps developers productive while maintaining quality.
 
+## Managing Test Properties and Configurations
+
+Effectively managing configuration properties is crucial for creating reliable and maintainable tests. Spring Boot provides a flexible and powerful system for handling test-specific properties, but it's important to understand the hierarchy and best practices.
+
+### The Property Hierarchy
+
+Spring Boot loads properties from various sources with a specific order of precedence. When it comes to testing, the hierarchy is as follows (from highest to lowest precedence):
+
+1.  `@TestPropertySource` (inline properties): Properties defined directly in the annotation have the highest priority.
+2.  `@TestPropertySource` (file-based properties): Properties loaded from files specified in the annotation.
+3.  `@SpringBootTest` (properties attribute): Properties defined in the `properties` attribute of the `@SpringBootTest` annotation.
+4.  Application-specific properties outside your packaged jar: (e.g., `application-test.properties` in the same directory as the jar).
+5.  Application-specific properties inside your packaged jar: (e.g., `application-test.properties` in `src/test/resources`).
+
+Understanding this hierarchy is key to avoiding confusion and ensuring that your tests are using the correct configuration.
+
+### Best Practices for Test Properties
+
+-   Use `application-test.properties` for common test configuration: Create an `application-test.properties` file in `src/test/resources` to define properties that should apply to *all* tests. This is the perfect place to configure your test database connection, disable production features, and set up logging for tests.
+
+```properties
+# src/test/resources/application-test.properties
+spring.datasource.url=jdbc:tc:postgresql:16-alpine:///testdb
+spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver
+spring.jpa.hibernate.ddl-auto=create-drop
+```
+
+- Use `@TestPropertySource` for test-specific overrides: When a specific test or test class needs to override a default test property, use the `@TestPropertySource` annotation. This makes the test's unique configuration explicit and self-contained.
+
+```java
+@SpringBootTest
+@TestPropertySource(properties = "feature.toggle.new-algorithm.enabled=true")
+class NewAlgorithmTest {
+    // This test will run with the new algorithm feature toggle enabled.
+}
+```
+
+- Avoid scattering properties: Keep your property definitions consolidated. Prefer using `application-test.properties` for shared settings and `@TestPropertySource` for specific overrides. Avoid mixing multiple ways of setting the same property, as it can lead to confusion.
+
 ## Test Data Management
 
 ### Creating Test Data Factories
 
-#### Why Test Data Factories Matter
+Test data factories solve several common problems in our testing approach. They reduce duplication by centralizing test data creation, improve readability by expressing intent clearly, ensure validity by creating valid data consistently, and enable variations by making it easy to create specific scenarios.
 
-Test data factories solve common problems:
-- **Reduce Duplication**: Centralize test data creation
-- **Improve Readability**: Express intent clearly
-- **Ensure Validity**: Create valid data consistently
-- **Enable Variations**: Easy to create specific scenarios
-
-#### Object Mother Pattern
+The Object Mother pattern provides an excellent foundation for test data creation.
 
 ```java
 public class BookMother {
@@ -780,8 +945,6 @@ public static List<Book> withGenre(String genre, int count) {
 
 ### Using Test Fixtures Effectively
 
-#### Builder Pattern for Test Scenarios
-
 Test fixtures create complete scenarios with related data. They're especially useful for integration tests that need realistic data setups.
 
 ```java
@@ -836,7 +999,7 @@ public static class Scenario {
 }
 ```
 
-#### Using Fixtures in Tests
+When using fixtures in our tests, we can create complete scenarios with minimal setup:
 
 ```java
 @SpringBootTest
@@ -872,13 +1035,7 @@ assertThatThrownBy(() ->
 
 ### Database Seeding Strategies
 
-#### Approaches to Test Data Setup
-
-1. **SQL Scripts**: Best for static reference data
-2. **Object Mothers**: Best for unit tests
-3. **CSV/JSON Files**: Best for large datasets
-4. **Test Containers Init Scripts**: Best for schema setup
-5. **Programmatic Setup**: Best for complex scenarios
+Several approaches work well for different test data setup scenarios. SQL scripts work best for static reference data, Object Mothers excel for unit tests, CSV/JSON files handle large datasets efficiently, Test Containers init scripts are ideal for schema setup, and programmatic setup works best for complex scenarios.
 
 Simple SQL script approach:
 
@@ -927,12 +1084,7 @@ The `@PostConstruct` method runs after dependency injection. You'd typically use
 
 ### Cleanup Procedures
 
-#### Strategies for Test Isolation
-
-1. **@Transactional + @Rollback**: Best for most tests
-2. **@DirtiesContext**: Nuclear option, recreates context
-3. **Manual Cleanup**: For non-transactional tests
-4. **Test Containers**: Fresh database per test class
+Different strategies work for different test isolation needs. `@Transactional` with `@Rollback` works best for most tests, `@DirtiesContext` serves as a nuclear option that recreates the context, manual cleanup handles non-transactional tests, and Test Containers provide a fresh database per test class.
 
 Strategy 1: Transaction rollback (preferred):
 
@@ -988,13 +1140,7 @@ Perfect for tests that modify database structure or need specific PostgreSQL ver
 
 ### Authentication and Authorization Testing
 
-#### Key Security Testing Scenarios
-
-1. **Anonymous Access**: What can unauthenticated users do?
-2. **Role-Based Access**: Do roles work correctly?
-3. **Method Security**: Are service methods protected?
-4. **CSRF Protection**: Is CSRF properly configured?
-5. **Session Management**: Do sessions timeout correctly?
+Key security testing scenarios include verifying anonymous access limitations, ensuring role-based access controls work correctly, confirming service method protection, validating CSRF configuration, and testing session timeout behavior.
 
 ```java
 @SpringBootTest
@@ -1055,9 +1201,7 @@ This verifies your security configuration is properly enforcing access rules.
 
 ### Testing Secured Endpoints
 
-#### Custom Security Test Annotations
-
-Create reusable security contexts for common test scenarios:
+We can create reusable security contexts for common test scenarios through custom annotations:
 
 Simple role-based annotation:
 
@@ -1104,7 +1248,7 @@ These annotations make security tests expressive. The first test runs with libra
 
 ### Testing Method-Level Security
 
-#### @PreAuthorize and @PostAuthorize Testing
+Testing method-level security annotations like `@PreAuthorize` and `@PostAuthorize` ensures our business rules are properly enforced:
 
 Service with method-level security:
 
@@ -1163,17 +1307,9 @@ void librarianCanAddBooks() {
 
 ### Test Design Principles
 
-#### FIRST Principles
+The FIRST principles guide effective test design: tests should be Fast and run quickly, Independent without dependencies on each other, Repeatable with the same result every time, Self-Validating to pass or fail without manual inspection, and Timely by being written just before production code.
 
-**F**ast - Tests should run quickly
-**I**ndependent - Tests don't depend on each other
-**R**epeatable - Same result every time
-**S**elf-Validating - Pass or fail, no manual inspection
-**T**imely - Written just before production code
-
-#### The Three A's Pattern
-
-Structured test with clear sections:
+The Three A's pattern structures tests with clear sections:
 
 ```java
 @Test
@@ -1189,7 +1325,7 @@ void shouldCalculateLateFee() {
 }
 ```
 
-#### Test Naming Conventions
+Consistent test naming conventions improve readability and maintainability:
 
 Behavior-driven naming pattern:
 
@@ -1209,16 +1345,6 @@ void calculateFee_SevenDaysLate_Returns3Dollars50()
 
 ### Key Takeaways
 
-#### Avoid These Anti-Patterns
-1. **Over-mocking**: Mock only external dependencies
-2. **Testing implementation**: Focus on behavior, not how
-3. **Fragile tests**: Make tests resilient to minor changes
-4. **Slow tests**: Keep feedback loops fast
-5. **Shared state**: Ensure test isolation
+We should avoid these anti-patterns: over-mocking by mocking only external dependencies, testing implementation by focusing on behavior rather than how, creating fragile tests by making them resilient to minor changes, writing slow tests by keeping feedback loops fast, and using shared state by ensuring test isolation.
 
-#### Embrace These Practices
-1. **Test slices**: Use the right tool for the job
-2. **Object mothers**: Centralize test data creation
-3. **Context caching**: Optimize for reuse
-4. **Parallel execution**: Leverage modern hardware
-5. **Continuous refactoring**: Tests are code too
+We should embrace these practices: using test slices and the right tool for each job, implementing object mothers to centralize test data creation, optimizing context caching for reuse, leveraging parallel execution and modern hardware, and continuously refactoring since tests are code too.

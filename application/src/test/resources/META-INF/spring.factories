@@ -1,0 +1,3 @@
+# Enable Spring Test Profiler automatically
+org.springframework.test.context.TestExecutionListener=\
+  digital.pragmatech.spring.test.profiler.SpringTestProfilerListener

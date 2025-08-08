@@ -12,11 +12,13 @@ pandoc \
  05-outro.md \
  changelog.md \
  --toc \
+ --toc-depth=3 \
  -H ../config.tex \
  -V linkcolor=ideablue \
  -V colorlinks=true \
  -V mainfont="Fira Sans" \
  -V monofont="SauceCodePro Nerd Font" \
+ --top-level-division=section \
  --pdf-engine=xelatex \
  --pdf-engine-opt=-shell-escape \
  --listings \

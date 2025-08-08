@@ -1,6 +1,15 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 
+% Custom title page formatting
+\usepackage{titling}
+\pretitle{\begin{center}\LARGE\bfseries}
+\posttitle{\par\end{center}\vskip 0.5em}
+\preauthor{\begin{center}\large}
+\postauthor{\par\end{center}\vskip 1em}
+\predate{\begin{center}\large}
+\postdate{\par\end{center}}
+
 \definecolor{ideagreen}{rgb}{0,0.5019607843137255,0}
 \definecolor{ideablue}{rgb}{0,0,0.5019607843137255}
 \definecolor{ideagray}{rgb}{0.5019607843137255,0.5019607843137255,0.5019607843137255}
@@ -52,10 +61,9 @@
   morekeywords={xmlns,type}% list your attributes here
 }
 
-%  Watermarking the footer
-%\usepackage{fancyhdr}
-%\usepackage{hyperref}
-%\pagestyle{fancy}
-%\fancyfoot{}
-%\fancyfoot[L]{This PDF copy licensed is to Foo Bar foo@bar.de}
-%\fancyfoot[R]{\thepage}
+% Custom page numbering - always bottom right
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} % Clear all headers and footers
+\fancyfoot[R]{\thepage} % Page number always on the right
+\renewcommand{\headrulewidth}{0pt} % Remove header rule

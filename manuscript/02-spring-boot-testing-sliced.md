@@ -34,13 +34,11 @@ class WebLayerTest {
 
 Test slices provide several advantages:
 
-1. **Faster Test Execution**: Loading fewer beans means quicker context startup
-2. **Clearer Test Intent**: The test annotation immediately communicates what's being tested
-3. **Reduced Memory Usage**: Smaller contexts consume less memory
-4. **Better Isolation**: Fewer components mean fewer potential side effects
-5. **Easier Debugging**: Less noise when troubleshooting test failures
-
-### Available Test Slice Annotations
+1. Faster Test Execution: Loading fewer beans means quicker context startup
+2. Clearer Test Intent: The test annotation immediately communicates what's being tested
+3. Reduced Memory Usage: Smaller contexts consume less memory
+4. Better Isolation: Fewer components mean fewer potential side effects
+5. Easier Debugging: Less noise when troubleshooting test failures
 
 Spring Boot provides numerous test slice annotations, each targeting specific layers:
 
@@ -55,7 +53,6 @@ Spring Boot provides numerous test slice annotations, each targeting specific la
 | `@DataRedisTest` | Test Redis operations | Redis repositories |
 | `@JdbcTest` | Test JDBC operations | JdbcTemplate, DataSource |
 
-
 ... and much more, consult the [documentation for a complete list](https://docs.spring.io/spring-boot/appendix/test-auto-configuration/slices.html).
 
 ### When to Use Sliced Testing vs. Full Context Testing
@@ -67,6 +64,7 @@ Use sliced tests when:
 - Validating configuration for a particular layer
 
 Use full context tests (`@SpringBootTest`) when:
+
 - Testing integration between multiple layers
 - Validating the complete request-response flow
 - Testing application startup and configuration
@@ -76,23 +74,21 @@ Use full context tests (`@SpringBootTest`) when:
 
 The `@WebMvcTest` annotation is perhaps the most commonly used test slice, allowing us to test Spring MVC controllers efficiently.
 
-### Why Unit Testing Controllers Is Not Effective
-
-Before we dive into using `@WebMvcTest`, it's important to understand why traditional unit testing of controllers falls short.
+Before we dive into using `@WebMvcTest`, it's important to understand why traditional unit testing of controllers falls short and why we need the Spring testing infrastructure.
 
 When we unit test a controller in isolation, we miss critical aspects of how Spring Boot actually processes requests:
 
-1. **Request Mapping**: Unit tests don't verify that our `@RequestMapping`, `@GetMapping`, or other mapping annotations are correctly configured. A typo in the path or incorrect HTTP method won't be caught.
+1. Request Mapping: Unit tests don't verify that our `@RequestMapping`, `@GetMapping`, or other mapping annotations are correctly configured. A typo in the path or incorrect HTTP method won't be caught.
 
-2. **Validation**: Spring's validation framework (`@Valid`, `@Validated`) requires the full web infrastructure to work. Unit tests bypass this entirely, missing validation errors that would occur in production.
+2. Validation: Spring's validation framework (`@Valid`, `@Validated`) requires the full web infrastructure to work. Unit tests bypass this entirely, missing validation errors that would occur in production.
 
-3. **Type Conversion**: Spring automatically converts request parameters and path variables to the appropriate types. Unit tests don't exercise these conversions, potentially missing conversion failures.
+3. Type Conversion: Spring automatically converts request parameters and path variables to the appropriate types. Unit tests don't exercise these conversions, potentially missing conversion failures.
 
-4. **Security**: Security configurations, authentication, and authorization are handled by Spring Security filters that don't exist in unit tests. We can't verify that endpoints are properly secured.
+4. Security: Security configurations, authentication, and authorization are handled by Spring Security filters that don't exist in unit tests. We can't verify that endpoints are properly secured.
 
-5. **Exception Handling**: Global exception handlers (`@ControllerAdvice`) and error mapping won't be invoked in unit tests, leaving error handling untested.
+5. Exception Handling: Global exception handlers (`@ControllerAdvice`) and error mapping won't be invoked in unit tests, leaving error handling untested.
 
-6. **Content Negotiation**: Spring's content negotiation (handling different media types) requires the web infrastructure to function properly.
+6. Content Negotiation: Spring's content negotiation (handling different media types) requires the web infrastructure to function properly.
 
 Here's an example of what we miss with unit testing:
 
@@ -625,7 +621,7 @@ class DeleteBookTests {
 
 Nested classes group related tests, making test reports more readable. This inner class will contain all DELETE endpoint tests, clearly showing which security scenarios we're covering.
 
-**Test 1: No authentication**
+Test 1: No authentication
 
 ```java
 @Test
@@ -657,7 +653,7 @@ verify(bookService, times(0)).deleteBook(any());
 
 Crucial verification - the service should never be called when authentication fails. This ensures security is enforced at the framework level, not in our business logic.
 
-**Test 2: Insufficient privileges**
+Test 2: Insufficient privileges
 
 ```java
 @Test
@@ -680,7 +676,7 @@ verify(bookService, times(0)).deleteBook(any());
 
 403 (Forbidden) differs from 401 - the user is authenticated but not authorized. Again, the service isn't called, confirming authorization is enforced before business logic.
 
-**Test 3: Admin can delete existing book**
+Test 3: Admin can delete existing book
 
 ```java
 @Test
@@ -711,7 +707,7 @@ verify(bookService, times(1)).deleteBook(1L);
 
 Unlike the previous tests, this verifies the service WAS called exactly once. Security passed, so business logic executed.
 
-**Test 4: Admin tries to delete non-existent book**
+Test 4: Admin tries to delete non-existent book
 
 ```java
 @Test
@@ -734,10 +730,10 @@ verify(bookService, times(1)).deleteBook(999L);
 
 This comprehensive test demonstrates several important security testing patterns:
 
-1. **Testing unauthenticated access**: Verifying that endpoints are properly secured
-2. **Testing insufficient privileges**: Ensuring role-based access control works correctly
-3. **Testing authorized access**: Confirming that users with proper roles can access endpoints
-4. **Verifying service interactions**: Ensuring the service is only called when authorization succeeds
+1. Testing unauthenticated access: Verifying that endpoints are properly secured
+2. Testing insufficient privileges: Ensuring role-based access control works correctly
+3. Testing authorized access: Confirming that users with proper roles can access endpoints
+4. Verifying service interactions: Ensuring the service is only called when authorization succeeds
 
 ## Testing Data Access with @DataJpaTest
 
@@ -970,22 +966,11 @@ Without `clear()`, we'd get the cached entity with the old value. Now we force a
 
 ### Testing with Real Databases using Testcontainers
 
-For more realistic testing, we use [Testcontainers](https://testcontainers.com/).
+For more realistic testing, we use Testcontainers - a Java library that provides lightweight, throwaway instances of databases, message brokers, web browsers, or anything else that can run in a Docker container. It revolutionizes integration testing by allowing us to test against real instances of external dependencies.
 
-### Introduction to Testcontainers
+Testcontainers offers several compelling advantages: Production Parity means we test against the same database version used in production, No Setup Required since containers start automatically and are cleaned up after tests, Isolation allowing each test to have its own container instance, and Cross-Platform compatibility working on any system that supports Docker.
 
-Testcontainers is a Java library that provides lightweight, throwaway instances of databases, message brokers, web browsers, or anything else that can run in a Docker container. It revolutionizes integration testing by allowing us to test against real instances of external dependencies.
-
-#### Why Testcontainers?
-
-1. **Production Parity**: Test against the same database version you use in production
-2. **No Setup Required**: Containers start automatically and are cleaned up after tests
-3. **Isolation**: Each test can have its own container instance
-4. **Cross-Platform**: Works on any system that supports Docker
-
-#### Adding Testcontainers to Your Project
-
-First, add the core Testcontainers dependency:
+To get started, we need to add the core Testcontainers dependency to our project:
 
 ```xml
 <dependency>
@@ -1011,9 +996,7 @@ Next, add the database-specific module:
 
 The PostgreSQL module includes pre-configured containers and connection helpers for PostgreSQL databases.
 
-#### Testcontainers in Action
-
-First, set up the test class:
+Let's see Testcontainers in action by setting up a test class:
 
 ```java
 @DataJpaTest
@@ -1056,7 +1039,7 @@ Organize tests with `@Nested`:
 class FindByIsbnTests {
 ```
 
-**Test 1: Find existing book**
+Test 1: Find existing book
 
 Create test data:
 
@@ -1107,7 +1090,7 @@ assertThat(result.get())
 
 The `satisfies()` method groups related assertions on the same object. If any assertion fails, you'll see exactly which property was wrong. This is cleaner than multiple separate assertions and provides better error messages than comparing the entire object.
 
-**Test 2: Book not found**
+Test 2: Book not found
 
 ```java
 @Test
@@ -1131,7 +1114,7 @@ Optional<Book> result = cut.findByIsbn("9780987654321");
 assertThat(result).isEmpty();
 ```
 
-**Test isolation verification**:
+Test isolation verification:
 
 ```java
 @Test
@@ -1154,17 +1137,17 @@ This meta-test verifies our test setup works correctly. It confirms that `@Trans
 
 Key advantages of Testcontainers:
 
-1. **Real database behavior**: Tests run against actual PostgreSQL
-2. **@ServiceConnection**: Automatic configuration in Spring Boot 3.1+
-3. **Test isolation**: Each test starts clean
-4. **Production parity**: Catch database-specific issues early
+1. Real database behavior: Tests run against actual PostgreSQL
+2. @ServiceConnection: Automatic configuration in Spring Boot 3.1+
+3. Test isolation: Each test starts clean
+4. Production parity: Catch database-specific issues early
 
 ### Best Practices for Custom Test Slices
 
-1. **Keep slices focused**: Each slice should test one architectural concern
-2. **Document usage**: Provide clear documentation on when to use each slice
-3. **Minimize overlap**: Avoid creating slices that duplicate existing functionality
-4. **Consider performance**: Only include necessary auto-configurations
-5. **Maintain consistency**: Follow Spring Boot's patterns and conventions
+1. Keep slices focused: Each slice should test one architectural concern
+2. Document usage: Provide clear documentation on when to use each slice
+3. Minimize overlap: Avoid creating slices that duplicate existing functionality
+4. Consider performance: Only include necessary auto-configurations
+5. Maintain consistency: Follow Spring Boot's patterns and conventions
 
 By mastering test slices, we can write faster, more focused tests that clearly communicate their intent while maintaining the benefits of Spring Boot's auto-configuration.

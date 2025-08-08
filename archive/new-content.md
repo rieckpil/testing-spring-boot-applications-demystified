@@ -12,7 +12,7 @@ For some teams, the primary motivation for testing is to meet a predetermined co
 
 While achieving high code coverage is beneficial, it shouldn’t be the sole focus.
 
-Both of these approaches — rushed testing before a merge and testing solely to meet coverage metrics — are flawed and do not harness the true potential of a robust testing strategy.
+Both of these approaches - rushed testing before a merge and testing solely to meet coverage metrics - are flawed and do not harness the true potential of a robust testing strategy.
 
 ## The True Value of Testing
 

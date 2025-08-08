@@ -7,5 +7,6 @@ manuscript-pandoc/generated
 !manuscript-pandoc/config.text
 
 *.pdf
+!front-cover.pdf
 
 workshop/

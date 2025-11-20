@@ -11,6 +11,6 @@ description: "Write Better Tests, Ship Faster: A Practical Guide to Spring Boot 
 keywords: ["Spring Boot", "Testing", "JUnit", "Mockito", "Integration Testing", "Unit Testing", "Test Automation"]
 author:
   - "Philip Riecks"
-date: "Version 2.1 • Generated November 2025"
-version: "2.1"
+date: "Version 3.0 • Generated November 2025"
+version: "3.0"
 ---

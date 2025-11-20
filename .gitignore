@@ -3,10 +3,12 @@ node_modules
 .DS_Store
 
 manuscript-pandoc/generated
+manuscript-pandoc/cover-images
 !manuscript-pandoc/000-settings.md
 !manuscript-pandoc/config.text
 
 *.pdf
 !front-cover.pdf
+!cover.pdf
 
 workshop/

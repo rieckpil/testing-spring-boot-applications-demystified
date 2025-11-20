@@ -1,0 +1,145 @@
+name: Verify PDF Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install LaTeX and dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            texlive-xetex \
+            texlive-fonts-recommended \
+            texlive-latex-extra \
+            poppler-utils \
+            ghostscript \
+            fonts-firacode \
+            wget \
+            unzip
+
+      - name: Install Fira Sans and SauceCodePro Nerd Font
+        run: |
+          mkdir -p ~/.fonts
+          cd ~/.fonts
+
+          # Download and install Fira Sans
+          wget -q https://github.com/mozilla/Fira/archive/refs/tags/4.106.zip
+          unzip -q 4.106.zip
+          cp Fira-4.106/ttf/*.ttf .
+          rm -rf Fira-4.106 4.106.zip
+
+          # Download and install SauceCodePro Nerd Font
+          wget -q https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/SourceCodePro.zip
+          unzip -q SourceCodePro.zip -d SourceCodePro
+          cp SourceCodePro/*.ttf .
+          rm -rf SourceCodePro SourceCodePro.zip
+
+          # Refresh font cache
+          fc-cache -f -v
+
+          # Verify fonts are installed
+          echo "Installed fonts:"
+          fc-list | grep -i "fira"
+          fc-list | grep -i "sauce"
+
+      - name: Install Pandoc
+        run: |
+          wget https://github.com/jgm/pandoc/releases/download/3.8.2/pandoc-3.8.2-1-amd64.deb
+          sudo dpkg -i pandoc-3.8.2-1-amd64.deb
+
+      - name: Build PDF
+        run: |
+          chmod +x render-book.sh
+          ./render-book.sh
+
+      - name: Verify PDF exists
+        run: |
+          if [ ! -f "testing-spring-boot-applications-demystified.pdf" ]; then
+            echo "Error: PDF file was not generated"
+            exit 1
+          fi
+          echo "✓ PDF file exists"
+
+      - name: Extract version from settings
+        id: version
+        run: |
+          VERSION=$(grep '^version:' manuscript-pandoc/000-settings.md | sed 's/version: "\(.*\)"/\1/' | tr -d ' ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Verify PDF metadata
+        run: |
+          echo "Checking PDF metadata..."
+          pdfinfo testing-spring-boot-applications-demystified.pdf
+
+          # Check Title
+          TITLE=$(pdfinfo testing-spring-boot-applications-demystified.pdf | grep "^Title:" | sed 's/^Title:[[:space:]]*//')
+          if [ "$TITLE" != "Testing Spring Boot Applications Demystified" ]; then
+            echo "✗ Title mismatch. Expected: 'Testing Spring Boot Applications Demystified', Got: '$TITLE'"
+            exit 1
+          fi
+          echo "✓ Title is correct"
+
+          # Check Author
+          AUTHOR=$(pdfinfo testing-spring-boot-applications-demystified.pdf | grep "^Author:" | sed 's/^Author:[[:space:]]*//')
+          if [ "$AUTHOR" != "Philip Riecks" ]; then
+            echo "✗ Author mismatch. Expected: 'Philip Riecks', Got: '$AUTHOR'"
+            exit 1
+          fi
+          echo "✓ Author is correct"
+
+          # Check Creator
+          CREATOR=$(pdfinfo testing-spring-boot-applications-demystified.pdf | grep "^Creator:" | sed 's/^Creator:[[:space:]]*//')
+          if [ "$CREATOR" != "LaTeX via pandoc" ]; then
+            echo "✗ Creator mismatch. Expected: 'LaTeX via pandoc', Got: '$CREATOR'"
+            exit 1
+          fi
+          echo "✓ Creator is correct"
+
+          # Check Keywords
+          KEYWORDS=$(pdfinfo testing-spring-boot-applications-demystified.pdf | grep "^Keywords:" | sed 's/^Keywords:[[:space:]]*//')
+          if [ "$KEYWORDS" != "Spring Boot, Testing, JUnit, Mockito, Integration Testing, Unit Testing, Test Automation" ]; then
+            echo "✗ Keywords mismatch. Expected: 'Spring Boot, Testing, JUnit, Mockito, Integration Testing, Unit Testing, Test Automation', Got: '$KEYWORDS'"
+            exit 1
+          fi
+          echo "✓ Keywords are correct"
+
+          echo ""
+          echo "✓ All metadata checks passed!"
+
+      - name: Verify PDF file size
+        run: |
+          FILE_SIZE=$(stat -c%s "testing-spring-boot-applications-demystified.pdf")
+          FILE_SIZE_MB=$((FILE_SIZE / 1024 / 1024))
+          MAX_SIZE_MB=3
+
+          echo "PDF file size: ${FILE_SIZE_MB} MB"
+
+          if [ $FILE_SIZE_MB -ge $MAX_SIZE_MB ]; then
+            echo "✗ PDF file size ($FILE_SIZE_MB MB) exceeds maximum allowed size ($MAX_SIZE_MB MB)"
+            exit 1
+          fi
+
+          echo "✓ PDF file size is within limit (${FILE_SIZE_MB} MB < ${MAX_SIZE_MB} MB)"
+
+      - name: Rename PDF with version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          cp testing-spring-boot-applications-demystified.pdf "testing-spring-boot-applications-demystified-v${VERSION}.pdf"
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: testing-spring-boot-applications-demystified-v${{ steps.version.outputs.version }}
+          path: testing-spring-boot-applications-demystified-v${{ steps.version.outputs.version }}.pdf
+          retention-days: 30

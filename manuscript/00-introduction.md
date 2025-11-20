@@ -18,7 +18,7 @@ Under the slogan Testing Spring Boot Applications Made Simple, Philip provides r
 
 He's on a mission to transform the perception of testing from a frustrated afterthought to an enjoyable daily practice.
 
-![Philip speaking at Devoxx Belgium](resources/rieckpil-devoxx-speaking.jpg)
+![Philip speaking at the JUG Zürich in 2025](resources/philip-jug-zurich-2025.jpg)
 
 Apart from blogging, he's a course instructor for various Java-related online courses, runs a [YouTube channel](http://youtube.com/rieckpil), has co-authored [Stratospheric - From Zero to Production with Spring Boot on AWS](https://stratospheric.dev) and regularly visits international conferences as a speaker.
 

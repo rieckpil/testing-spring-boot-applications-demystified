@@ -32,6 +32,7 @@ jobs:
         # Issue with inline anchor as part of markdown-link-check > 3.9.0, wait for https://github.com/tcort/markdown-link-check/issues/91#issuecomment-1073230831
         run: npm run check-links
 
+# We no longer use Leanpub to generate the PDF and rather use pandoc
 #      - name: Send webhook to Leanpub API
 #        timeout-minutes: 5
 #        continue-on-error: false

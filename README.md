@@ -13,6 +13,5 @@ Make sure to locally install:
 
 ## Upload the new version
 
-- Build the final PDF as described above
-- Take the Preview Markdown PDF from Leanpub and attach the first three PDF pages manually (don't automate this as it will break the internal PDF structure)
+- Build the final PDF as described above (front cover is automatically attached)
 - Manually upload the final PDF to Leanpub and inform the users

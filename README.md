@@ -6,7 +6,11 @@
 
 This repository contains the source code for the book [Testing Spring Boot Applications Demystified](https://leanpub.com/testing-spring-boot-applications-demystified).
 
-The book provides comprehensive guidance on testing Spring Boot applications, covering everything from basic unit tests to advanced integration testing strategies with Testcontainers, WireMock, and Spring Security Test.
+Spring Boot testing doesn't have to be a **nightmare** of broken configurations and unreliable tests.
+
+This book transforms testing from your biggest frustration into your **secret** **weapon**, with proven strategies that work in real projects and examples you can implement today.
+
+Demystify testing **real-world Spring Boot applications** to deliver robust & maintainable code with **confidence**.
 
 ## Get the Missing Spring Boot Testing Manual for Free
 

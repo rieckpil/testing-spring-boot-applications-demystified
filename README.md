@@ -1,6 +1,10 @@
 # Testing Spring Boot Applications Demystified
 
-This repository contains the source code for the book [**Testing Spring Boot Applications Demystified**](https://leanpub.com/testing-spring-boot-applications-demystified).
+<p align="center">
+  <img src="ebook-cover.png" width="400" alt="Testing Spring Boot Applications Demystified Cover">
+</p>
+
+This repository contains the source code for the book [Testing Spring Boot Applications Demystified](https://leanpub.com/testing-spring-boot-applications-demystified).
 
 The book provides comprehensive guidance on testing Spring Boot applications, covering everything from basic unit tests to advanced integration testing strategies with Testcontainers, WireMock, and Spring Security Test.
 
@@ -12,7 +16,7 @@ Write code that works, scale without breaking, and deploy daily.
 - **Sleep better**: Eliminate deployment anxiety and refactor fearlessly.
 - **Ship faster**: Copy-paste recipes for JUnit, Testcontainers, WireMock and Spring Boot.
 
-Sign up below to get access to your 120+ Pages Manual for free and receive updates about new content releases 👇🏻
+Sign up below to get access to your 120+ Pages Manual for free 👇🏻
 
 [Testing Spring Boot Applications Demystified](https://rieckpil.de/free-spring-boot-testing-book/?utm_source=github&utm_medium=free-download&utm_id=free-lead-magnet)
 

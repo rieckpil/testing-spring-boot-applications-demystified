@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}"
+      th:with="headline='My Books'">
+
+<section class="section" layout:fragment="page-content">
+  <h1 class="text-center">My Books</h1>
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th>Title</th>
+      <th>Author</th>
+      <th>ISBN</th>
+      <th>Publication Date</th>
+      <th>Genre</th>
+      <th>Average Rating</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="book : ${books}">
+      <td th:text="${book.title}"></td>
+      <td th:text="${book.author}"></td>
+      <td th:text="${book.isbn}"></td>
+      <td th:text="${#temporals.format(book.publicationDate, 'yyyy-MM-dd')}"></td>
+      <td th:text="${book.genre}"></td>
+      <td th:text="${book.averageRating}"></td>
+      <td>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</section>
+</html>

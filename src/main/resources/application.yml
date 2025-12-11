@@ -1,0 +1,7 @@
+spring:
+  docker:
+    compose:
+      file: application/compose.yml
+  jpa:
+    hibernate:
+      ddl-auto: validate

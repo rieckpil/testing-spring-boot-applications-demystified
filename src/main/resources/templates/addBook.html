@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}"
+      th:with="headline='Add a Book'">
+
+<section class="section" layout:fragment="page-content">
+  <h1 class="text-center">Add a new Book</h1>
+  <form th:action="@{/bookshelf}" th:object="${book}" th:method="POST">
+    <div class="mb-3">
+      <label for="title" class="form-label">Title</label>
+      <input type="text" class="form-control" id="title" th:field="*{title}">
+      <span th:if="${#fields.hasErrors('title')}" class="text-danger">
+          Title is required.
+        </span>
+    </div>
+    <div class="mb-3">
+      <label for="author" class="form-label">Author(s)</label>
+      <input type="text" class="form-control" id="author" th:field="*{author}">
+      <span th:if="${#fields.hasErrors('author')}" class="text-danger">
+          Author(s) is required.
+        </span>
+    </div>
+    <div class="mb-3">
+      <label for="isbn" class="form-label">ISBN (Optional)</label>
+      <input type="text" class="form-control" id="isbn" th:field="*{isbn}">
+    </div>
+    <div class="mb-3">
+      <label for="publicationDate" class="form-label">Publication Date</label>
+      <input type="date" class="form-control" id="publicationDate" th:field="*{publicationDate}">
+    </div>
+    <div class="mb-3">
+      <label for="genre" class="form-label">Genre(s)</label>
+      <input type="text" class="form-control" id="genre" th:field="*{genre}">
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Description (Optional)</label>
+      <textarea class="form-control" id="description" th:field="*{description}"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Book</button>
+  </form>
+</section>
+</html>

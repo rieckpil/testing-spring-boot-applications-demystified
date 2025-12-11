@@ -1,0 +1,2211 @@
+{
+  "title": "Clean Code",
+  "subtitle": "A Handbook of Agile Software Craftsmanship",
+  "publish_date": "July 2008",
+  "publishers": [
+    "Prentice Hall"
+  ],
+  "source_records": [
+    "ia:cleancodehandboo00mart_668",
+    "bwb:9780132350884",
+    "marc:marc_loc_2016/BooksAll.2016.part35.utf8:123153805:1131",
+    "ia:cleancodehandboo0000unse",
+    "idb:9780132350884"
+  ],
+  "covers": [
+    14840846,
+    8085499
+  ],
+  "type": {
+    "key": "/type/edition"
+  },
+  "key": "/books/OL26222911M",
+  "works": [
+    {
+      "key": "/works/OL17618370W"
+    }
+  ],
+  "identifiers": {},
+  "isbn_10": [
+    "0132350882"
+  ],
+  "isbn_13": [
+    "9780132350884"
+  ],
+  "lccn": [
+    "2008024750"
+  ],
+  "classifications": {},
+  "lc_classifications": [
+    "QA76.76.D47M3652",
+    "QA76.76.D47 C583 2009"
+  ],
+  "languages": [
+    {
+      "key": "/languages/eng"
+    }
+  ],
+  "physical_format": "Taschenbuch",
+  "ocaid": "cleancodehandboo0000unse",
+  "number_of_pages": 431,
+  "table_of_contents": [
+    {
+      "level": 0,
+      "label": "",
+      "title": "Foreword",
+      "pagenum": "xix"
+    },
+    {
+      "level": 0,
+      "label": "",
+      "title": "Introduction",
+      "pagenum": "xxv"
+    },
+    {
+      "level": 0,
+      "label": "",
+      "title": "On the Cover",
+      "pagenum": "xxix"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 1",
+      "title": "Clean Code",
+      "pagenum": "1"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "There Will Be Code",
+      "pagenum": "2"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bad Code",
+      "pagenum": "3"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "The Total Cost of Owning a Mess",
+      "pagenum": "4"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "The Grand Redesign in the Sky",
+      "pagenum": "5"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Attitude",
+      "pagenum": "5"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "The Primal Conundrum",
+      "pagenum": "6"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "The Art of Clean Code?",
+      "pagenum": "6"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "What Is Clean Code?",
+      "pagenum": "7"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Schools of Thought",
+      "pagenum": "12"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "We Are Authors",
+      "pagenum": "13"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "The Boy Scout Rule",
+      "pagenum": "14"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Prequel and Principles",
+      "pagenum": "15"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "15"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "15"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 2",
+      "title": "Meaningful Names",
+      "pagenum": "17"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "A Introduction",
+      "pagenum": "17"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Use Intention-Revealing Names",
+      "pagenum": "18"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Avoid Disinformation",
+      "pagenum": "19"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Make Meaningful Distinctions",
+      "pagenum": "20"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Use Pronounceable Names",
+      "pagenum": "21"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Use Searchable Names",
+      "pagenum": "22"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Avoid Encodings",
+      "pagenum": "23"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Hungarian Notation",
+      "pagenum": "23"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Member Prefixes",
+      "pagenum": "24"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Interfaces and Implementations",
+      "pagenum": "24"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Avoid Mental Mapping",
+      "pagenum": "25"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Class Names",
+      "pagenum": "25"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Method Names",
+      "pagenum": "25"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Don't Be Cute",
+      "pagenum": "26"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Pick One Word per Concept",
+      "pagenum": "26"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Don't Pun",
+      "pagenum": "26"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Use Solution Domain Names",
+      "pagenum": "27"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Use Problem Domain Names",
+      "pagenum": "27"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Add Meaningful Context",
+      "pagenum": "27"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Don't Add Gratuitous Context",
+      "pagenum": "29"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Final Words",
+      "pagenum": "30"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 3",
+      "title": "Functions",
+      "pagenum": "31"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Small!",
+      "pagenum": "34"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Blocks and Indenting",
+      "pagenum": "35"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Do One Thing",
+      "pagenum": "35"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Sections within Functions",
+      "pagenum": "36"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "One Level of Abstraction per Function",
+      "pagenum": "36"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Reading Code from Top to Bottom: The Stepdown Rule",
+      "pagenum": "37"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Switch Statements",
+      "pagenum": "37"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Use Descriptive Names",
+      "pagenum": "39"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Function Arguments",
+      "pagenum": "40"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Common Monadic Forms",
+      "pagenum": "41"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Flag Arguments",
+      "pagenum": "41"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Dyadic Functions",
+      "pagenum": "42"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Triads",
+      "pagenum": "42"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Argument Objects",
+      "pagenum": "43"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Argument Lists",
+      "pagenum": "43"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Verbs and Keywords",
+      "pagenum": "43"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Have No Side Effects",
+      "pagenum": "44"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Output Arguments",
+      "pagenum": "45"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Command Query Separation",
+      "pagenum": "45"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Prefer Exceptions to Returning Error Codes",
+      "pagenum": "46"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Extract Try/Catch Blocks",
+      "pagenum": "46"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Error Handling Is One Thing",
+      "pagenum": "47"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "The Error.java Dependency Magnet",
+      "pagenum": "47"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Don't Repeat Yourself",
+      "pagenum": "48"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Structured Programming",
+      "pagenum": "48"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "How Do You Write Functions Like This?",
+      "pagenum": "49"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "49"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "SetupTeardownIncluder",
+      "pagenum": "50"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "52"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 4",
+      "title": "Comments",
+      "pagenum": "53"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Comments Do Not Make Up for Bad Code",
+      "pagenum": "55"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Explain Yourself in Code",
+      "pagenum": "55"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Good Comments",
+      "pagenum": "55"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Legal Comments",
+      "pagenum": "55"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Informative Comments",
+      "pagenum": "56"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Explanation of Intent",
+      "pagenum": "56"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Clarification",
+      "pagenum": "57"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Warning of Consequences",
+      "pagenum": "58"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "TODO Comments",
+      "pagenum": "58"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Amplification",
+      "pagenum": "59"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Javadocs in Public APIs",
+      "pagenum": "59"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bad Comments",
+      "pagenum": "59"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Mumbling",
+      "pagenum": "59"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Redundant Comments",
+      "pagenum": "60"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Misleading Comments",
+      "pagenum": "63"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Mandated Comments",
+      "pagenum": "63"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Journal Comments",
+      "pagenum": "63"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Noise Comments",
+      "pagenum": "64"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Scary Noise",
+      "pagenum": "66"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Don't Use a Comment When You Can Use a Function or a Variable",
+      "pagenum": "67"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Position Markers",
+      "pagenum": "67"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Closing Brace Comments",
+      "pagenum": "67"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Attributions and Bylines",
+      "pagenum": "68"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Commented-Out Code",
+      "pagenum": "68"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "HTML Comments",
+      "pagenum": "69"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Nonlocal Information",
+      "pagenum": "69"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Too Much Information",
+      "pagenum": "70"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Inobvious Connection",
+      "pagenum": "70"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Function Headers",
+      "pagenum": "70"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Javadocs in Nonpublic Code",
+      "pagenum": "71"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Example",
+      "pagenum": "71"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "74"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 5",
+      "title": "Formatting",
+      "pagenum": "75"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "The Purpose of Formatting",
+      "pagenum": "76"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Vertical Formatting",
+      "pagenum": "76"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "The Newspaper Metaphor",
+      "pagenum": "77"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Vertical Openness Between Concepts",
+      "pagenum": "78"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Vertical Density",
+      "pagenum": "79"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Vertical Distance",
+      "pagenum": "80"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Vertical Ordering",
+      "pagenum": "84"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Horizontal Formatting",
+      "pagenum": "85"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Horizontal Openness and Density",
+      "pagenum": "86"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Horizontal Alignment",
+      "pagenum": "87"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Indentation",
+      "pagenum": "88"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Dummy Scopes",
+      "pagenum": "90"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Team Rules",
+      "pagenum": "90"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Uncle Bob's Formatting Rules",
+      "pagenum": "90"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 6",
+      "title": "Objects and Data Structures",
+      "pagenum": "93"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Data Abstraction",
+      "pagenum": "93"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Data/Object Anti-Symmetry",
+      "pagenum": "95"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "The Law of Demeter",
+      "pagenum": "97"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Train Wrecks",
+      "pagenum": "98"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Hybrids",
+      "pagenum": "99"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Hiding Structure",
+      "pagenum": "99"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Data Transfer Objects",
+      "pagenum": "100"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Active Record",
+      "pagenum": "101"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "101"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "101"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 7",
+      "title": "Error Handling",
+      "pagenum": "103"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Use Exceptions Rather Than Return Codes",
+      "pagenum": "104"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Write Your Try-Catch-Finally Statement First",
+      "pagenum": "105"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Use Unchecked Exceptions",
+      "pagenum": "106"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Provide Context with Exceptions",
+      "pagenum": "107"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Define Exception Classes in Terms of a Caller's Needs",
+      "pagenum": "107"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Define the Normal Flow",
+      "pagenum": "109"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Don't Return Null",
+      "pagenum": "110"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Don't Pass Null",
+      "pagenum": "111"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "112"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "112"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 8",
+      "title": "Boundaries",
+      "pagenum": "113"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Using Third-Party Code",
+      "pagenum": "114"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Exploring and Learning Boundaries",
+      "pagenum": "116"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Learning log4j",
+      "pagenum": "116"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Learning Tests Are Better Than Free",
+      "pagenum": "118"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Using Code That Does Not Yet Exist",
+      "pagenum": "118"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Clean Boundaries",
+      "pagenum": "120"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "120"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 9",
+      "title": "Unit Tests",
+      "pagenum": "121"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "The Three Laws of TDD",
+      "pagenum": "122"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Keeping Tests Clean",
+      "pagenum": "123"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Tests Enable the -ilities",
+      "pagenum": "124"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Clean Tests",
+      "pagenum": "124"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Domain-Specific Testing Language",
+      "pagenum": "127"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "A Dual Standard",
+      "pagenum": "127"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "One Assert per Test",
+      "pagenum": "130"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Single Concept per Test",
+      "pagenum": "131"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "F.I.R.S.T.",
+      "pagenum": "132"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "133"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "133"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 10",
+      "title": "Classes",
+      "pagenum": "135"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Class Organization",
+      "pagenum": "136"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Encapsulation",
+      "pagenum": "136"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Classes Should Be Small!",
+      "pagenum": "138"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "The Single Responsibility Principle",
+      "pagenum": "138"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Cohesion",
+      "pagenum": "140"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Maintaining Cohesion Results in Many Small Classes",
+      "pagenum": "141"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Organizing for Change",
+      "pagenum": "147"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Isolating from Change",
+      "pagenum": "149"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "151"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 11",
+      "title": "Systems",
+      "pagenum": "153"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "How Would You Build a City?",
+      "pagenum": "154"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Separate Constructing a System from Using It",
+      "pagenum": "154"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Separation of Main",
+      "pagenum": "155"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Factories",
+      "pagenum": "155"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Dependency Injection",
+      "pagenum": "157"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Scaling Up",
+      "pagenum": "157"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Cross-Cutting Concerns",
+      "pagenum": "160"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Java Proxies",
+      "pagenum": "161"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Pure Java AOP Frameworks",
+      "pagenum": "163"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "AspectJ Aspects",
+      "pagenum": "166"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Test Drive the System Architecture",
+      "pagenum": "166"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Optimize Decision Making",
+      "pagenum": "167"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Use Standards Wisely, When They Add Demonstrable Value",
+      "pagenum": "168"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Systems Need Domain-Specific Languages",
+      "pagenum": "168"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "169"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "169"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 12",
+      "title": "Emergence",
+      "pagenum": "171"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Getting Clean via Emergent Design",
+      "pagenum": "171"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Simple Design Rule 1: Runs All the Tests",
+      "pagenum": "172"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Simple Design Rules 2-4: Refactoring",
+      "pagenum": "172"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "No Duplication",
+      "pagenum": "173"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Expressive",
+      "pagenum": "175"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Minimal Classes and Methods",
+      "pagenum": "176"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "176"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "176"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 13",
+      "title": "Concurrency",
+      "pagenum": "177"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Why Concurrency?",
+      "pagenum": "178"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Myths and Misconceptions",
+      "pagenum": "179"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Challenges",
+      "pagenum": "180"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Concurrency Defense Principles",
+      "pagenum": "180"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Single Responsibility Principle",
+      "pagenum": "181"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Corollary: Limit the Scope of Data",
+      "pagenum": "181"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Corollary: Use Copies of Data",
+      "pagenum": "181"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Corollary: Threads Should Be as Independent as Possible",
+      "pagenum": "182"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Know Your Library",
+      "pagenum": "182"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Thread-Safe Collections",
+      "pagenum": "182"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Know Your Execution Models",
+      "pagenum": "183"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Producer-Consumer",
+      "pagenum": "184"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Readers-Writers",
+      "pagenum": "184"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Dining Philosophers",
+      "pagenum": "184"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Beware Dependencies Between Synchronized Methods",
+      "pagenum": "185"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Keep Synchronized Sections Small",
+      "pagenum": "185"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Writing Correct Shut-Down Code Is Hard",
+      "pagenum": "186"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Testing Threaded Code",
+      "pagenum": "186"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Treat Spurious Failures as Candidate Threading Issues",
+      "pagenum": "187"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Get Your Nonthreaded Code Working First",
+      "pagenum": "187"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Make Your Threaded Code Pluggable",
+      "pagenum": "187"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Make Your Threaded Code Tunable",
+      "pagenum": "187"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Run with More Threads Than Processors",
+      "pagenum": "188"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Run on Different Platforms",
+      "pagenum": "188"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Instrument Your Code to Try and Force Failures",
+      "pagenum": "188"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Hand-Coded",
+      "pagenum": "189"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Automated",
+      "pagenum": "189"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "190"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "191"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 14",
+      "title": "Successive Refinement",
+      "pagenum": "193"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Args Implementation",
+      "pagenum": "194"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "How Did I Do This?",
+      "pagenum": "200"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Args: The Rough Draft",
+      "pagenum": "201"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "So I Stopped",
+      "pagenum": "212"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "On Incrementalism",
+      "pagenum": "212"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "String Arguments",
+      "pagenum": "214"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "250"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 15",
+      "title": "JUnit Internals",
+      "pagenum": "251"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "The JUnit Framework",
+      "pagenum": "252"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "265"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 16",
+      "title": "Refactoring SerialDate",
+      "pagenum": "267"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "First, Make It Work",
+      "pagenum": "268"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Then Make It Right",
+      "pagenum": "270"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "284"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "284"
+    },
+    {
+      "level": 0,
+      "label": "Chapter 17",
+      "title": "Smells and Heuristics",
+      "pagenum": "285"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Comments",
+      "pagenum": "286"
+    },
+    {
+      "level": 2,
+      "label": "C1",
+      "title": "Inappropriate Information",
+      "pagenum": "286"
+    },
+    {
+      "level": 2,
+      "label": "C2",
+      "title": "Obsolete Comment",
+      "pagenum": "286"
+    },
+    {
+      "level": 2,
+      "label": "C3",
+      "title": "Redundant Comment",
+      "pagenum": "286"
+    },
+    {
+      "level": 2,
+      "label": "C4",
+      "title": "Poorly Written Comment",
+      "pagenum": "287"
+    },
+    {
+      "level": 2,
+      "label": "C5",
+      "title": "Commented-Out Code",
+      "pagenum": "287"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Environment",
+      "pagenum": "287"
+    },
+    {
+      "level": 2,
+      "label": "E1",
+      "title": "Build Requires More Than One Step",
+      "pagenum": "287"
+    },
+    {
+      "level": 2,
+      "label": "E2",
+      "title": "Tests Require More Than One Step",
+      "pagenum": "287"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Functions",
+      "pagenum": "288"
+    },
+    {
+      "level": 2,
+      "label": "F1",
+      "title": "Too Many Arguments",
+      "pagenum": "288"
+    },
+    {
+      "level": 2,
+      "label": "F2",
+      "title": "Output Arguments",
+      "pagenum": "288"
+    },
+    {
+      "level": 2,
+      "label": "F3",
+      "title": "Flag Arguments",
+      "pagenum": "288"
+    },
+    {
+      "level": 2,
+      "label": "F4",
+      "title": "Dead Function",
+      "pagenum": "288"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "General",
+      "pagenum": "288"
+    },
+    {
+      "level": 2,
+      "label": "G1",
+      "title": "Multiple Languages in One Source File",
+      "pagenum": "288"
+    },
+    {
+      "level": 2,
+      "label": "G2",
+      "title": "Obvious Behavior Is Unimplemented",
+      "pagenum": "288"
+    },
+    {
+      "level": 2,
+      "label": "G3",
+      "title": "Incorrect Behavior at the Boundaries",
+      "pagenum": "289"
+    },
+    {
+      "level": 2,
+      "label": "G4",
+      "title": "Overridden Safeties",
+      "pagenum": "289"
+    },
+    {
+      "level": 2,
+      "label": "G5",
+      "title": "Duplication",
+      "pagenum": "289"
+    },
+    {
+      "level": 2,
+      "label": "G6",
+      "title": "Code at Wrong Level of Abstraction",
+      "pagenum": "290"
+    },
+    {
+      "level": 2,
+      "label": "G7",
+      "title": "Base Classes Depending on Their Derivatives",
+      "pagenum": "291"
+    },
+    {
+      "level": 2,
+      "label": "G8",
+      "title": "Too Much Information",
+      "pagenum": "291"
+    },
+    {
+      "level": 2,
+      "label": "G9",
+      "title": "Dead Code",
+      "pagenum": "292"
+    },
+    {
+      "level": 2,
+      "label": "G10",
+      "title": "Vertical Separation",
+      "pagenum": "292"
+    },
+    {
+      "level": 2,
+      "label": "G11",
+      "title": "Inconsistency",
+      "pagenum": "292"
+    },
+    {
+      "level": 2,
+      "label": "G12",
+      "title": "Clutter",
+      "pagenum": "293"
+    },
+    {
+      "level": 2,
+      "label": "G13",
+      "title": "Artificial Coupling",
+      "pagenum": "293"
+    },
+    {
+      "level": 2,
+      "label": "G14",
+      "title": "Feature Envy",
+      "pagenum": "293"
+    },
+    {
+      "level": 2,
+      "label": "G15",
+      "title": "Selector Arguments",
+      "pagenum": "294"
+    },
+    {
+      "level": 2,
+      "label": "G16",
+      "title": "Obscured Intent",
+      "pagenum": "295"
+    },
+    {
+      "level": 2,
+      "label": "G17",
+      "title": "Misplaced Responsibility",
+      "pagenum": "295"
+    },
+    {
+      "level": 2,
+      "label": "G18",
+      "title": "Inappropriate Static",
+      "pagenum": "296"
+    },
+    {
+      "level": 2,
+      "label": "G19",
+      "title": "Use Explanatory Variables",
+      "pagenum": "296"
+    },
+    {
+      "level": 2,
+      "label": "G20",
+      "title": "Function Names Should Say What They Do",
+      "pagenum": "297"
+    },
+    {
+      "level": 2,
+      "label": "G21",
+      "title": "Understand the Algorithm",
+      "pagenum": "297"
+    },
+    {
+      "level": 2,
+      "label": "G22",
+      "title": "Make Logical Dependencies Physical",
+      "pagenum": "298"
+    },
+    {
+      "level": 2,
+      "label": "G23",
+      "title": "Prefer Polymorphism to If/Else or Switch/Case",
+      "pagenum": "299"
+    },
+    {
+      "level": 2,
+      "label": "G24",
+      "title": "Follow Standard Conventions",
+      "pagenum": "299"
+    },
+    {
+      "level": 2,
+      "label": "G25",
+      "title": "Replace Magic Numbers with Named Constants",
+      "pagenum": "300"
+    },
+    {
+      "level": 2,
+      "label": "G26",
+      "title": "Be Precise",
+      "pagenum": "301"
+    },
+    {
+      "level": 2,
+      "label": "G27",
+      "title": "Structure over Convention",
+      "pagenum": "301"
+    },
+    {
+      "level": 2,
+      "label": "G28",
+      "title": "Encapsulate Conditionals",
+      "pagenum": "301"
+    },
+    {
+      "level": 2,
+      "label": "G29",
+      "title": "Avoid Negative Conditionals",
+      "pagenum": "302"
+    },
+    {
+      "level": 2,
+      "label": "G30",
+      "title": "Functions Should Do One Thing",
+      "pagenum": "302"
+    },
+    {
+      "level": 2,
+      "label": "G31",
+      "title": "Hidden Temporal Couplings",
+      "pagenum": "302"
+    },
+    {
+      "level": 2,
+      "label": "G32",
+      "title": "Don't Be Arbitrary",
+      "pagenum": "303"
+    },
+    {
+      "level": 2,
+      "label": "G33",
+      "title": "Encapsulate Boundary Conditions",
+      "pagenum": "304"
+    },
+    {
+      "level": 2,
+      "label": "G34",
+      "title": "Functions Should Descend Only One Level of Abstraction",
+      "pagenum": "304"
+    },
+    {
+      "level": 2,
+      "label": "G35",
+      "title": "Keep Configurable Data at High Levels",
+      "pagenum": "306"
+    },
+    {
+      "level": 2,
+      "label": "G36",
+      "title": "Avoid Transitive Navigation",
+      "pagenum": "306"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Java",
+      "pagenum": "307"
+    },
+    {
+      "level": 2,
+      "label": "J1",
+      "title": "Avoid Long Import Lists by Using Wildcards",
+      "pagenum": "307"
+    },
+    {
+      "level": 2,
+      "label": "J2",
+      "title": "Don't Inherit Constants",
+      "pagenum": "307"
+    },
+    {
+      "level": 2,
+      "label": "J3",
+      "title": "Constants versus Enums",
+      "pagenum": "308"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Names",
+      "pagenum": "309"
+    },
+    {
+      "level": 2,
+      "label": "N1",
+      "title": "Choose Descriptive Names",
+      "pagenum": "309"
+    },
+    {
+      "level": 2,
+      "label": "N2",
+      "title": "Choose Names at the Appropriate Level of Abstraction",
+      "pagenum": "311"
+    },
+    {
+      "level": 2,
+      "label": "N3",
+      "title": "Use Standard Nomenclature Where Possible",
+      "pagenum": "311"
+    },
+    {
+      "level": 2,
+      "label": "N4",
+      "title": "Unambiguous Names",
+      "pagenum": "312"
+    },
+    {
+      "level": 2,
+      "label": "N5",
+      "title": "Use Long Names for Long Scopes",
+      "pagenum": "312"
+    },
+    {
+      "level": 2,
+      "label": "N6",
+      "title": "Avoid Encodings",
+      "pagenum": "312"
+    },
+    {
+      "level": 2,
+      "label": "N7",
+      "title": "Names Should Describe Side-Effects",
+      "pagenum": "313"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Tests",
+      "pagenum": "313"
+    },
+    {
+      "level": 2,
+      "label": "T1",
+      "title": "Insufficient Tests",
+      "pagenum": "313"
+    },
+    {
+      "level": 2,
+      "label": "T2",
+      "title": "Use a Coverage Tool!",
+      "pagenum": "313"
+    },
+    {
+      "level": 2,
+      "label": "T3",
+      "title": "Don't Skip Trivial Tests",
+      "pagenum": "313"
+    },
+    {
+      "level": 2,
+      "label": "T4",
+      "title": "An Ignored Test Is a Question About an Ambiguity",
+      "pagenum": "313"
+    },
+    {
+      "level": 2,
+      "label": "T5",
+      "title": "Test Boundary Conditions",
+      "pagenum": "314"
+    },
+    {
+      "level": 2,
+      "label": "T6",
+      "title": "Exhaustively Test Near Bugs",
+      "pagenum": "314"
+    },
+    {
+      "level": 2,
+      "label": "T7",
+      "title": "Patterns of Failure Are Revealing",
+      "pagenum": "314"
+    },
+    {
+      "level": 2,
+      "label": "T8",
+      "title": "Test Coverage Patterns Can Be Revealing",
+      "pagenum": "314"
+    },
+    {
+      "level": 2,
+      "label": "T9",
+      "title": "Tests Should Be Fast",
+      "pagenum": "314"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "314"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Bibliography",
+      "pagenum": "315"
+    },
+    {
+      "level": 0,
+      "label": "Appendix A",
+      "title": "Concurrency",
+      "pagenum": "317"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Client/Server Example",
+      "pagenum": "317"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "The Server",
+      "pagenum": "317"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Adding Threading",
+      "pagenum": "319"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Server Observations",
+      "pagenum": "319"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "321"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Possible Paths of Execution",
+      "pagenum": "321"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Number of Paths",
+      "pagenum": "322"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Digging Deeper",
+      "pagenum": "323"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "326"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Knowing Your Library",
+      "pagenum": "326"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Executor Framework",
+      "pagenum": "326"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Nonblocking Solutions",
+      "pagenum": "327"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Nonthread-Safe Classes",
+      "pagenum": "328"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Dependencies Between Methods Can Break Concurrent Code",
+      "pagenum": "329"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Tolerate the Failure",
+      "pagenum": "330"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Client-Based Locking",
+      "pagenum": "330"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Server-Based Locking",
+      "pagenum": "332"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Increasing Throughput",
+      "pagenum": "333"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Single-Thread Calculation of Throughput",
+      "pagenum": "334"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Multithread Calculation of Throughput",
+      "pagenum": "335"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Deadlock",
+      "pagenum": "335"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Mutual Exclusion",
+      "pagenum": "336"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Lock & Wait",
+      "pagenum": "337"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "No Preemption",
+      "pagenum": "337"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Circular Wait",
+      "pagenum": "337"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Breaking Mutual Exclusion",
+      "pagenum": "337"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Breaking Lock & Wait",
+      "pagenum": "338"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Breaking Preemption",
+      "pagenum": "338"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Breaking Circular Wait",
+      "pagenum": "338"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Testing Multithreaded Code",
+      "pagenum": "339"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Tool Support for Testing Thread-Based Code",
+      "pagenum": "342"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Conclusion",
+      "pagenum": "342"
+    },
+    {
+      "level": 1,
+      "label": "",
+      "title": "Tutorial: Full Code Examples",
+      "pagenum": "343"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Client/Server Nonthreaded",
+      "pagenum": "343"
+    },
+    {
+      "level": 2,
+      "label": "",
+      "title": "Client/Server Using Threads",
+      "pagenum": "347"
+    },
+    {
+      "level": 0,
+      "label": "Appendix B",
+      "title": "org.jfree.date.SerialDate",
+      "pagenum": "349"
+    },
+    {
+      "level": 0,
+      "label": "Appendix C",
+      "title": "Cross References of Heuristics",
+      "pagenum": "409"
+    },
+    {
+      "level": 0,
+      "label": "",
+      "title": "Epilogue",
+      "pagenum": "411"
+    },
+    {
+      "level": 0,
+      "label": "",
+      "title": "Index",
+      "pagenum": "413"
+    }
+  ],
+  "latest_revision": 15,
+  "revision": 15,
+  "created": {
+    "type": "/type/datetime",
+    "value": "2017-02-09T02:17:10.400677"
+  },
+  "last_modified": {
+    "type": "/type/datetime",
+    "value": "2025-02-02T23:46:01.467169"
+  }
+}

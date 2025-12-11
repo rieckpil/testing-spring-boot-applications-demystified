@@ -86,7 +86,7 @@ class BookControllerTest {
       String validBookJson =
           """
         {
-            "isbn": "9781234567890",
+            "isbn": "978-1234567890",
             "title": "Test Book",
             "author": "Test Author",
             "publishedDate": "2023-01-01"
@@ -157,7 +157,7 @@ class BookControllerTest {
           String.format(
               """
         {
-            "isbn": "9781234567890",
+            "isbn": "978-1234567890",
             "title": "Test Book",
             "author": "Test Author",
             "publishedDate": "%s"

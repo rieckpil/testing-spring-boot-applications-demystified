@@ -20,7 +20,7 @@ public class BookMetadataResponseMother {
   private String physicalFormat = "Hardcover";
   private String description = "A comprehensive guide to Java best practices";
   private List<String> subjects = List.of("Java", "Programming", "Software Engineering");
-  private Map<String, Integer> covers = Map.of("medium", 8739161);
+  private List<Integer> covers = List.of(8739161);
 
   private BookMetadataResponseMother() {}
 
@@ -103,13 +103,13 @@ public class BookMetadataResponseMother {
     return this;
   }
 
-  public BookMetadataResponseMother withCovers(Map<String, Integer> covers) {
+  public BookMetadataResponseMother withCovers(List<Integer> covers) {
     this.covers = covers;
     return this;
   }
 
   public BookMetadataResponseMother withCoverId(Integer coverId) {
-    this.covers = Map.of("medium", coverId);
+    this.covers = List.of(coverId);
     return this;
   }
 

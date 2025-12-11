@@ -30,7 +30,7 @@ public record BookMetadataResponse(
     // Additional metadata
     String description,
     @JsonProperty("subjects") List<String> subjects,
-    @JsonProperty("cover") Map<String, Integer> covers) {
+    List<Integer> covers) {
   // Convenience methods
   public String getMainIsbn() {
     if (isbn13 != null && !isbn13.isEmpty()) {
@@ -49,8 +49,8 @@ public record BookMetadataResponse(
   }
 
   public Integer getCoverId() {
-    if (covers != null && covers.containsKey("medium")) {
-      return covers.get("medium");
+    if (covers != null && !covers.isEmpty()) {
+      return covers.get(0);
     }
     return null;
   }

@@ -49,7 +49,7 @@ class BookControllerIntegrationTest extends BaseIntegrationTest {
     String requestBody =
         """
       {
-        "isbn": "9780134685991",
+        "isbn": "978-0134685991",
         "title": "Effective Java",
         "author": "Joshua Bloch",
         "publishedDate": "2018-01-06"
@@ -58,7 +58,7 @@ class BookControllerIntegrationTest extends BaseIntegrationTest {
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    headers.setBasicAuth("user", "password");
+    headers.setBasicAuth("user", "user");
     HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
 
     // Act
@@ -71,18 +71,18 @@ class BookControllerIntegrationTest extends BaseIntegrationTest {
 
     assertThat(bookRepository.count()).isEqualTo(1);
     Book savedBook = bookRepository.findAll().get(0);
-    assertThat(savedBook.getIsbn()).isEqualTo("9780134685991");
+    assertThat(savedBook.getIsbn()).isEqualTo("978-0134685991");
   }
 
   @Test
   @DisplayName("Should get book by ID via REST API")
   void shouldGetBookById() {
     // Arrange
-    Book book = new Book("9780134685991", "Effective Java", "Joshua Bloch", LocalDate.now());
+    Book book = new Book("978-0134685991", "Effective Java", "Joshua Bloch", LocalDate.now());
     Book savedBook = bookRepository.save(book);
 
     HttpHeaders headers = new HttpHeaders();
-    headers.setBasicAuth("user", "password");
+    headers.setBasicAuth("user", "user");
     HttpEntity<Void> request = new HttpEntity<>(headers);
 
     // Act
@@ -93,7 +93,7 @@ class BookControllerIntegrationTest extends BaseIntegrationTest {
     // Assert
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().getIsbn()).isEqualTo("9780134685991");
+    assertThat(response.getBody().getIsbn()).isEqualTo("978-0134685991");
   }
 
   @Test

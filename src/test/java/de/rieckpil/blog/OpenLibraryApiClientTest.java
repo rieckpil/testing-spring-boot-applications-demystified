@@ -52,7 +52,7 @@ class OpenLibraryApiClientTest {
     assertThat(result.title()).isEqualTo("Clean Code");
     assertThat(result.isbn13().get(0)).isEqualTo("9780132350884");
     assertThat(result.numberOfPages()).isEqualTo(431);
-    assertThat(result.getCoverUrl()).contains("9780132350884");
+    assertThat(result.getCoverUrl()).contains("14840846");
   }
 
   @Test

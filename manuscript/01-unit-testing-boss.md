@@ -132,7 +132,9 @@ Use whichever pattern makes your tests more readable. We'll use both throughout 
 
 ## Boss Strategy #1: Testing Pure Business Logic
 
-Let's test a realistic piece of business logic from our Shelfie application. Here's a price calculator that applies discounts and taxes:
+Let's test a realistic piece of business logic from our Shelfie application: a price calculator that applies discounts and taxes.
+
+First, we define our business rules as constants:
 
 ```java
 public class PriceCalculator {
@@ -140,85 +142,115 @@ public class PriceCalculator {
   private static final double DISCOUNT_THRESHOLD = 100.0;
   private static final double DISCOUNT_RATE = 0.10;
 
-  public double calculateFinalPrice(double basePrice, int quantity) {
-    if (basePrice <= 0 || quantity <= 0) {
-      throw new IllegalArgumentException(
-        "Price and quantity must be positive");
-    }
-
-    double subtotal = basePrice * quantity;
-    double discountedPrice = applyDiscount(subtotal);
-    return applyTax(discountedPrice);
-  }
-
-  private double applyDiscount(double price) {
-    if (price > DISCOUNT_THRESHOLD) {
-      return price * (1 - DISCOUNT_RATE);
-    }
-    return price;
-  }
-
-  private double applyTax(double price) {
-    return price * (1 + TAX_RATE);
-  }
+  // Methods follow...
 }
 ```
 
-This class contains business rules:
-- 8% tax applies to all purchases
-- 10% discount for orders over $100
-- Discount applies before tax
-- Invalid inputs throw exceptions
+These constants make our code self-documenting: 8% tax rate, $100 discount threshold, and 10% discount rate.
 
-Let's test these rules comprehensively:
+The main calculation method validates inputs and orchestrates the calculation:
+
+```java
+public double calculateFinalPrice(double basePrice, int quantity) {
+  if (basePrice <= 0 || quantity <= 0) {
+    throw new IllegalArgumentException(
+      "Price and quantity must be positive");
+  }
+
+  double subtotal = basePrice * quantity;
+  double discountedPrice = applyDiscount(subtotal);
+  return applyTax(discountedPrice);
+}
+```
+
+Notice the validation happens first. Then we calculate the subtotal, apply the discount, and finally apply tax. The order matters: discount before tax gives customers a better deal.
+
+Two private helper methods keep our code clean:
+
+```java
+private double applyDiscount(double price) {
+  if (price > DISCOUNT_THRESHOLD) {
+    return price * (1 - DISCOUNT_RATE);
+  }
+  return price;
+}
+
+private double applyTax(double price) {
+  return price * (1 + TAX_RATE);
+}
+```
+
+The `applyDiscount` method only applies the 10% discount for purchases over $100. The `applyTax` method always applies the 8% tax rate.
+
+Now let's test these business rules comprehensively.
+
+Start with the test class setup:
 
 ```java
 class PriceCalculatorTest {
   private PriceCalculator calculator = new PriceCalculator();
 
-  @Test
-  void shouldCalculatePriceWithoutDiscount() {
-    // Given: Purchase under discount threshold
-    double basePrice = 20.0;
-    int quantity = 4; // Total: $80
-
-    // When: Calculate final price
-    double finalPrice = calculator.calculateFinalPrice(
-      basePrice, quantity);
-
-    // Then: Only tax is applied (80 * 1.08 = 86.40)
-    assertEquals(86.40, finalPrice, 0.01);
-  }
-
-  @Test
-  void shouldApplyDiscountForLargePurchases() {
-    // Given: Purchase over discount threshold
-    double basePrice = 50.0;
-    int quantity = 3; // Total: $150
-
-    // When: Calculate final price
-    double finalPrice = calculator.calculateFinalPrice(
-      basePrice, quantity);
-
-    // Then: Discount and tax applied (150 * 0.9 * 1.08 = 145.80)
-    assertEquals(145.80, finalPrice, 0.01);
-  }
-
-  @Test
-  void shouldThrowExceptionForNegativePrice() {
-    // When/Then: Negative price throws exception
-    assertThrows(IllegalArgumentException.class,
-      () -> calculator.calculateFinalPrice(-10, 5));
-  }
-
-  @Test
-  void shouldThrowExceptionForZeroQuantity() {
-    // When/Then: Zero quantity throws exception
-    assertThrows(IllegalArgumentException.class,
-      () -> calculator.calculateFinalPrice(10, 0));
-  }
+  // Tests follow...
 }
 ```
+
+We create one calculator instance to use across all tests. No Spring, no mocks—just a plain Java object.
+
+Test #1: Purchases under $100 get only tax applied:
+
+```java
+@Test
+void shouldCalculatePriceWithoutDiscount() {
+  // Given: Purchase under discount threshold
+  double basePrice = 20.0;
+  int quantity = 4; // Total: $80
+
+  // When: Calculate final price
+  double finalPrice = calculator.calculateFinalPrice(basePrice, quantity);
+
+  // Then: Only tax is applied (80 * 1.08 = 86.40)
+  assertEquals(86.40, finalPrice, 0.01);
+}
+```
+
+The third parameter `0.01` is the delta for floating-point comparison. We allow 1 cent difference to handle floating-point precision issues.
+
+Test #2: Purchases over $100 get discount plus tax:
+
+```java
+@Test
+void shouldApplyDiscountForLargePurchases() {
+  // Given: Purchase over discount threshold
+  double basePrice = 50.0;
+  int quantity = 3; // Total: $150
+
+  // When: Calculate final price
+  double finalPrice = calculator.calculateFinalPrice(basePrice, quantity);
+
+  // Then: Discount and tax (150 * 0.9 * 1.08 = 145.80)
+  assertEquals(145.80, finalPrice, 0.01);
+}
+```
+
+First the 10% discount (150 × 0.9 = 135), then 8% tax (135 × 1.08 = 145.80).
+
+Test #3 and #4: Invalid inputs throw exceptions:
+
+```java
+@Test
+void shouldThrowExceptionForNegativePrice() {
+  assertThrows(IllegalArgumentException.class,
+    () -> calculator.calculateFinalPrice(-10, 5));
+}
+
+@Test
+void shouldThrowExceptionForZeroQuantity() {
+  assertThrows(IllegalArgumentException.class,
+    () -> calculator.calculateFinalPrice(10, 0));
+}
+```
+
+These tests verify our validation logic catches bad inputs before any calculation happens.
 
 Notice what makes these good unit tests:
 - **No Spring annotations**: Just plain JUnit
@@ -231,7 +263,9 @@ The third parameter in `assertEquals(86.40, finalPrice, 0.01)` is the delta for 
 
 ## Boss Strategy #2: Using Mockito for Isolation
 
-Real applications have dependencies. Here's a shopping cart service that depends on a pricing service:
+Real applications have dependencies. Here's a shopping cart service that depends on a pricing service.
+
+First, let's look at the class structure:
 
 ```java
 @Service
@@ -243,44 +277,58 @@ public class ShoppingCart {
     this.pricingService = pricingService;
   }
 
-  public void addItem(String productId, int quantity) {
-    if (quantity <= 0) {
-      throw new IllegalArgumentException(
-        "Quantity must be positive");
-    }
-
-    items.merge(productId,
-      new CartItem(productId, quantity),
-      (existing, newItem) ->
-        new CartItem(productId, existing.quantity + quantity)
-    );
-  }
-
-  public double calculateTotal() {
-    return items.values().stream()
-      .mapToDouble(item -> {
-        double price = pricingService.getPrice(item.productId);
-        return price * item.quantity;
-      })
-      .sum();
-  }
-
-  public int getItemCount() {
-    return items.values().stream()
-      .mapToInt(item -> item.quantity)
-      .sum();
-  }
-
   private record CartItem(String productId, int quantity) {}
 }
 ```
 
-To unit test `ShoppingCart`, we need to isolate it from `PricingService`. We don't want our test to:
-- Call a real database for prices
-- Depend on external price data
-- Break when price data changes
+The cart stores items in a map and depends on `PricingService` to get prices. Constructor injection makes it testable.
 
-This is where Mockito saves us:
+The `addItem` method validates quantity and merges items:
+
+```java
+public void addItem(String productId, int quantity) {
+  if (quantity <= 0) {
+    throw new IllegalArgumentException("Quantity must be positive");
+  }
+
+  items.merge(productId,
+    new CartItem(productId, quantity),
+    (existing, newItem) ->
+      new CartItem(productId, existing.quantity + quantity)
+  );
+}
+```
+
+The `merge` method either adds a new item or combines quantities if the product already exists.
+
+The `calculateTotal` method uses the pricing service:
+
+```java
+public double calculateTotal() {
+  return items.values().stream()
+    .mapToDouble(item -> {
+      double price = pricingService.getPrice(item.productId);
+      return price * item.quantity;
+    })
+    .sum();
+}
+```
+
+For each item, we call `pricingService.getPrice()`, multiply by quantity, and sum everything.
+
+A helper method counts total items:
+
+```java
+public int getItemCount() {
+  return items.values().stream()
+    .mapToInt(item -> item.quantity)
+    .sum();
+}
+```
+
+To unit test `ShoppingCart`, we need to isolate it from `PricingService`. We don't want our test to call a real database, depend on external price data, or break when prices change.
+
+This is where Mockito saves us. Let's set up the test class:
 
 ```java
 @ExtendWith(MockitoExtension.class)
@@ -291,120 +339,108 @@ class ShoppingCartTest {
 
   @InjectMocks
   private ShoppingCart cart;
-
-  @Nested
-  @DisplayName("Adding items to cart")
-  class AddingItems {
-
-    @Test
-    @DisplayName("should add single item successfully")
-    void addSingleItem() {
-      // When
-      cart.addItem("PROD-001", 2);
-
-      // Then
-      assertThat(cart.getItemCount()).isEqualTo(2);
-    }
-
-    @Test
-    @DisplayName("should accumulate quantities for same product")
-    void accumulateQuantities() {
-      // When
-      cart.addItem("PROD-001", 2);
-      cart.addItem("PROD-001", 3);
-
-      // Then
-      assertThat(cart.getItemCount()).isEqualTo(5);
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = {0, -1, -10})
-    @DisplayName("should reject non-positive quantities")
-    void rejectInvalidQuantities(int quantity) {
-      assertThrows(IllegalArgumentException.class,
-        () -> cart.addItem("PROD-001", quantity));
-    }
-  }
-
-  @Nested
-  @DisplayName("Calculating totals")
-  class CalculatingTotals {
-
-    @Test
-    @DisplayName("should calculate total for single item")
-    void calculateSingleItemTotal() {
-      // Given
-      when(pricingService.getPrice("PROD-001"))
-        .thenReturn(10.0);
-
-      // When
-      cart.addItem("PROD-001", 3);
-      double total = cart.calculateTotal();
-
-      // Then
-      assertThat(total).isEqualTo(30.0);
-      verify(pricingService).getPrice("PROD-001");
-    }
-
-    @Test
-    @DisplayName("should calculate total for multiple items")
-    void calculateMultipleItemsTotal() {
-      // Given
-      when(pricingService.getPrice("PROD-001"))
-        .thenReturn(10.0);
-      when(pricingService.getPrice("PROD-002"))
-        .thenReturn(25.0);
-
-      // When
-      cart.addItem("PROD-001", 2);
-      cart.addItem("PROD-002", 1);
-      double total = cart.calculateTotal();
-
-      // Then
-      assertThat(total).isEqualTo(45.0); // (2×10) + (1×25)
-    }
-
-    @Test
-    @DisplayName("should return zero for empty cart")
-    void emptyCartTotal() {
-      // When
-      double total = cart.calculateTotal();
-
-      // Then
-      assertThat(total).isEqualTo(0.0);
-      verifyNoInteractions(pricingService);
-    }
-  }
 }
 ```
 
-Let's break down the Mockito magic:
+Breaking down the Mockito annotations:
 
-**`@ExtendWith(MockitoExtension.class)`**
-- Activates Mockito for JUnit 5
-- Enables Mockito annotations
+**`@ExtendWith(MockitoExtension.class)`** activates Mockito for JUnit 5 and enables Mockito annotations.
 
-**`@Mock private PricingService pricingService`**
-- Creates a mock (fake) PricingService
-- Has no real behavior until we configure it
+**`@Mock private PricingService pricingService`** creates a mock (fake) PricingService with no real behavior until we configure it.
 
-**`@InjectMocks private ShoppingCart cart`**
-- Creates a real ShoppingCart instance
-- Automatically injects mocked dependencies into it
+**`@InjectMocks private ShoppingCart cart`** creates a real ShoppingCart instance and automatically injects our mocked dependencies.
 
-**`when(pricingService.getPrice("PROD-001")).thenReturn(10.0)`**
-- Defines behavior: "When `getPrice()` is called with 'PROD-001', return 10.0"
-- This is called "stubbing"
+Now let's write tests. First, test adding items without worrying about pricing:
 
-**`verify(pricingService).getPrice("PROD-001")`**
-- Verifies the mock was called with specific arguments
-- Ensures our code actually used the dependency
+```java
+@Test
+void shouldAddSingleItem() {
+  // When
+  cart.addItem("PROD-001", 2);
 
-**`verifyNoInteractions(pricingService)`**
-- Ensures the mock was never called
-- Important for testing optimization paths
+  // Then
+  assertThat(cart.getItemCount()).isEqualTo(2);
+}
+```
 
-Notice how we use `@Nested` classes to group related tests. This creates readable test reports:
+This test verifies items are added. No pricing service needed yet.
+
+Test that quantities accumulate for the same product:
+
+```java
+@Test
+void shouldAccumulateQuantitiesForSameProduct() {
+  // When
+  cart.addItem("PROD-001", 2);
+  cart.addItem("PROD-001", 3);
+
+  // Then
+  assertThat(cart.getItemCount()).isEqualTo(5);
+}
+```
+
+Adding the same product twice combines quantities: 2 + 3 = 5.
+
+Now test the pricing service integration. We stub the mock's behavior:
+
+```java
+@Test
+void shouldCalculateTotalForSingleItem() {
+  // Given - configure mock behavior
+  when(pricingService.getPrice("PROD-001")).thenReturn(10.0);
+
+  // When
+  cart.addItem("PROD-001", 3);
+  double total = cart.calculateTotal();
+
+  // Then
+  assertThat(total).isEqualTo(30.0);
+  verify(pricingService).getPrice("PROD-001");
+}
+```
+
+The `when().thenReturn()` configures our mock: "When getPrice() is called with 'PROD-001', return 10.0." This is called **stubbing**.
+
+The `verify()` checks that our mock was actually called. This ensures our cart code uses the pricing service correctly.
+
+Test with multiple different products:
+
+```java
+@Test
+void shouldCalculateTotalForMultipleItems() {
+  // Given - stub prices for two products
+  when(pricingService.getPrice("PROD-001")).thenReturn(10.0);
+  when(pricingService.getPrice("PROD-002")).thenReturn(25.0);
+
+  // When
+  cart.addItem("PROD-001", 2);
+  cart.addItem("PROD-002", 1);
+  double total = cart.calculateTotal();
+
+  // Then
+  assertThat(total).isEqualTo(45.0); // (2×10) + (1×25)
+}
+```
+
+We can stub multiple products. Each gets its own price.
+
+Test empty cart doesn't call the pricing service:
+
+```java
+@Test
+void shouldReturnZeroForEmptyCart() {
+  // When
+  double total = cart.calculateTotal();
+
+  // Then
+  assertThat(total).isEqualTo(0.0);
+  verifyNoInteractions(pricingService);
+}
+```
+
+`verifyNoInteractions()` ensures our mock was never called. Empty cart = no pricing lookups needed.
+
+Notice how we use `@Nested` classes to group related tests:
 
 ```
 ShoppingCartTest
@@ -612,7 +648,7 @@ book2.setTitle("Test Book 2");
 // ... repeat for every test
 ```
 
-The Test Data Builder pattern eliminates this duplication:
+The Test Data Builder pattern eliminates this duplication. Start with fields and sensible defaults:
 
 ```java
 class BookTestDataBuilder {
@@ -622,30 +658,44 @@ class BookTestDataBuilder {
   private LocalDate publishedDate = LocalDate.now();
   private BookStatus status = BookStatus.AVAILABLE;
 
-  public BookTestDataBuilder withTitle(String title) {
-    this.title = title;
-    return this;
-  }
+  // Builder methods follow...
+}
+```
 
-  public BookTestDataBuilder withAuthor(String author) {
-    this.author = author;
-    return this;
-  }
+Every book starts with these defaults. Tests override only what matters.
 
-  public BookTestDataBuilder withIsbn(String isbn) {
-    this.isbn = isbn;
-    return this;
-  }
+Add fluent setter methods:
 
-  public Book build() {
-    Book book = new Book();
-    book.setTitle(title);
-    book.setAuthor(author);
-    book.setIsbn(isbn);
-    book.setPublishedDate(publishedDate);
-    book.setStatus(status);
-    return book;
-  }
+```java
+public BookTestDataBuilder withTitle(String title) {
+  this.title = title;
+  return this;
+}
+
+public BookTestDataBuilder withAuthor(String author) {
+  this.author = author;
+  return this;
+}
+
+public BookTestDataBuilder withIsbn(String isbn) {
+  this.isbn = isbn;
+  return this;
+}
+```
+
+Each method returns `this`, allowing method chaining.
+
+The `build()` method creates the actual book:
+
+```java
+public Book build() {
+  Book book = new Book();
+  book.setTitle(title);
+  book.setAuthor(author);
+  book.setIsbn(isbn);
+  book.setPublishedDate(publishedDate);
+  book.setStatus(status);
+  return book;
 }
 ```
 

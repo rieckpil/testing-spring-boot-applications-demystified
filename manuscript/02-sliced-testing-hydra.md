@@ -385,62 +385,66 @@ class BookControllerTest {
 }
 ```
 
-Now test different security scenarios:
+Now test different security scenarios. Test #1: No authentication returns 401:
 
 ```java
-@Nested
-@DisplayName("POST /api/books security tests")
-class CreateBookSecurityTests {
+@Test
+void shouldReturn401WhenNotAuthenticated() throws Exception {
+  mockMvc.perform(post("/api/books")
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{}"))
+    .andExpect(status().isUnauthorized());
 
-  @Test
-  @DisplayName("should return 401 when not authenticated")
-  void shouldReturn401WhenNotAuthenticated() throws Exception {
-    mockMvc.perform(post("/api/books")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{}"))
-      .andExpect(status().isUnauthorized());
-
-    verify(bookService, never()).createBook(any());
-  }
-
-  @Test
-  @WithMockUser(roles = "USER")
-  @DisplayName("should return 403 when user lacks admin role")
-  void shouldReturn403WhenNotAdmin() throws Exception {
-    mockMvc.perform(post("/api/books")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{}"))
-      .andExpect(status().isForbidden());
-
-    verify(bookService, never()).createBook(any());
-  }
-
-  @Test
-  @WithMockUser(roles = "ADMIN")
-  @DisplayName("should create book when user is admin")
-  void shouldCreateBookWhenAdmin() throws Exception {
-    String validJson = """
-      {
-        "isbn": "9780134685991",
-        "title": "Effective Java",
-        "author": "Joshua Bloch",
-        "publishedDate": "2018-01-06"
-      }
-      """;
-
-    when(bookService.createBook(any())).thenReturn(1L);
-
-    mockMvc.perform(post("/api/books")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(validJson))
-      .andExpect(status().isCreated());
-
-    verify(bookService, times(1)).createBook(any());
-  }
+  verify(bookService, never()).createBook(any());
 }
 ```
 
-The `@WithMockUser` annotation (from `spring-security-test`) creates a mock authenticated user with specified roles.
+Without authentication, Spring Security blocks the request with 401 Unauthorized. The service is never called.
+
+Test #2: Wrong role returns 403:
+
+```java
+@Test
+@WithMockUser(roles = "USER")
+void shouldReturn403WhenNotAdmin() throws Exception {
+  mockMvc.perform(post("/api/books")
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{}"))
+    .andExpect(status().isForbidden());
+
+  verify(bookService, never()).createBook(any());
+}
+```
+
+The `@WithMockUser` annotation (from `spring-security-test`) creates a mock authenticated user. A USER role exists but lacks ADMIN privileges, resulting in 403 Forbidden.
+
+Test #3: Correct role succeeds:
+
+```java
+@Test
+@WithMockUser(roles = "ADMIN")
+void shouldCreateBookWhenAdmin() throws Exception {
+  String validJson = """
+    {
+      "isbn": "9780134685991",
+      "title": "Effective Java",
+      "author": "Joshua Bloch",
+      "publishedDate": "2018-01-06"
+    }
+    """;
+
+  when(bookService.createBook(any())).thenReturn(1L);
+
+  mockMvc.perform(post("/api/books")
+      .contentType(MediaType.APPLICATION_JSON)
+      .content(validJson))
+    .andExpect(status().isCreated());
+
+  verify(bookService, times(1)).createBook(any());
+}
+```
+
+With ADMIN role, the request succeeds with 201 Created, and the service is called.
 
 These tests verify our security progression:
 - 401 (Unauthorized) → No authentication
@@ -601,7 +605,9 @@ This test verifies:
 
 ### Testing with Real Databases using Testcontainers
 
-H2 is great for quick tests, but it's not PostgreSQL. For database-specific features (like JSONB columns, full-text search, or specific SQL syntax), use Testcontainers:
+H2 is great for quick tests, but it's not PostgreSQL. For database-specific features (like JSONB columns, full-text search, or specific SQL syntax), use Testcontainers.
+
+Set up the test class with Testcontainers:
 
 ```java
 @DataJpaTest
@@ -619,30 +625,38 @@ class BookRepositoryPostgresTest {
 
   @Autowired
   private BookRepository bookRepository;
-
-  @Test
-  void shouldFindBookByIsbn() {
-    // Given
-    Book book = new Book("9780134685991", "Effective Java",
-                         "Joshua Bloch", LocalDate.of(2018, 1, 6));
-    book.setStatus(BookStatus.AVAILABLE);
-
-    bookRepository.save(book);
-
-    // When
-    Optional<Book> found = bookRepository.findByIsbn("9780134685991");
-
-    // Then
-    assertThat(found).isPresent();
-    assertThat(found.get())
-      .satisfies(b -> {
-        assertThat(b.getIsbn()).isEqualTo("9780134685991");
-        assertThat(b.getTitle()).isEqualTo("Effective Java");
-        assertThat(b.getStatus()).isEqualTo(BookStatus.AVAILABLE);
-      });
-  }
 }
 ```
+
+Breaking down the annotations: `@Testcontainers` activates the Testcontainers extension. `@AutoConfigureTestDatabase(replace = NONE)` tells Spring NOT to replace our database with H2. `@Container` manages the container lifecycle, and `@ServiceConnection` (Spring Boot 3.1+) automatically configures the DataSource.
+
+Now write a test using the real PostgreSQL database:
+
+```java
+@Test
+void shouldFindBookByIsbn() {
+  // Given
+  Book book = new Book("9780134685991", "Effective Java",
+                       "Joshua Bloch", LocalDate.of(2018, 1, 6));
+  book.setStatus(BookStatus.AVAILABLE);
+
+  bookRepository.save(book);
+
+  // When
+  Optional<Book> found = bookRepository.findByIsbn("9780134685991");
+
+  // Then
+  assertThat(found).isPresent();
+  assertThat(found.get())
+    .satisfies(b -> {
+      assertThat(b.getIsbn()).isEqualTo("9780134685991");
+      assertThat(b.getTitle()).isEqualTo("Effective Java");
+      assertThat(b.getStatus()).isEqualTo(BookStatus.AVAILABLE);
+    });
+}
+```
+
+This test runs against real PostgreSQL, giving us confidence that our queries work in production.
 
 Breaking down the annotations:
 

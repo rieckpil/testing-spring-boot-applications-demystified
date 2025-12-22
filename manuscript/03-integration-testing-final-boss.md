@@ -312,7 +312,7 @@ public class BookService {
 }
 ```
 
-Let's test this with WireMock:
+Let's test this with WireMock. Start with the test class setup:
 
 ```java
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -325,86 +325,134 @@ class BookServiceIntegrationIT {
     new PostgreSQLContainer<>("postgres:16-alpine");
 
   static WireMockServer wireMockServer;
+}
+```
 
-  @Autowired
-  private TestRestTemplate restTemplate;
+We combine `@SpringBootTest` for full context with Testcontainers for PostgreSQL. The `static WireMockServer` will mock our external API.
 
-  @Autowired
-  private BookRepository bookRepository;
+Set up WireMock lifecycle methods:
 
-  @BeforeAll
-  static void beforeAll() {
-    wireMockServer = new WireMockServer(8089);
-    wireMockServer.start();
-    WireMock.configureFor("localhost", 8089);
-  }
+```java
+@BeforeAll
+static void beforeAll() {
+  wireMockServer = new WireMockServer(8089);
+  wireMockServer.start();
+  WireMock.configureFor("localhost", 8089);
+}
 
-  @AfterAll
-  static void afterAll() {
-    wireMockServer.stop();
-  }
+@AfterAll
+static void afterAll() {
+  wireMockServer.stop();
+}
+```
 
-  @DynamicPropertySource
-  static void configureProperties(DynamicPropertyRegistry registry) {
-    registry.add("openlibrary.api.base-url",
-      () -> "http://localhost:8089");
-  }
+`@BeforeAll` starts WireMock once before all tests. We use port 8089 to avoid conflicts. `@AfterAll` ensures clean shutdown.
 
-  @BeforeEach
-  void setUp() {
-    bookRepository.deleteAll();
-    wireMockServer.resetAll();
-  }
+Point our application to WireMock instead of the real API:
 
-  @Test
-  void shouldEnrichBookWithExternalMetadata() {
-    // Given - stub external API response
-    String isbn = "9780132350884";
+```java
+@DynamicPropertySource
+static void configureProperties(DynamicPropertyRegistry registry) {
+  registry.add("openlibrary.api.base-url",
+    () -> "http://localhost:8089");
+}
+```
 
-    stubFor(get(urlEqualTo("/isbn/" + isbn + ".json"))
-      .willReturn(aResponse()
-        .withStatus(200)
-        .withHeader("Content-Type", "application/json")
-        .withBody("""
-          {
-            "isbn_13": ["9780132350884"],
-            "title": "Clean Code",
-            "publishers": ["Prentice Hall"],
-            "covers": [12345],
-            "number_of_pages": 431
-          }
-          """)));
+`@DynamicPropertySource` overrides application properties at runtime. Our `OpenLibraryApiClient` now calls WireMock instead of the real OpenLibrary API.
 
-    // When - create book via API
-    String createRequest = """
-      {
-        "isbn": "9780132350884",
-        "title": "Clean Code",
-        "author": "Robert Martin",
-        "publishedDate": "2008-08-01"
-      }
-      """;
+Clean up between tests:
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
+```java
+@Autowired
+private TestRestTemplate restTemplate;
 
-    ResponseEntity<Void> response = restTemplate.exchange(
-      "/api/books",
-      HttpMethod.POST,
-      new HttpEntity<>(createRequest, headers),
-      Void.class
-    );
+@Autowired
+private BookRepository bookRepository;
 
-    // Then - verify book was enriched with external data
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+@BeforeEach
+void setUp() {
+  bookRepository.deleteAll();
+  wireMockServer.resetAll();
+}
+```
 
-    Book savedBook = bookRepository.findAll().get(0);
-    assertThat(savedBook.getIsbn()).isEqualTo("9780132350884");
-    assertThat(savedBook.getThumbnailUrl())
-      .contains("covers.openlibrary.org/b/id/12345");
+Each test starts with an empty database and fresh WireMock stubs.
 
-    // Verify external API was called
-    verify(getRequestedFor(urlEqualTo("/isbn/" + isbn + ".json")));
+Now write the actual test. First, stub the external API response:
+
+```java
+@Test
+void shouldEnrichBookWithExternalMetadata() {
+  // Given - stub external API response
+  String isbn = "9780132350884";
+
+  stubFor(get(urlEqualTo("/isbn/" + isbn + ".json"))
+    .willReturn(aResponse()
+      .withStatus(200)
+      .withHeader("Content-Type", "application/json")
+      .withBody("""
+        {
+          "isbn_13": ["9780132350884"],
+          "title": "Clean Code",
+          "publishers": ["Prentice Hall"],
+          "covers": [12345],
+          "number_of_pages": 431
+        }
+        """)));
+}
+```
+
+`stubFor()` configures WireMock: when a GET request to `/isbn/9780132350884.json` arrives, return this JSON with HTTP 200.
+
+Make the HTTP request to create a book:
+
+```java
+  // When - create book via API
+  String createRequest = """
+    {
+      "isbn": "9780132350884",
+      "title": "Clean Code",
+      "author": "Robert Martin",
+      "publishedDate": "2008-08-01"
+    }
+    """;
+
+  HttpHeaders headers = new HttpHeaders();
+  headers.setContentType(MediaType.APPLICATION_JSON);
+
+  ResponseEntity<Void> response = restTemplate.exchange(
+    "/api/books",
+    HttpMethod.POST,
+    new HttpEntity<>(createRequest, headers),
+    Void.class
+  );
+```
+
+We POST book data to our application. Behind the scenes, our service calls the OpenLibrary API (actually WireMock) to fetch metadata.
+
+Verify the HTTP response and database state:
+
+```java
+  // Then - verify book was enriched with external data
+  assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+  Book savedBook = bookRepository.findAll().get(0);
+  assertThat(savedBook.getIsbn()).isEqualTo("9780132350884");
+  assertThat(savedBook.getThumbnailUrl())
+    .contains("covers.openlibrary.org/b/id/12345");
+```
+
+The book was created (201 status) and saved with a thumbnail URL from the external API data.
+
+Finally, verify the external API was actually called:
+
+```java
+  // Verify external API was called
+  verify(getRequestedFor(urlEqualTo("/isbn/" + isbn + ".json")));
+}
+```
+
+WireMock's `verify()` confirms our application made the expected HTTP call.
   }
 }
 ```
@@ -531,34 +579,49 @@ These tests verify security in the **real runtime environment**:
 
 ## Creating a Base Integration Test Class
 
-To optimize context caching (we'll explore this deeply in the next chapter), create a base class:
+To optimize context caching (we'll explore this deeply in the next chapter), create a base class. Start with the class declaration and annotations:
 
 ```java
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 @ActiveProfiles("test")
 public abstract class BaseIntegrationTest {
-
-  @Container
-  @ServiceConnection
-  static PostgreSQLContainer<?> postgres =
-    new PostgreSQLContainer<>("postgres:16-alpine")
-      .withDatabaseName("testdb")
-      .withUsername("test")
-      .withPassword("test");
-
-  @Autowired
-  protected TestRestTemplate restTemplate;
-
-  @Autowired
-  protected BookRepository bookRepository;
-
-  @BeforeEach
-  void cleanDatabase() {
-    bookRepository.deleteAll();
-  }
+  // Configuration follows...
 }
 ```
+
+`@ActiveProfiles("test")` ensures consistent profile usage across all tests. This is crucial for context caching.
+
+Add the Testcontainers PostgreSQL setup:
+
+```java
+@Container
+@ServiceConnection
+static PostgreSQLContainer<?> postgres =
+  new PostgreSQLContainer<>("postgres:16-alpine")
+    .withDatabaseName("testdb")
+    .withUsername("test")
+    .withPassword("test");
+```
+
+The `static` container starts once and is shared by all test classes that extend this base.
+
+Inject common dependencies:
+
+```java
+@Autowired
+protected TestRestTemplate restTemplate;
+
+@Autowired
+protected BookRepository bookRepository;
+
+@BeforeEach
+void cleanDatabase() {
+  bookRepository.deleteAll();
+}
+```
+
+Using `protected` makes these available to subclasses. `@BeforeEach` ensures each test starts with a clean database.
 
 Now all integration tests can extend this:
 

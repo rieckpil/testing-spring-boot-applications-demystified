@@ -94,6 +94,30 @@ Spring Boot manages all version compatibility for us. Every Spring Boot version 
 
 You don't need to debate which testing framework to use or worry about version conflicts. It's all there, ready to use.
 
+## About the Code Examples
+
+**Important:** This book uses **Spring Boot 4.0** and **Java 21** for all code examples.
+
+Spring Boot 4.0 introduced some structural changes to how testing modules are organized. If you're working with Spring Boot 3.x or earlier, you might encounter different import paths.
+
+The main change: Spring Boot 4.0 reorganized the `spring-boot-test` module structure. Some testing classes moved to different packages.
+
+**If you're using Spring Boot 3.x:**
+- The concepts and patterns in this book still apply 100%
+- Most code examples work without changes
+- You may need to adjust some import statements
+- Your IDE's auto-import will typically suggest the correct path
+
+For a detailed breakdown of what changed for testing in Spring Boot 4.0 and Spring Framework 7, see: [What's New for Testing in Spring Boot 4.0 and Spring Framework 7](https://rieckpil.de/whats-new-for-testing-in-spring-boot-4-0-and-spring-framework-7/)
+
+**Key highlights:**
+- Test context caching improvements (context pausing)
+- Reorganized module structure
+- Enhanced Testcontainers support
+- New `@ServiceConnection` features
+
+The good news: upgrading from Spring Boot 3.x to 4.0 for testing is straightforward. Most tests continue to work without changes.
+
 ## Your Quest Through the Maze
 
 To successfully navigate the Spring Boot Testing Maze and reach that Friday afternoon confidence, you'll need to:

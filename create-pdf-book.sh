@@ -6,12 +6,12 @@ cd manuscript-pandoc/generated/
 
 pandoc \
  ../000-settings.md \
- 00-introduction.md \
- 01-spring-boot-testing-fundamentals.md \
- 02-spring-boot-testing-sliced.md \
- 03-spring-boot-testing-full.md \
- 04-spring-boot-testing-pitfalls-and-best-practices.md \
- 05-outro.md \
+ 00-the-great-entrance.md \
+ 01-unit-testing-boss.md \
+ 02-sliced-testing-hydra.md \
+ 03-integration-testing-final-boss.md \
+ 04-quest-items.md \
+ 05-exiting-the-maze.md \
  changelog.md \
  --toc \
  --toc-depth=3 \

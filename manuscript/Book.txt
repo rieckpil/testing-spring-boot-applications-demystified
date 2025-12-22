@@ -1,7 +1,15 @@
-00-introduction.md
-01-spring-boot-testing-fundamentals.md
-02-spring-boot-testing-sliced.md
-03-spring-boot-testing-full.md
-04-spring-boot-testing-pitfalls-and-best-practices.md
-05-outro.md
-changelog.md
+# DEPRECATED - This file is no longer used
+#
+# The book now uses the create-pdf-book.sh script which directly
+# references the markdown files in the following order:
+#
+# 00-the-great-entrance.md
+# 01-unit-testing-boss.md
+# 02-sliced-testing-hydra.md
+# 03-integration-testing-final-boss.md
+# 04-quest-items.md
+# 05-exiting-the-maze.md
+# changelog.md
+#
+# To build the PDF, run:
+# ./convert-to-pandoc.sh && ./create-pdf-book.sh

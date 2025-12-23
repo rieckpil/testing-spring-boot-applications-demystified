@@ -19,11 +19,11 @@ pandoc \
  -V linkcolor=ideablue \
  -V colorlinks=true \
  -V mainfont="Fira Sans" \
- -V monofont="SauceCodePro Nerd Font" \
+ -V monofont="Monaco" \
  --top-level-division=section \
  --pdf-engine=xelatex \
  --pdf-engine-opt=-shell-escape \
- --syntax-highlighting=idiomatic \
+ --highlight-style=../annotation-theme.theme \
  -o ../../main-content.pdf
 
 cd ../..
@@ -52,3 +52,5 @@ gs -sDEVICE=pdfwrite \
    main-content.pdf
 
 echo "PDF created successfully with front cover and compressed!"
+
+open testing-spring-boot-applications-demystified.pdf

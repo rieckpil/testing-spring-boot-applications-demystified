@@ -103,57 +103,148 @@ Think of test slices as **focused Spring contexts**. Instead of loading your ent
 
 ## Understanding How Slices Work
 
-When you use `@SpringBootTest`, Spring Boot loads everything:
+To truly understand test slices, let's visualize what happens when Spring Boot starts up for testing. We'll build this understanding step by step.
+
+### Step 1: The Full Application Context
+
+When you use `@SpringBootTest`, Spring Boot loads everything. Imagine your application context as a collection of different bean types:
+
+![Image 1: Full Application Context with Different Bean Types](resources/slices-step-1-full-context.png)
 
 ```
 Full Application Context:
 ┌─────────────────────────────────────┐
-│  Controllers                        │
-│  Services                           │
-│  Repositories                       │
-│  Security Config                    │
-│  JPA Config                         │
-│  Jackson Config                     │
-│  Database Connection Pool           │
+│  @RestController  BookController    │
+│  @RestController  UserController    │
+│  @Service         BookService       │
+│  @Service         UserService       │
+│  @Repository      BookRepository    │
+│  @Repository      UserRepository    │
+│  @Configuration   SecurityConfig    │
+│  @Configuration   JpaConfig         │
+│  @Component       JacksonMapper     │
+│  DataSource       Connection Pool   │
 │  ... everything else ...            │
 └─────────────────────────────────────┘
 ```
 
 This takes time. For a medium-sized application: 5-15 seconds. For larger apps: 30+ seconds.
 
-With a test slice like `@WebMvcTest`, Spring loads only web-related components:
+### Step 2: Grouping Beans by Layer
+
+These beans naturally organize into layers based on their responsibilities:
+
+![Image 2: Beans Grouped by Application Layer](resources/slices-step-2-grouped-layers.png)
 
 ```
-Web Layer Slice:
+Layered Application Context:
 ┌─────────────────────────────────────┐
-│  Controllers (marked @RestController)│
-│  Filters (implementing Filter)      │
-│  Security Config                     │
-│  Jackson ObjectMapper                │
-│  MockMvc (test utility)              │
+│  🌐 WEB LAYER (Green)               │
+│  @RestController  BookController    │
+│  @RestController  UserController    │
+│  Filter           SecurityFilter    │
+├─────────────────────────────────────┤
+│  ⚙️  SERVICE LAYER (Blue)            │
+│  @Service         BookService       │
+│  @Service         UserService       │
+├─────────────────────────────────────┤
+│  💾 DATA LAYER (Purple)             │
+│  @Repository      BookRepository    │
+│  @Repository      UserRepository    │
+│  DataSource       Connection Pool   │
+└─────────────────────────────────────┘
+```
+
+Most tests don't need all layers. A controller test doesn't need database connections. A repository test doesn't need web controllers.
+
+### Step 3: Creating a Sliced Context
+
+This is where Spring Boot's test slices shine. When you use a test slice annotation like `@WebMvcTest`, Spring Boot creates a minimal context containing only the beans relevant to that layer:
+
+![Image 3: Sliced Context with @WebMvcTest](resources/slices-step-3-sliced-context.png)
+
+```
+@WebMvcTest - Web Layer Only:
+┌─────────────────────────────────────┐
+│  🌐 WEB LAYER                       │
+│  @RestController  BookController    │
+│  @RestController  UserController    │
+│  Filter           SecurityFilter    │
+│  @ControllerAdvice ErrorHandler     │
+│  MockMvc          (Test utility)    │
 └─────────────────────────────────────┘
 
-NOT loaded:
-  ✗ Services
-  ✗ Repositories
+NOT LOADED:
+  ✗ @Service classes
+  ✗ @Repository interfaces
   ✗ Database connections
   ✗ JPA configuration
 ```
 
 Startup time: 1-3 seconds. Much faster!
 
-How does Spring Boot know what to include? Each test slice has a "shopping list" of component types to scan for.
+But wait - our `BookController` depends on `BookService`. How does this work if services aren't loaded?
 
-For `@WebMvcTest`, the shopping list includes:
-- `@RestController`
-- `@Controller`
-- `@ControllerAdvice`
-- `@JsonComponent`
-- `Filter`
-- `WebMvcConfigurer`
-- `HandlerInterceptor`
+### Step 4: The Shopping List - How Spring Knows What to Load
 
-When Spring scans your packages, it only picks beans matching this list.
+Here's the secret: each test slice annotation has an internal "shopping list" that tells Spring Boot exactly which component types to scan for. Let's look at `@WebMvcTest`:
+
+![Image 4: @WebMvcTest Type Filter Shopping List](resources/slices-step-4-type-filter.png)
+
+When you annotate your test with `@WebMvcTest`:
+
+```java
+@WebMvcTest(BookController.class)
+class BookControllerTest {
+  @Autowired
+  private MockMvc mockMvc;
+
+  @MockBean  // ← We MUST mock the service!
+  private BookService bookService;
+}
+```
+
+Spring Boot uses the `WebMvcTypeExcludeFilter` to perform fractional component scanning:
+
+```java
+// Simplified view of WebMvcTypeExcludeFilter
+class WebMvcTypeExcludeFilter extends TypeExcludeFilter {
+
+  private static final Set<Class<?>> INCLUDED_TYPES = Set.of(
+    Controller.class,
+    RestController.class,
+    ControllerAdvice.class,
+    JsonComponent.class,
+    WebMvcConfigurer.class
+    // ... and a few more web-related types
+  );
+
+  @Override
+  public boolean match(Class<?> type) {
+    // Only include types in our shopping list
+    return INCLUDED_TYPES.stream()
+      .anyMatch(includedType ->
+        includedType.isAssignableFrom(type));
+  }
+}
+```
+
+This is Spring Boot's "shopping list" in action! During component scanning, Spring Boot asks each bean: "Are you on my shopping list?" If the answer is no, the bean isn't loaded into the context.
+
+**The Web Layer Shopping List includes:**
+- `@RestController` ✓
+- `@Controller` ✓
+- `@ControllerAdvice` ✓
+- `@JsonComponent` ✓
+- `Filter` ✓
+- `WebMvcConfigurer` ✓
+
+**NOT on the shopping list:**
+- `@Service` ✗
+- `@Repository` ✗
+- `@Component` ✗ (unless it's a web-specific component)
+
+This is why our `BookService` isn't loaded and we must use `@MockBean` to provide a mock implementation. The controller needs the service to start, but `@Service` isn't on the web layer's shopping list.
 
 ## Hydra Head #1: Testing Web Controllers with @WebMvcTest
 

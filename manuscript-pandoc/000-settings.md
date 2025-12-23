@@ -3,7 +3,7 @@ documentclass: scrbook
 classoption: openany
 papersize: a4
 geometry: left=1in, right=1in, top=1in, bottom=1.5in,
-fontsize: 12pt
+fontsize: 13pt
 lang: en-US
 title: "Testing Spring Boot Applications Demystified"
 subtitle: "Write Better Tests, Ship Faster: A Practical Guide to Spring Boot Testing."

@@ -1,6 +1,16 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 
+% Set code font size to absolute 11pt for all code environments
+\usepackage{etoolbox}
+% For code blocks with syntax highlighting
+\AtBeginEnvironment{Shaded}{\fontsize{11pt}{13pt}\selectfont}
+% For inline code and verbatim
+\AtBeginEnvironment{Verbatim}{\fontsize{11pt}{13pt}\selectfont}
+\AtBeginEnvironment{verbatim}{\fontsize{11pt}{13pt}\selectfont}
+% Also set for the Highlighting environment used inside Shaded
+\AtBeginEnvironment{Highlighting}{\fontsize{11pt}{13pt}\selectfont}
+
 % Custom title page formatting
 \usepackage{titling}
 \pretitle{\begin{center}\LARGE\bfseries}
@@ -13,6 +23,7 @@
 \definecolor{ideagreen}{rgb}{0,0.5019607843137255,0}
 \definecolor{ideablue}{rgb}{0,0,0.5019607843137255}
 \definecolor{ideagray}{rgb}{0.5019607843137255,0.5019607843137255,0.5019607843137255}
+\definecolor{annotationcolor}{HTML}{808000}
 
 \usepackage{hyperref}
 
@@ -35,6 +46,7 @@
   keywordstyle=\color{ideablue}\bfseries, % Keywords
   commentstyle=\color{ideagray},          % Comments
   stringstyle=\color{ideagreen},            % Strings
+  morestring=[b]""",                      % Java text blocks (multiline strings)
   columns=fullflexible,
   stepnumber=1,               % Line number step
   tabsize=2,                  % Set tab width

@@ -118,6 +118,14 @@ For a detailed breakdown of what changed for testing in Spring Boot 4.0 and Spri
 
 The good news: upgrading from Spring Boot 3.x to 4.0 for testing is straightforward. Most tests continue to work without changes.
 
+**Companion GitHub Repository:**
+
+All code examples in this book come from a fully working Spring Boot application that you can explore, run, and experiment with. The complete source code is available at:
+
+[https://github.com/rieckpil/testing-spring-boot-applications-demystified](https://github.com/rieckpil/testing-spring-boot-applications-demystified)
+
+We encourage you to clone the repository and run the tests alongside reading the book. Seeing the code in action and experimenting with modifications will deepen your understanding.
+
 ## Your Quest Through the Maze
 
 To successfully navigate the Spring Boot Testing Maze and reach that Friday afternoon confidence, you'll need to:
@@ -224,6 +232,17 @@ Before we enter the maze, let's establish a mental map. The testing pyramid show
 - Entire application running
 - Slowest execution (seconds to minutes)
 - Low volume (a handful of critical paths)
+
+**A Word of Caution:**
+
+The testing pyramid is a useful mental model, but it's not a rigid requirement. Your test suite doesn't need to look exactly like this pyramid to be effective. Different applications have different testing needs.
+
+For some applications, you might have more integration tests than unit tests. For others, you might rely heavily on test slices and have fewer full end-to-end tests. What matters most is not the shape of your test distribution, but achieving two critical goals:
+
+1. **Fast Feedback**: Your tests should run quickly enough that you run them frequently during development
+2. **Confident Deployment**: Your tests should give you confidence to deploy to production on a Friday afternoon
+
+Use the pyramid as a guide, not a mandate. The right balance depends on your application's architecture, team preferences, and deployment requirements.
 
 Throughout this book, we'll focus on the first two layers, as they provide the foundation for confident Spring Boot development.
 

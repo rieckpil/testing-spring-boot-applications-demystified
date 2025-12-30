@@ -35,7 +35,7 @@ class BookControllerIntegrationTest extends BaseIntegrationTest {
   @BeforeEach
   void setUp() {
     baseUrl = "http://localhost:" + port;
-    bookRepository.deleteAll();
+    // No manual cleanup needed - DatabaseCleanupExtension handles it automatically
   }
 
   @Test

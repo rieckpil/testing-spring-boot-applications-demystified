@@ -52,4 +52,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
    * @return the book with the given ISBN, if found
    */
   Optional<Book> findByIsbn(String isbn);
+
+  List<Book> findByAuthorContainingIgnoreCase(String author);
 }

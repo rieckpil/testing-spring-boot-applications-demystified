@@ -1,6 +1,7 @@
 package de.rieckpil.blog;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
@@ -19,17 +20,43 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BookController.class)
 @Import(SecurityConfig.class)
 class BookControllerTest {
 
-  @Autowired private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
-  @MockitoBean private BookService bookService;
+  @MockitoBean
+  private BookService bookService;
+
+  @Nested
+  @DisplayName("GET /api/books endpoint tests")
+  class GetBooksTests {
+
+    @Test
+    void shouldListAllBooks() throws Exception {
+      List<Book> books = List.of(
+        new Book("9780134685991", "Effective Java", "Joshua Bloch", LocalDate.of(2008, 8, 1)),
+        new Book("9780132350884", "Clean Code", "Robert Martin",
+          LocalDate.of(2008, 8, 1))
+      );
+
+      when(bookService.getAllBooks()).thenReturn(books);
+
+      mockMvc.perform(get("/api/books"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", Matchers.hasSize(2)))
+        .andExpect(jsonPath("$[0].title", Matchers.is("Effective Java")))
+        .andExpect(jsonPath("$[1].isbn", Matchers.is("9780132350884")));
+    }
+  }
 
   @Nested
   @DisplayName("DELETE /api/books/{id} endpoint tests")
@@ -52,16 +79,16 @@ class BookControllerTest {
       verify(bookService, times(0)).deleteBook(any());
     }
 
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("Should return 204 No Content when authenticated as admin and book exists")
-    void shouldReturnNoContentWhenAdminAndBookExists() throws Exception {
-      when(bookService.deleteBook(1L)).thenReturn(true);
+@Test
+@WithMockUser(roles = "ADMIN")
+@DisplayName("Should return 204 No Content when authenticated as admin and book exists")
+void shouldReturnNoContentWhenAdminAndBookExists() throws Exception {
+  when(bookService.deleteBook(1L)).thenReturn(true);
 
-      mockMvc.perform(delete("/api/books/1")).andExpect(status().isNoContent());
+  mockMvc.perform(delete("/api/books/1")).andExpect(status().isNoContent());
 
-      verify(bookService, times(1)).deleteBook(1L);
-    }
+  verify(bookService, times(1)).deleteBook(1L);
+}
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -84,23 +111,23 @@ class BookControllerTest {
     @DisplayName("Should return 201 Created when valid book data is provided")
     void shouldReturnCreatedWhenValidBookData() throws Exception {
       String validBookJson =
-          """
-        {
-            "isbn": "978-1234567890",
-            "title": "Test Book",
-            "author": "Test Author",
-            "publishedDate": "2023-01-01"
-        }
-        """;
+        """
+          {
+              "isbn": "978-1234567890",
+              "title": "Test Book",
+              "author": "Test Author",
+              "publishedDate": "2023-01-01"
+          }
+          """;
 
       when(bookService.createBook(any())).thenReturn(1L);
 
       mockMvc
-          .perform(
-              post("/api/books").contentType(MediaType.APPLICATION_JSON).content(validBookJson))
-          .andExpect(status().isCreated())
-          .andExpect(header().exists("Location"))
-          .andExpect(header().string("Location", Matchers.containsString("/api/books/1")));
+        .perform(
+          post("/api/books").contentType(MediaType.APPLICATION_JSON).content(validBookJson))
+        .andExpect(status().isCreated())
+        .andExpect(header().exists("Location"))
+        .andExpect(header().string("Location", Matchers.containsString("/api/books/1")));
 
       verify(bookService, times(1)).createBook(any());
     }
@@ -110,19 +137,19 @@ class BookControllerTest {
     @DisplayName("Should return 400 Bad Request when invalid book data is provided")
     void shouldReturnBadRequestWhenInvalidBookData() throws Exception {
       String invalidBookJson =
-          """
-        {
-            "isbn": "",
-            "title": "",
-            "author": "Test Author",
-            "publishedDate": "2025-01-01"
-        }
-        """;
+        """
+          {
+              "isbn": "",
+              "title": "",
+              "author": "Test Author",
+              "publishedDate": "2025-01-01"
+          }
+          """;
 
       mockMvc
-          .perform(
-              post("/api/books").contentType(MediaType.APPLICATION_JSON).content(invalidBookJson))
-          .andExpect(status().isBadRequest());
+        .perform(
+          post("/api/books").contentType(MediaType.APPLICATION_JSON).content(invalidBookJson))
+        .andExpect(status().isBadRequest());
 
       verify(bookService, times(0)).createBook(any());
     }
@@ -132,18 +159,18 @@ class BookControllerTest {
     @DisplayName("Should return 400 Bad Request when ISBN is null")
     void shouldReturnBadRequestWhenIsbnIsNull() throws Exception {
       String nullIsbnJson =
-          """
-        {
-            "isbn": null,
-            "title": "Test Book",
-            "author": "Test Author",
-            "publishedDate": "2023-01-01"
-        }
-        """;
+        """
+          {
+              "isbn": null,
+              "title": "Test Book",
+              "author": "Test Author",
+              "publishedDate": "2023-01-01"
+          }
+          """;
 
       mockMvc
-          .perform(post("/api/books").contentType(MediaType.APPLICATION_JSON).content(nullIsbnJson))
-          .andExpect(status().isBadRequest());
+        .perform(post("/api/books").contentType(MediaType.APPLICATION_JSON).content(nullIsbnJson))
+        .andExpect(status().isBadRequest());
 
       verify(bookService, times(0)).createBook(any());
     }
@@ -154,21 +181,21 @@ class BookControllerTest {
     void shouldReturnBadRequestWhenPublishedDateInFuture() throws Exception {
       LocalDate futureDate = LocalDate.now().plusDays(1);
       String futureDateJson =
-          String.format(
-              """
-        {
-            "isbn": "978-1234567890",
-            "title": "Test Book",
-            "author": "Test Author",
-            "publishedDate": "%s"
-        }
-        """,
-              futureDate);
+        String.format(
+          """
+            {
+                "isbn": "978-1234567890",
+                "title": "Test Book",
+                "author": "Test Author",
+                "publishedDate": "%s"
+            }
+            """,
+          futureDate);
 
       mockMvc
-          .perform(
-              post("/api/books").contentType(MediaType.APPLICATION_JSON).content(futureDateJson))
-          .andExpect(status().isBadRequest());
+        .perform(
+          post("/api/books").contentType(MediaType.APPLICATION_JSON).content(futureDateJson))
+        .andExpect(status().isBadRequest());
 
       verify(bookService, times(0)).createBook(any());
     }

@@ -84,7 +84,7 @@ The project includes comprehensive test coverage with both unit and integration 
 ### Run only integration tests
 
 ```bash
-./mvnw failsafe:integration-test failsafe:verfify
+./mvnw failsafe:integration-test failsafe:verify
 ```
 
 ## Key Testing Patterns Demonstrated

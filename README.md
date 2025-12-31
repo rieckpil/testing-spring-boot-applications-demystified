@@ -1,10 +1,10 @@
-# Testing Spring Boot Applications Demystified
+# Testing Spring Boot Applications Demystified 🍃
 
 <p align="center">
   <img src="resources/tsbad-beginning.png" height="600" alt="Spring Boot Testing Maze Entry">
 </p>
 
-This repository contains the source code for the book [Testing Spring Boot Applications Demystified](https://leanpub.com/testing-spring-boot-applications-demystified).
+This repository contains the source code for the book [Testing Spring Boot Applications Demystified](https://rieckpil.de/free-spring-boot-testing-book/?utm_source=github&utm_medium=free-download&utm_id=free-lead-magnet).
 
 Spring Boot testing doesn't have to be a **nightmare** of broken configurations and unreliable tests.
 
@@ -22,7 +22,7 @@ Write code that works, scale without breaking, and deploy daily.
 
 Sign up below to get access to your 120+ Pages Manual for free 👇🏻
 
-[Testing Spring Boot Applications Demystified](https://rieckpil.de/free-spring-boot-testing-book/?utm_source=github&utm_medium=free-download&utm_id=free-lead-magnet)
+[» Testing Spring Boot Applications Demystified](https://rieckpil.de/free-spring-boot-testing-book/?utm_source=github&utm_medium=free-download&utm_id=free-lead-magnet)
 
 ## Requirements
 
@@ -59,42 +59,10 @@ The project uses Maven as the build tool. You can use the Maven wrapper included
 ./mvnw compile
 ```
 
-### Build the application (skip tests)
-
-```bash
-./mvnw package -DskipTests
-```
-
 ### Build the application (with tests)
 
 ```bash
 ./mvnw verify
-```
-
-## Running the Application
-
-### Using Docker Compose
-
-The project includes Spring Boot Docker Compose support. Simply start the application, and Docker Compose will automatically start the PostgreSQL database:
-
-```bash
-./mvnw spring-boot:run
-```
-
-The PostgreSQL database will be started automatically using the configuration from `compose.yml`.
-
-### Manual Database Setup
-
-Alternatively, you can start PostgreSQL manually using Docker Compose:
-
-```bash
-docker compose up -d
-```
-
-Then run the application:
-
-```bash
-./mvnw spring-boot:run
 ```
 
 ## Running Tests
@@ -116,7 +84,7 @@ The project includes comprehensive test coverage with both unit and integration 
 ### Run only integration tests
 
 ```bash
-./mvnw failsafe:integration-test
+./mvnw failsafe:integration-test failsafe:verfify
 ```
 
 ## Key Testing Patterns Demonstrated
@@ -138,7 +106,5 @@ This codebase showcases various testing patterns covered in the book:
 The code in this repository is available for educational purposes as companion material for the book.
 
 Testing is a team sport, so feel free to share the link to get the eBook copy of [Testing Spring Boot Applications Demystified](https://rieckpil.de/free-spring-boot-testing-book/?utm_source=github&utm_medium=free-download&utm_id=free-lead-magnet) with your colleagues.
-
----
 
 **Joyful Testing!**

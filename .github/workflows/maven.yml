@@ -22,5 +22,4 @@ jobs:
 
       - name: Build project
         timeout-minutes: 15
-        continue-on-error: true
         run: ./mvnw verify --no-transfer-progress

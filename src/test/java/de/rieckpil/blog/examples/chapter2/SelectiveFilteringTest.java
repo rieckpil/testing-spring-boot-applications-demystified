@@ -4,8 +4,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
- * Example of selective test filtering using tags.
- * <br>
+ * Example of selective test filtering using tags. <br>
  * Run with ./mvnw test -Dgroups="fast"
  */
 class SelectiveFilteringTest {

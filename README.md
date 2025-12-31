@@ -1,7 +1,7 @@
 # Testing Spring Boot Applications Demystified
 
 <p align="center">
-  <img src="ebook-cover.png" width="400" alt="Testing Spring Boot Applications Demystified Cover">
+  <img src="resources/tsbad-beginning.png" height="600" alt="Spring Boot Testing Maze Entry">
 </p>
 
 This repository contains the source code for the book [Testing Spring Boot Applications Demystified](https://leanpub.com/testing-spring-boot-applications-demystified).

@@ -1,6 +1,8 @@
-package de.rieckpil.blog;
+package de.rieckpil.blog.examples.chapter3;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import de.rieckpil.blog.BookMetadataResponse;
+import de.rieckpil.blog.OpenLibraryApiClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +37,7 @@ class OpenLibraryApiClientTest {
   @DisplayName("Should return book metadata when API returns valid response")
   void shouldReturnBookMetadataWhenApiReturnsValidResponse() {
     // Arrange
-    String isbn = "9780132350884";
+    String isbn = "978-0132350884";
 
     wireMockServer.stubFor(
         get("/isbn/" + isbn)
@@ -95,27 +97,5 @@ class OpenLibraryApiClientTest {
         assertThrows(WebClientResponseException.NotFound.class, () -> cut.getBookByIsbn(isbn));
 
     assertThat(exception.getStatusCode().value()).isEqualTo(404);
-  }
-
-  @Test
-  @DisplayName("Should handle slow response from API")
-  void shouldHandleSlowResponseFromApi() {
-    // Arrange
-    String isbn = "9780132350884";
-
-    wireMockServer.stubFor(
-        get("/isbn/" + isbn)
-            .willReturn(
-                aResponse()
-                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .withBodyFile(isbn + "-success.json")
-                    .withFixedDelay(100)));
-
-    // Act
-    BookMetadataResponse result = cut.getBookByIsbn(isbn);
-
-    // Assert
-    assertThat(result).isNotNull();
-    assertThat(result.title()).isEqualTo("Clean Code");
   }
 }

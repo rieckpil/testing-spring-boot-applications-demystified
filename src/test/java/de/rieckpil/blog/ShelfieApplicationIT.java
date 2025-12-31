@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Import;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(LocalDevTestcontainerConfig.class)
-class ApplicationIT {
+class ShelfieApplicationIT {
 
   @Test
   void contextLoads() {}

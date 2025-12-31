@@ -27,25 +27,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
   List<Book> searchBooksByTitleWithRanking(@Param("searchTerms") String searchTerms);
 
   /**
-   * PostgreSQL-specific: Fuzzy string matching using trigram similarity. Finds books with similar
-   * titles even with typos or slight variations. Requires the pg_trgm extension.
-   *
-   * @param title the approximate title to search for
-   * @param similarityThreshold the minimum similarity threshold (0.0-1.0)
-   * @return list of books with similar titles, ordered by similarity
-   */
-  @Query(
-      value =
-          """
-    SELECT * FROM books
-    WHERE similarity(title, :title) > :similarityThreshold
-    ORDER BY similarity(title, :title) DESC
-    """,
-      nativeQuery = true)
-  List<Book> findBooksByTitleFuzzy(
-      @Param("title") String title, @Param("similarityThreshold") double similarityThreshold);
-
-  /**
    * Find a book by its ISBN.
    *
    * @param isbn the ISBN to search for

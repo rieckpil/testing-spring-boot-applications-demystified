@@ -1,7 +1,9 @@
-package de.rieckpil.blog;
+package de.rieckpil.blog.examples.chapter1;
 
 import java.util.List;
 import java.util.Map;
+
+import de.rieckpil.blog.BookMetadataResponse;
 
 /**
  * TestObjectMother for creating BookMetadataResponse instances in tests. Provides sensible defaults

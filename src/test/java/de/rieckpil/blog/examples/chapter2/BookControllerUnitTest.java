@@ -1,7 +1,10 @@
-package de.rieckpil.blog;
+package de.rieckpil.blog.examples.chapter2;
 
 import java.time.LocalDate;
 
+import de.rieckpil.blog.BookController;
+import de.rieckpil.blog.BookCreationRequest;
+import de.rieckpil.blog.BookService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,19 +22,16 @@ class BookControllerUnitTest {
     BookService mockService = mock(BookService.class);
     BookController controller = new BookController(mockService);
 
-    when(mockService.createBook(any()))
-      .thenReturn(1L);
+    when(mockService.createBook(any())).thenReturn(1L);
 
-    BookCreationRequest request = new BookCreationRequest(
-      "9780132350884", "Clean Code", "Robert Martin",
-      LocalDate.of(2008, 8, 1)
-    );
+    BookCreationRequest request =
+        new BookCreationRequest(
+            "9780132350884", "Clean Code", "Robert Martin", LocalDate.of(2008, 8, 1));
 
     ResponseEntity<Void> response =
-      controller.createBook(request, UriComponentsBuilder.fromUriString("/"));
+        controller.createBook(request, UriComponentsBuilder.fromUriString("/"));
 
     assertEquals(HttpStatus.CREATED, response.getStatusCode());
-    assertEquals("/api/books/1",
-      response.getHeaders().getLocation().toString());
+    assertEquals("/api/books/1", response.getHeaders().getLocation().toString());
   }
 }

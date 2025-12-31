@@ -13,10 +13,10 @@ public class TestApplication {
   @Bean
   @ServiceConnection
   PostgreSQLContainer<?> postgresContainer() {
-    return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15-alpine"));
+    return new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"));
   }
 
   public static void main(String[] args) {
-    SpringApplication.from(Application::main).with(TestApplication.class).run(args);
+    SpringApplication.from(ShelfieApplication::main).with(TestApplication.class).run(args);
   }
 }

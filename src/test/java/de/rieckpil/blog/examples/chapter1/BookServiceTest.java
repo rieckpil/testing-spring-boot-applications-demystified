@@ -1,8 +1,15 @@
-package de.rieckpil.blog;
+package de.rieckpil.blog.examples.chapter1;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
+import de.rieckpil.blog.Book;
+import de.rieckpil.blog.BookAlreadyExistsException;
+import de.rieckpil.blog.BookCreationRequest;
+import de.rieckpil.blog.BookMetadataResponse;
+import de.rieckpil.blog.BookRepository;
+import de.rieckpil.blog.BookService;
+import de.rieckpil.blog.OpenLibraryApiClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

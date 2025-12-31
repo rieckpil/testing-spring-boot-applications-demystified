@@ -39,11 +39,10 @@ Before you begin, ensure you have the following installed:
 
 This project demonstrates testing techniques for a Spring Boot application that includes:
 
-- **Spring Boot 3** with Java 21
+- **Spring Boot 4** with Java 21
 - **Spring Data JPA** with PostgreSQL
 - **Spring Security** for authentication and authorization
 - **Spring WebFlux** for reactive HTTP clients
-- **Thymeleaf** for server-side templating
 - **Flyway** for database migrations
 - **Testcontainers** for integration testing
 - **WireMock** for HTTP client mocking
@@ -119,30 +118,6 @@ The project includes comprehensive test coverage with both unit and integration 
 ```bash
 ./mvnw failsafe:integration-test
 ```
-
-### Test Configuration
-
-- **Unit Tests**: Use Surefire plugin with parallel execution enabled
-- **Integration Tests**: Use Failsafe plugin and follow the naming convention `*IT.java` or `*WT.java`
-- **Testcontainers**: Automatically starts PostgreSQL containers for integration tests
-- **Context Caching**: Examples included to optimize Spring context reuse across tests
-
-## Code Quality
-
-The project enforces code quality standards:
-
-- **Spotless**: Ensures consistent code formatting using Google Java Format
-  ```bash
-  ./mvnw spotless:check
-  ./mvnw spotless:apply
-  ```
-
-- **SortPOM**: Keeps the `pom.xml` organized
-  ```bash
-  ./mvnw sortpom:verify
-  ```
-
-- **Maven Enforcer**: Validates dependency convergence
 
 ## Key Testing Patterns Demonstrated
 

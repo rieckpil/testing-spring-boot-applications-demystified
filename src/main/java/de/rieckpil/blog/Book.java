@@ -2,6 +2,7 @@ package de.rieckpil.blog;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -37,6 +38,7 @@ public class Book {
   @Column(name = "thumbnail_url")
   private String thumbnailUrl;
 
+  @JsonIgnore
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private BookStatus status = BookStatus.AVAILABLE;

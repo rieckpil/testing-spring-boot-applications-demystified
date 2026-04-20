@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: 'postgres:16.0'
+    image: 'postgres:16.13'
     environment:
       - 'POSTGRES_DB=shelfie'
       - 'POSTGRES_PASSWORD=secret'
